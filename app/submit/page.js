@@ -29,7 +29,7 @@ export default function Submit() {
         body: JSON.stringify(form)
       });
     } catch(e) {}
-    setSubmitted(true);
+    localStorage.setItem("salarymena_access", "true"); setSubmitted(true);
   };
 
   const inp = {width:'100%',background:'#13131f',border:'1px solid #2a2a3e',borderRadius:'10px',padding:'14px 16px',color:'#fff',fontSize:'15px',outline:'none',boxSizing:'border-box',appearance:'none'};
