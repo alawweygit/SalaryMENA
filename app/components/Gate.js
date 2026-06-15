@@ -1,0 +1,47 @@
+'use client';
+import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
+
+export default function Gate({ children }) {
+  const [hasAccess, setHasAccess] = useState(null);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const access = localStorage.getItem('salarymena_access');
+    setHasAccess(!!access);
+  }, []);
+
+  const grantAccess = () => {
+    localStorage.setItem('salarymena_access', 'true');
+    setHasAccess(true);
+  };
+
+  const publicPages = ['/', '/submit'];
+  if (publicPages.includes(pathname)) return children;
+  if (hasAccess === null) return null;
+  if (hasAccess) return children;
+
+  return (
+    <div style={{ fontFamily: 'Inter, sans-serif', background: '#0a0a0f', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', padding: '24px' }}>
+      <div style={{ maxWidth: '520px', width: '100%', textAlign: 'center' }}>
+        <div style={{ fontSize: '48px', marginBottom: '24px' }}>🔒</div>
+        <h1 style={{ fontSize: '32px', fontWeight: '800', marginBottom: '16px' }}>See what others earn</h1>
+        <p style={{ color: '#a0a0b0', fontSize: '16px', lineHeight: 1.7, marginBottom: '40px' }}>
+          SalaryMENA is built on sharing. To browse real salaries across the MENA region, share yours first. It takes 90 seconds and is completely anonymous.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <a href="/submit" style={{ display: 'block', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', textDecoration: 'none', borderRadius: '12px', padding: '16px', fontSize: '16px', fontWeight: '700' }}>
+            Share My Salary → Get Full Access
+          </a>
+          <button onClick={grantAccess}
+            style={{ background: 'transparent', border: '1px solid #2a2a3e', color: '#a0a0b0', borderRadius: '12px', padding: '16px', fontSize: '15px', cursor: 'pointer', fontWeight: '500' }}>
+            I have never been employed
+          </button>
+        </div>
+        <p style={{ marginTop: '24px', fontSize: '12px', color: '#404050' }}>
+          Your salary is never shown individually. Always anonymous.
+        </p>
+      </div>
+    </div>
+  );
+}
