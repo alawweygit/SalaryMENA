@@ -21,14 +21,31 @@ export default function Gate({ children }) {
   if (hasAccess === null) return null;
   if (hasAccess) return children;
 
+  const pageMessages = {
+    '/explore': {
+      icon: '🔍',
+      title: 'See what others earn',
+      desc: 'To browse real salaries across the MENA region, share yours first. It takes 90 seconds and is completely anonymous.',
+    },
+    '/coach': {
+      icon: '🤖',
+      title: 'Unlock your AI Negotiation Coach',
+      desc: 'To get a personalized salary negotiation script, share your current salary first. It helps us give you accurate advice.',
+    },
+  };
+
+  const message = pageMessages[pathname] || {
+    icon: '🔒',
+    title: 'Share your salary to continue',
+    desc: 'SalaryMENA is built on sharing. Share your salary first to get full access. It takes 90 seconds and is completely anonymous.',
+  };
+
   return (
     <div style={{ fontFamily: 'Inter, sans-serif', background: '#0a0a0f', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', padding: '24px' }}>
       <div style={{ maxWidth: '520px', width: '100%', textAlign: 'center' }}>
-        <div style={{ fontSize: '48px', marginBottom: '24px' }}>🔒</div>
-        <h1 style={{ fontSize: '32px', fontWeight: '800', marginBottom: '16px' }}>See what others earn</h1>
-        <p style={{ color: '#a0a0b0', fontSize: '16px', lineHeight: 1.7, marginBottom: '40px' }}>
-          SalaryMENA is built on sharing. To browse real salaries across the MENA region, share yours first. It takes 90 seconds and is completely anonymous.
-        </p>
+        <div style={{ fontSize: '48px', marginBottom: '24px' }}>{message.icon}</div>
+        <h1 style={{ fontSize: '32px', fontWeight: '800', marginBottom: '16px' }}>{message.title}</h1>
+        <p style={{ color: '#a0a0b0', fontSize: '16px', lineHeight: 1.7, marginBottom: '40px' }}>{message.desc}</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <a href="/submit" style={{ display: 'block', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', textDecoration: 'none', borderRadius: '12px', padding: '16px', fontSize: '16px', fontWeight: '700' }}>
             Share My Salary → Get Full Access
