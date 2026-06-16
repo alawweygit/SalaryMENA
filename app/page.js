@@ -80,7 +80,7 @@ export default function Home() {
         </div>
         <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
           {[text.nav_explore, text.nav_submit, text.nav_coach, text.nav_companies].map((item, i) => (
-            <a key={i} href={['explore','submit','coach','#'][i]==='#'?'#':`/${['explore','submit','coach','#'][i]}`} style={{ color: '#a0a0b0', textDecoration: 'none', fontSize: '14px', fontWeight: '500' }}
+            <a key={i} href={['explore','submit','coach','underpaid'][i]==='#'?'#':`/${['explore','submit','coach','underpaid'][i]}`} style={{ color: '#a0a0b0', textDecoration: 'none', fontSize: '14px', fontWeight: '500' }}
               onMouseEnter={e => e.target.style.color = '#fff'}
               onMouseLeave={e => e.target.style.color = '#a0a0b0'}>
               {item}
