@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Navbar from '../components/Navbar';
 import { useLang } from '../components/LanguageContext';
 import { t } from '../components/translations';
@@ -27,6 +28,31 @@ export default function Coach() {
     : ['Private','Government'];
 
   const filteredCountries = COUNTRIES.filter(c=>c.toLowerCase().includes(countrySearch.toLowerCase()));
+
+  // Auto-fill and auto-submit if coming from underpaid page
+  useEffect(() => {
+    const prefill = localStorage.getItem('coach_prefill');
+    if (prefill) {
+      const data = JSON.parse(prefill);
+      localStorage.removeItem('coach_prefill');
+      setForm(p=>({...p,...data}));
+      // Auto-submit after form is set
+      setTimeout(() => {
+        submitForm(data);
+      }, 100);
+    }
+  }, []);
+
+  const submitForm = async (data) => {
+    setLoading(true);
+    setResult(null);
+    try {
+      const res = await fetch('/api/coach',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+      const json = await res.json();
+      setProgress(100);
+      setTimeout(()=>{setResult(json.text);setLoading(false);},400);
+    } catch(e){setResult(lang==='ar'?'حدث خطأ. حاول مجدداً.':'Something went wrong. Please try again.');setLoading(false);}
+  };
 
   useEffect(() => {
     if(!loading){setProgress(0);return;}

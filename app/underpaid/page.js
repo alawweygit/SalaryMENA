@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Navbar from '../components/Navbar';
 import { useLang } from '../components/LanguageContext';
 import { t } from '../components/translations';
@@ -10,6 +11,7 @@ const GCC = ['UAE','Saudi Arabia','Kuwait','Qatar','Bahrain','Oman'];
 export default function Underpaid() {
   const { lang, isAr } = useLang();
   const txt = t[lang];
+  const router = useRouter();
   const [form, setForm] = useState({jobTitle:'',country:'',currency:'AED',monthlySalary:'',experience:'',companyType:'',nationalityType:''});
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -47,7 +49,6 @@ export default function Underpaid() {
   const canAnalyze = form.jobTitle && form.country && form.monthlySalary && form.experience && form.companyType && form.nationalityType;
   const filteredCountries = COUNTRIES.filter(c=>c.toLowerCase().includes(countrySearch.toLowerCase()));
   const fmt = (n) => Math.round(n).toLocaleString();
-
   const experiences = ['0-1','1-3','3-5','5-8','8-12','12+'];
 
   const analyze = async () => {
@@ -63,6 +64,19 @@ export default function Underpaid() {
         setLoading(false);
       },400);
     } catch(e){setResult({error:true});setLoading(false);}
+  };
+
+  const goToCoach = () => {
+    localStorage.setItem('coach_prefill', JSON.stringify({
+      jobTitle: form.jobTitle,
+      country: form.country,
+      nationalityType: form.nationalityType,
+      companyType: form.companyType,
+      experience: form.experience,
+      currency: form.currency,
+      offeredSalary: form.monthlySalary
+    }));
+    router.push('/coach');
   };
 
   const getGaugeRotation = (low,high,userSalary) => {
@@ -244,7 +258,7 @@ export default function Underpaid() {
               <div style={{background:'rgba(239,68,68,0.08)',border:'1px solid rgba(239,68,68,0.25)',borderRadius:'20px',padding:'32px',textAlign:'center'}}>
                 <h3 style={{fontSize:'20px',fontWeight:'800',marginBottom:'8px'}}>{txt.negotiate_title}</h3>
                 <p style={{color:'#a0a0b0',fontSize:'14px',marginBottom:'20px'}}>{txt.negotiate_sub}</p>
-                <a href="/coach" style={{display:'inline-block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'10px',padding:'12px 28px',fontWeight:'700',fontSize:'14px'}}>{txt.negotiate_btn}</a>
+                <button onClick={goToCoach} style={{display:'inline-block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'10px',padding:'12px 28px',fontWeight:'700',fontSize:'14px',border:'none',cursor:'pointer'}}>{txt.negotiate_btn}</button>
               </div>
             )}
 
