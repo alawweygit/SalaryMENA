@@ -23,8 +23,8 @@ export default function Underpaid() {
     : (lang==='ar'?['مواطن محلي','عربي (دولة أخرى)','وافد غربي','وافد آسيوي']:['Local National','Arab (Other)','Western Expat','Asian Expat']);
 
   const companyTypes = lang==='ar'
-    ? ['متعددة الجنسيات','شركة خاصة','حكومة','شركة عائلية']
-    : ['Multinational','Private Company','Government','Family Business'];
+    ? ['خاص','حكومة']
+    : ['Private','Government'];
 
   useEffect(() => {
     if(!loading){setProgress(0);return;}
