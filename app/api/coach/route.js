@@ -7,13 +7,12 @@ const pool = new Pool({ connectionString: process.env.DATABASE_PUBLIC_URL });
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { jobTitle, country, currency, currentSalary, offeredSalary, experience, seniority, companyType, nationalityType } = body;
+    const { jobTitle, country, currency, currentSalary, offeredSalary, experience, companyType, nationalityType } = body;
 
-    // Silently save to DB in background — don't await, don't block the AI response
     pool.query(
-      `INSERT INTO salaries (job_title, seniority, company_type, country, monthly_salary, currency, experience, nationality_type)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-      [jobTitle, seniority, companyType || null, country, offeredSalary || currentSalary || null, currency, experience, nationalityType || null]
+      `INSERT INTO salaries (job_title, company_type, country, monthly_salary, currency, experience, nationality_type)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [jobTitle, companyType || null, country, offeredSalary || currentSalary || null, currency, experience, nationalityType || null]
     ).catch(err => console.error('Coach DB save error:', err));
 
     const message = await client.messages.create({
@@ -23,22 +22,26 @@ export async function POST(req) {
         role: 'user',
         content: `You are an expert salary negotiation coach for the MENA region with deep knowledge of compensation across UAE, Saudi Arabia, Egypt, Oman, Kuwait, Qatar, Bahrain, Jordan, Lebanon and all Arab countries.
 
-A professional has shared the following details:
+CRITICAL CONTEXT — MENA salaries differ significantly by nationality:
+- Expats (Arab, Asian, Western) earn considerably less than GCC nationals/local citizens for identical roles
+- Government sector compensation differs greatly from private sector
+- Always benchmark against the correct segment for this person
+
+Profile:
 - Job Title: ${jobTitle}
-- Seniority: ${seniority}
 - Country: ${country}
-- Currency: ${currency}
-- Years of Experience: ${experience}
+- Nationality Type: ${nationalityType}
 - Company Type: ${companyType || 'Not specified'}
+- Years of Experience: ${experience}
 - Current Salary: ${currentSalary ? currency + ' ' + currentSalary + '/month' : 'Not disclosed'}
 - Offered Salary: ${currency} ${offeredSalary}/month
 
-Based on your knowledge of MENA salary markets, provide:
-1. A clear verdict: is this offer below market, fair, or above market?
-2. A brief market assessment for this role in this country
+Based on your knowledge of MENA salary markets for ${nationalityType} professionals in ${country}, provide:
+1. A clear verdict: is this offer below market, fair, or above market for this specific nationality type and company type?
+2. A brief market assessment using realistic figures for ${nationalityType} in ${country}
 3. A word-for-word negotiation script they can use with HR
 4. 3 specific talking points to strengthen their position
-5. A realistic counter offer range
+5. A realistic counter offer range based on ${nationalityType} market rates
 
 Use these exact section headers on their own line:
 VERDICT
@@ -47,7 +50,7 @@ YOUR NEGOTIATION SCRIPT
 3 TALKING POINTS
 RECOMMENDED COUNTER OFFER
 
-Be specific, direct, and practical. Write in a warm professional tone. Give real numbers.`
+Be specific, direct, and practical. Give real numbers appropriate for ${nationalityType} in ${country}.`
       }]
     });
 

@@ -14,7 +14,7 @@ export default function Coach() {
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState(null);
   const [countrySearch, setCountrySearch] = useState('');
-  const [form, setForm] = useState({jobTitle:'',country:'',currency:'AED',currentSalary:'',offeredSalary:'',experience:'',seniority:'',companyType:'',nationalityType:''});
+  const [form, setForm] = useState({jobTitle:'',country:'',currency:'AED',currentSalary:'',offeredSalary:'',experience:'',companyType:'',nationalityType:''});
   const update = (f,v) => setForm(p=>({...p,[f]:v}));
 
   const isGCC = GCC.includes(form.country);
@@ -22,15 +22,11 @@ export default function Coach() {
     ? (lang==='ar'?['مواطن خليجي','وافد عربي','وافد غربي','وافد آسيوي']:['GCC National','Arab Expat','Western Expat','Asian Expat'])
     : (lang==='ar'?['مواطن محلي','عربي (دولة أخرى)','وافد غربي','وافد آسيوي']:['Local National','Arab (Other)','Western Expat','Asian Expat']);
 
-  const filteredCountries = COUNTRIES.filter(c=>c.toLowerCase().includes(countrySearch.toLowerCase()));
-
-  const seniorities = lang==='ar'
-    ? ['مبتدئ','متوسط','متقدم','قائد','مدير','مدير أول','الإدارة العليا']
-    : ['Junior','Mid-Level','Senior','Lead','Manager','Director','C-Suite'];
-
   const companyTypes = lang==='ar'
-    ? ['شركة متعددة الجنسيات','شركة محلية','حكومة','شركة عائلية']
-    : ['Multinational','Local Company','Government','Family Business'];
+    ? ['متعددة الجنسيات','شركة خاصة','حكومة','شركة عائلية']
+    : ['Multinational','Private Company','Government','Family Business'];
+
+  const filteredCountries = COUNTRIES.filter(c=>c.toLowerCase().includes(countrySearch.toLowerCase()));
 
   useEffect(() => {
     if(!loading){setProgress(0);return;}
@@ -50,7 +46,7 @@ export default function Coach() {
   const chip = (a) => ({padding:'10px 20px',borderRadius:'50px',fontSize:'14px',fontWeight:'500',cursor:'pointer',border:'none',background:a?'linear-gradient(135deg,#6366f1,#8b5cf6)':'#13131f',color:a?'#fff':'#606070',outline:a?'none':'1px solid #2a2a3e',transition:'all 0.2s'});
   const countryChip = (a) => ({padding:'8px 16px',borderRadius:'50px',fontSize:'13px',fontWeight:'500',cursor:'pointer',border:'none',background:a?'linear-gradient(135deg,#6366f1,#8b5cf6)':'#13131f',color:a?'#fff':'#606070',outline:a?'none':'1px solid #2a2a3e',whiteSpace:'nowrap'});
 
-  const canSubmit = form.jobTitle && form.country && form.offeredSalary && form.experience && form.seniority && form.nationalityType;
+  const canSubmit = form.jobTitle && form.country && form.offeredSalary && form.experience && form.companyType && form.nationalityType;
 
   const analyze = async () => {
     setLoading(true);
@@ -80,7 +76,6 @@ export default function Coach() {
 
       <div style={{maxWidth:'700px',margin:'0 auto',padding:'60px 24px'}}>
 
-        {/* LOADING */}
         {loading && (
           <div style={{textAlign:'center',padding:'80px 24px',animation:'fadeIn 0.3s ease'}}>
             <div style={{position:'relative',width:'140px',height:'140px',margin:'0 auto 32px'}}>
@@ -103,7 +98,6 @@ export default function Coach() {
           </div>
         )}
 
-        {/* FORM */}
         {!loading && !result && (
           <div style={{animation:'fadeIn 0.3s ease'}}>
             <div style={{textAlign:'center',marginBottom:'48px'}}>
@@ -132,24 +126,14 @@ export default function Coach() {
                 </div></div>
               )}
 
-              <div><label style={lbl}>{txt.seniority_label}</label>
+              <div><label style={lbl}>{txt.company_type_label}</label>
               <div style={{display:'flex',flexWrap:'wrap',gap:'8px'}}>
-                {seniorities.map(s=><button key={s} style={chip(form.seniority===s)} onClick={()=>update('seniority',s)}>{s}</button>)}
+                {companyTypes.map(tp=><button key={tp} style={chip(form.companyType===tp)} onClick={()=>update('companyType',tp)}>{tp}</button>)}
               </div></div>
 
               <div><label style={lbl}>{txt.experience_label}</label>
               <div style={{display:'flex',flexWrap:'wrap',gap:'8px'}}>
                 {['0-1','1-3','3-5','5-8','8-12','12+'].map(y=><button key={y} style={chip(form.experience===y)} onClick={()=>update('experience',y)}>{y} {lang==='ar'?'سنوات':'yrs'}</button>)}
-              </div></div>
-
-              <div><label style={lbl}>{txt.company_type_label} <span style={{color:'#404050',fontWeight:'400',textTransform:'none'}}>{txt.company_type_opt}</span></label>
-              <div style={{display:'flex',flexWrap:'wrap',gap:'8px'}}>
-                {companyTypes.map(tp=><button key={tp} style={chip(form.companyType===tp)} onClick={()=>update('companyType',tp)}>{tp}</button>)}
-              </div></div>
-
-              <div><label style={lbl}>{txt.currency_label}</label>
-              <div style={{display:'flex',flexWrap:'wrap',gap:'8px'}}>
-                {['AED','SAR','EGP','OMR','KWD','QAR','BHD','JOD','USD'].map(c=><button key={c} style={chip(form.currency===c)} onClick={()=>update('currency',c)}>{c}</button>)}
               </div></div>
 
               <div style={{display:'flex',gap:'16px'}}>
@@ -165,7 +149,6 @@ export default function Coach() {
           </div>
         )}
 
-        {/* RESULT */}
         {!loading && result && (
           <div style={{animation:'fadeIn 0.4s ease'}}>
             <div style={{background:'#0d0d18',border:'1px solid #1e1e2e',borderRadius:'24px',padding:'40px',marginBottom:'16px'}}>
@@ -173,13 +156,13 @@ export default function Coach() {
                 <div style={{width:'40px',height:'40px',borderRadius:'50%',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'18px',flexShrink:0}}>🤖</div>
                 <div>
                   <p style={{margin:0,fontWeight:'700',fontSize:'15px'}}>{txt.coach_title}</p>
-                  <p style={{margin:0,color:'#404050',fontSize:'13px'}}>{form.jobTitle} · {form.country}</p>
+                  <p style={{margin:0,color:'#404050',fontSize:'13px'}}>{form.jobTitle} · {form.country} · {form.nationalityType}</p>
                 </div>
               </div>
               <div>{formatResult(result)}</div>
             </div>
             <div style={{display:'flex',gap:'12px'}}>
-              <button onClick={()=>{setResult(null);setForm({jobTitle:'',country:'',currency:'AED',currentSalary:'',offeredSalary:'',experience:'',seniority:'',companyType:'',nationalityType:''});setCountrySearch('');}}
+              <button onClick={()=>{setResult(null);setForm({jobTitle:'',country:'',currency:'AED',currentSalary:'',offeredSalary:'',experience:'',companyType:'',nationalityType:''});setCountrySearch('');}}
                 style={{flex:1,background:'transparent',border:'1px solid #2a2a3e',color:'#a0a0b0',borderRadius:'12px',padding:'14px',fontSize:'14px',cursor:'pointer',fontWeight:'500'}}>{txt.analyze_another}</button>
               <a href="/submit" style={{flex:1,display:'block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'12px',padding:'14px',fontSize:'14px',fontWeight:'700',textAlign:'center'}}>{txt.submit_nav}</a>
             </div>

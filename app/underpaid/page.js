@@ -10,7 +10,7 @@ const GCC = ['UAE','Saudi Arabia','Kuwait','Qatar','Bahrain','Oman'];
 export default function Underpaid() {
   const { lang, isAr } = useLang();
   const txt = t[lang];
-  const [form, setForm] = useState({jobTitle:'',country:'',currency:'AED',monthlySalary:'',experience:'',seniority:'',nationalityType:''});
+  const [form, setForm] = useState({jobTitle:'',country:'',currency:'AED',monthlySalary:'',experience:'',companyType:'',nationalityType:''});
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -21,6 +21,10 @@ export default function Underpaid() {
   const nationalityOptions = isGCC
     ? (lang==='ar'?['مواطن خليجي','وافد عربي','وافد غربي','وافد آسيوي']:['GCC National','Arab Expat','Western Expat','Asian Expat'])
     : (lang==='ar'?['مواطن محلي','عربي (دولة أخرى)','وافد غربي','وافد آسيوي']:['Local National','Arab (Other)','Western Expat','Asian Expat']);
+
+  const companyTypes = lang==='ar'
+    ? ['متعددة الجنسيات','شركة خاصة','حكومة','شركة عائلية']
+    : ['Multinational','Private Company','Government','Family Business'];
 
   useEffect(() => {
     if(!loading){setProgress(0);return;}
@@ -40,13 +44,9 @@ export default function Underpaid() {
   const chip = (a) => ({padding:'10px 20px',borderRadius:'50px',fontSize:'14px',fontWeight:'500',cursor:'pointer',border:'none',background:a?'linear-gradient(135deg,#6366f1,#8b5cf6)':'#13131f',color:a?'#fff':'#606070',outline:a?'none':'1px solid #2a2a3e',transition:'all 0.2s'});
   const countryChip = (a) => ({padding:'8px 16px',borderRadius:'50px',fontSize:'13px',fontWeight:'500',cursor:'pointer',border:'none',background:a?'linear-gradient(135deg,#6366f1,#8b5cf6)':'#13131f',color:a?'#fff':'#606070',outline:a?'none':'1px solid #2a2a3e',whiteSpace:'nowrap'});
 
-  const canAnalyze = form.jobTitle && form.country && form.monthlySalary && form.experience && form.seniority && form.nationalityType;
+  const canAnalyze = form.jobTitle && form.country && form.monthlySalary && form.experience && form.companyType && form.nationalityType;
   const filteredCountries = COUNTRIES.filter(c=>c.toLowerCase().includes(countrySearch.toLowerCase()));
   const fmt = (n) => Math.round(n).toLocaleString();
-
-  const seniorities = lang==='ar'
-    ? ['مبتدئ','متوسط','متقدم','قائد','مدير','مدير أول','الإدارة العليا']
-    : ['Junior','Mid-Level','Senior','Lead','Manager','Director','C-Suite'];
 
   const experiences = ['0-1','1-3','3-5','5-8','8-12','12+'];
 
@@ -82,7 +82,6 @@ export default function Underpaid() {
 
       <div style={{maxWidth:'700px',margin:'0 auto',padding:'60px 24px'}}>
 
-        {/* LOADING */}
         {loading && (
           <div style={{textAlign:'center',padding:'80px 24px',animation:'fadeIn 0.3s ease'}}>
             <div style={{position:'relative',width:'140px',height:'140px',margin:'0 auto 32px'}}>
@@ -105,7 +104,6 @@ export default function Underpaid() {
           </div>
         )}
 
-        {/* FORM */}
         {!loading && !result && (
           <div style={{animation:'fadeIn 0.3s ease'}}>
             <div style={{textAlign:'center',marginBottom:'48px'}}>
@@ -115,6 +113,7 @@ export default function Underpaid() {
             </div>
 
             <div style={{background:'#0d0d18',border:'1px solid #1e1e2e',borderRadius:'24px',padding:'40px',display:'flex',flexDirection:'column',gap:'24px'}}>
+
               <div><label style={lbl}>{txt.job_title_label}</label><input style={inp} placeholder={txt.job_title_placeholder} value={form.jobTitle} onChange={e=>update('jobTitle',e.target.value)}/></div>
 
               <div>
@@ -133,9 +132,9 @@ export default function Underpaid() {
                 </div></div>
               )}
 
-              <div><label style={lbl}>{txt.seniority_label}</label>
+              <div><label style={lbl}>{txt.company_type_label}</label>
               <div style={{display:'flex',flexWrap:'wrap',gap:'8px'}}>
-                {seniorities.map(s=><button key={s} style={chip(form.seniority===s)} onClick={()=>update('seniority',s)}>{s}</button>)}
+                {companyTypes.map(tp=><button key={tp} style={chip(form.companyType===tp)} onClick={()=>update('companyType',tp)}>{tp}</button>)}
               </div></div>
 
               <div><label style={lbl}>{txt.experience_label}</label>
@@ -158,7 +157,6 @@ export default function Underpaid() {
           </div>
         )}
 
-        {/* RESULT */}
         {!loading && result && !result.error && (
           <div style={{display:'flex',flexDirection:'column',gap:'16px',animation:'fadeIn 0.4s ease'}}>
 
