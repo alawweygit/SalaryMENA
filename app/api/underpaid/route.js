@@ -7,9 +7,9 @@ const pool = new Pool({ connectionString: process.env.DATABASE_PUBLIC_URL });
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { jobTitle, country, currency, monthlySalary, experience, seniority, save } = body;
+    const { jobTitle, country, currency, monthlySalary, experience, seniority, nationalityType } = body;
 
-    if (save) {
+    try {
       await pool.query(`
         CREATE TABLE IF NOT EXISTS salaries (
           id SERIAL PRIMARY KEY, job_title TEXT, seniority TEXT, company_type TEXT, company_name TEXT,
@@ -19,11 +19,11 @@ export async function POST(req) {
         )
       `);
       await pool.query(
-        `INSERT INTO salaries (job_title, seniority, country, monthly_salary, currency, experience)
-         VALUES ($1, $2, $3, $4, $5, $6)`,
-        [jobTitle, seniority, country, monthlySalary, currency, experience]
+        `INSERT INTO salaries (job_title, seniority, country, monthly_salary, currency, experience, nationality_type)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [jobTitle, seniority, country, monthlySalary, currency, experience, nationalityType]
       );
-    }
+    } catch(dbErr) { console.error('DB error:', dbErr); }
 
     const message = await client.messages.create({
       model: 'claude-sonnet-4-6',
@@ -31,25 +31,28 @@ export async function POST(req) {
       tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 3 }],
       messages: [{
         role: 'user',
-        content: `You are a MENA salary expert. Search online including Reddit, Glassdoor, and salary sites to find current market salary data for this role and provide a market analysis.
+        content: `You are a MENA salary expert. Research current market salary data for this role and return MONTHLY salary figures only.
 
 Job Title: ${jobTitle}
 Seniority: ${seniority}
 Country: ${country}
+Nationality Type: ${nationalityType}
 Currency: ${currency}
 Years of Experience: ${experience}
-Their Current Salary: ${currency} ${monthlySalary}/month
+Their Current Monthly Salary: ${currency} ${monthlySalary}
 
-Respond with ONLY a JSON object, no other text:
+Important: All salary figures must be MONTHLY amounts in ${currency}. Do not use annual figures.
+
+Respond with ONLY a valid JSON object, no other text, no markdown:
 {
   "verdict": "Below Market",
   "verdictColor": "#ef4444",
-  "marketLow": 15000,
-  "marketMedian": 25000,
-  "marketHigh": 40000,
-  "userPercentile": 45,
-  "summary": "2-3 sentences about the market for this role",
-  "advice": "1-2 sentences of specific advice"
+  "marketLow": 8000,
+  "marketMedian": 12000,
+  "marketHigh": 18000,
+  "difference": -3000,
+  "summary": "2-3 sentences about monthly salary market for this role",
+  "advice": "1-2 sentences of specific actionable advice"
 }`
       }]
     });
