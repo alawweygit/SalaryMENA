@@ -1,23 +1,8 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { useLang } from '../components/LanguageContext';
 import { t } from '../components/translations';
-
-const SAMPLE_DATA = [
-  {id:1,title:'Software Engineer',seniority:'Senior',seniority_ar:'متقدم',company:'Multinational',company_ar:'متعددة الجنسيات',country:'UAE',city:'Dubai',currency:'AED',monthlySalary:35000,bonus:50000,experience:'5-8 yrs',education:"Bachelor's"},
-  {id:2,title:'Marketing Manager',seniority:'Mid-Level',seniority_ar:'متوسط',company:'Local Company',company_ar:'شركة محلية',country:'Saudi Arabia',city:'Riyadh',currency:'SAR',monthlySalary:18000,bonus:20000,experience:'3-5 yrs',education:"Bachelor's"},
-  {id:3,title:'Product Manager',seniority:'Senior',seniority_ar:'متقدم',company:'Multinational',company_ar:'متعددة الجنسيات',country:'UAE',city:'Abu Dhabi',currency:'AED',monthlySalary:42000,bonus:60000,experience:'8-12 yrs',education:"Master's"},
-  {id:4,title:'Financial Analyst',seniority:'Junior',seniority_ar:'مبتدئ',company:'Government',company_ar:'حكومة',country:'Kuwait',city:'Kuwait City',currency:'KWD',monthlySalary:1200,bonus:0,experience:'0-1 yrs',education:"Bachelor's"},
-  {id:5,title:'HR Manager',seniority:'Manager',seniority_ar:'مدير',company:'Multinational',company_ar:'متعددة الجنسيات',country:'Egypt',city:'Cairo',currency:'EGP',monthlySalary:45000,bonus:30000,experience:'8-12 yrs',education:"Bachelor's"},
-  {id:6,title:'Sales Executive',seniority:'Mid-Level',seniority_ar:'متوسط',company:'Local Company',company_ar:'شركة محلية',country:'Oman',city:'Muscat',currency:'OMR',monthlySalary:1800,bonus:5000,experience:'3-5 yrs',education:"Bachelor's"},
-  {id:7,title:'Data Scientist',seniority:'Senior',seniority_ar:'متقدم',company:'Multinational',company_ar:'متعددة الجنسيات',country:'UAE',city:'Dubai',currency:'AED',monthlySalary:38000,bonus:45000,experience:'5-8 yrs',education:"Master's"},
-  {id:8,title:'Civil Engineer',seniority:'Mid-Level',seniority_ar:'متوسط',company:'Government',company_ar:'حكومة',country:'Saudi Arabia',city:'Jeddah',currency:'SAR',monthlySalary:15000,bonus:10000,experience:'3-5 yrs',education:"Bachelor's"},
-  {id:9,title:'Nurse',seniority:'Mid-Level',seniority_ar:'متوسط',company:'Government',company_ar:'حكومة',country:'Qatar',city:'Doha',currency:'QAR',monthlySalary:12000,bonus:8000,experience:'3-5 yrs',education:"Bachelor's"},
-  {id:10,title:'Pharmacist',seniority:'Senior',seniority_ar:'متقدم',company:'Multinational',company_ar:'متعددة الجنسيات',country:'UAE',city:'Dubai',currency:'AED',monthlySalary:22000,bonus:15000,experience:'5-8 yrs',education:"Bachelor's"},
-  {id:11,title:'Teacher',seniority:'Mid-Level',seniority_ar:'متوسط',company:'Government',company_ar:'حكومة',country:'Jordan',city:'Amman',currency:'JOD',monthlySalary:800,bonus:0,experience:'3-5 yrs',education:"Bachelor's"},
-  {id:12,title:'Accountant',seniority:'Junior',seniority_ar:'مبتدئ',company:'Local Company',company_ar:'شركة محلية',country:'Bahrain',city:'Manama',currency:'BHD',monthlySalary:600,bonus:2000,experience:'1-3 yrs',education:"Bachelor's"},
-];
 
 const COUNTRIES = ['UAE','Saudi Arabia','Egypt','Oman','Kuwait','Qatar','Bahrain','Jordan','Lebanon','Iraq'];
 const LEVELS_EN = ['Junior','Mid-Level','Senior','Lead','Manager','Director','C-Suite'];
@@ -34,13 +19,22 @@ export default function Explore() {
   const [companyFilter, setCompanyFilter] = useState('');
   const [openDropdown, setOpenDropdown] = useState(null);
   const [countrySearch, setCountrySearch] = useState('');
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/explore')
+      .then(r => r.json())
+      .then(res => { setData(res.data || []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
 
   const LEVELS = lang==='ar' ? LEVELS_AR : LEVELS_EN;
   const TYPES = lang==='ar' ? TYPES_AR : TYPES_EN;
 
-  const filtered = SAMPLE_DATA.filter(d => {
+  const filtered = data.filter(d => {
     const q = search.toLowerCase();
-    const matchSearch = !q || d.title.toLowerCase().includes(q) || d.country.toLowerCase().includes(q) || d.city.toLowerCase().includes(q);
+    const matchSearch = !q || (d.title||'').toLowerCase().includes(q) || (d.country||'').toLowerCase().includes(q) || (d.city||'').toLowerCase().includes(q);
     const matchCountry = !countryFilter || d.country === countryFilter;
     const matchLevel = !levelFilter || d.seniority === levelFilter || d.seniority_ar === levelFilter;
     const matchCompany = !companyFilter || d.company === companyFilter || d.company_ar === companyFilter;
@@ -102,7 +96,7 @@ export default function Explore() {
         </div>
 
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'20px'}}>
-          <span style={{color:'#606070',fontSize:'14px'}}>{filtered.length} {txt.results_found}</span>
+          <span style={{color:'#606070',fontSize:'14px'}}>{loading ? '...' : `${filtered.length} ${txt.results_found}`}</span>
           {hasFilters && (
             <button onClick={()=>{setCountryFilter('');setLevelFilter('');setCompanyFilter('');}}
               style={{background:'transparent',border:'1px solid #2a2a3e',color:'#a0a0b0',borderRadius:'8px',padding:'6px 14px',fontSize:'13px',cursor:'pointer'}}>
@@ -111,7 +105,12 @@ export default function Explore() {
           )}
         </div>
 
-        {filtered.length===0 ? (
+        {loading ? (
+          <div style={{textAlign:'center',padding:'80px',color:'#404050'}}>
+            <div style={{fontSize:'32px',marginBottom:'16px'}}>⏳</div>
+            <p>Loading salary data...</p>
+          </div>
+        ) : filtered.length===0 ? (
           <div style={{textAlign:'center',padding:'80px',color:'#404050'}}>
             <div style={{fontSize:'48px',marginBottom:'16px'}}>🔍</div>
             <p>{txt.no_results}</p>
@@ -125,21 +124,23 @@ export default function Explore() {
                 <div>
                   <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'8px'}}>
                     <h3 style={{margin:0,fontSize:'17px',fontWeight:'700'}}>{d.title}</h3>
-                    <span style={{background:'rgba(99,102,241,0.2)',color:'#a78bfa',padding:'3px 10px',borderRadius:'50px',fontSize:'12px',fontWeight:'600'}}>
-                      {lang==='ar'?d.seniority_ar:d.seniority}
-                    </span>
+                    {d.seniority && (
+                      <span style={{background:'rgba(99,102,241,0.2)',color:'#a78bfa',padding:'3px 10px',borderRadius:'50px',fontSize:'12px',fontWeight:'600'}}>
+                        {d.seniority}
+                      </span>
+                    )}
                   </div>
                   <div style={{display:'flex',gap:'16px',flexWrap:'wrap'}}>
-                    <span style={{color:'#606070',fontSize:'13px'}}>📍 {d.city}, {d.country}</span>
-                    <span style={{color:'#606070',fontSize:'13px'}}>🏢 {lang==='ar'?d.company_ar:d.company}</span>
-                    <span style={{color:'#606070',fontSize:'13px'}}>⏱ {d.experience}</span>
-                    <span style={{color:'#606070',fontSize:'13px'}}>🎓 {d.education}</span>
+                    {(d.city||d.country) && <span style={{color:'#606070',fontSize:'13px'}}>📍 {[d.city,d.country].filter(Boolean).join(', ')}</span>}
+                    {d.company && <span style={{color:'#606070',fontSize:'13px'}}>🏢 {d.company}</span>}
+                    {d.experience && <span style={{color:'#606070',fontSize:'13px'}}>⏱ {d.experience}</span>}
+                    {d.education && <span style={{color:'#606070',fontSize:'13px'}}>🎓 {d.education}</span>}
                   </div>
                 </div>
                 <div style={{textAlign:isAr?'left':'right',flexShrink:0,marginLeft:isAr?0:'24px',marginRight:isAr?'24px':0}}>
-                  <div style={{fontSize:'22px',fontWeight:'800',color:'#a78bfa'}}>{d.currency} {d.monthlySalary.toLocaleString()}</div>
+                  <div style={{fontSize:'22px',fontWeight:'800',color:'#a78bfa'}}>{d.currency} {Number(d.monthlySalary).toLocaleString()}</div>
                   <div style={{color:'#606070',fontSize:'12px'}}>{txt.per_month}</div>
-                  {d.bonus>0 && <div style={{color:'#404050',fontSize:'12px'}}>+ {d.currency} {d.bonus.toLocaleString()} {txt.yr_bonus}</div>}
+                  {d.bonus>0 && <div style={{color:'#404050',fontSize:'12px'}}>+ {d.currency} {Number(d.bonus).toLocaleString()} {txt.yr_bonus}</div>}
                 </div>
               </div>
             ))}
