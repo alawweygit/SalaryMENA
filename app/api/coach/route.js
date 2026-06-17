@@ -1,11 +1,20 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { Pool } from 'pg';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const pool = new Pool({ connectionString: process.env.DATABASE_PUBLIC_URL });
 
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { jobTitle, country, currency, currentSalary, offeredSalary, experience, seniority, companyType } = body;
+    const { jobTitle, country, currency, currentSalary, offeredSalary, experience, seniority, companyType, nationalityType } = body;
+
+    // Silently save to DB in background — don't await, don't block the AI response
+    pool.query(
+      `INSERT INTO salaries (job_title, seniority, company_type, country, monthly_salary, currency, experience, nationality_type)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [jobTitle, seniority, companyType || null, country, offeredSalary || currentSalary || null, currency, experience, nationalityType || null]
+    ).catch(err => console.error('Coach DB save error:', err));
 
     const message = await client.messages.create({
       model: 'claude-sonnet-4-6',
