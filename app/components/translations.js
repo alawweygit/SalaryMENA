@@ -3,7 +3,7 @@ export const t = {
     // Navbar
     explore: 'Explore',
     submit_nav: 'Submit Salary',
-    coach_nav: 'AI Coach',
+    coach_nav: 'AI Negotiation Coach',
     underpaid_nav: 'Am I Underpaid?',
     toggle: 'العربية',
 
@@ -24,6 +24,21 @@ export const t = {
     submit_cta: 'Submit Your Salary Anonymously',
     submit_sub: 'No account needed. Takes 90 seconds. Help others know their worth.',
     submit_btn: 'Get Started →',
+
+    // Feature sections
+    fs_explore_title: 'Explore Real Salaries',
+    fs_explore_desc: 'Browse thousands of anonymous salaries across the MENA region. Filter by country, company type, and level to see what people like you actually earn.',
+    fs_explore_btn: 'Explore Salaries →',
+    fs_coach_title: 'AI Negotiation Coach',
+    fs_coach_desc: 'Got a job offer? Our free AI coach analyzes your offer against real market data and writes you a word-for-word negotiation script. Powered by AI.',
+    fs_coach_btn: 'Negotiate My Offer →',
+    fs_underpaid_title: 'Am I Underpaid?',
+    fs_underpaid_desc: 'Enter your current salary and get an instant AI-powered market analysis. See exactly where you stand against the market low, median, and high.',
+    fs_underpaid_btn: 'Check My Salary →',
+    fs_submit_title: 'Share Your Salary',
+    fs_submit_desc: 'Help build the most comprehensive MENA salary database. Submit anonymously in 90 seconds — no account needed. Every submission helps someone negotiate better.',
+    fs_submit_btn: 'Submit Anonymously →',
+
     footer: '© 2026 SalaryMENA. Built for the region.',
 
     // Submit form
@@ -56,8 +71,7 @@ export const t = {
     thank_you_title: 'Thank you!',
     thank_you_msg: 'Your salary has been submitted anonymously. We will send your personalized salary report to',
     back_home: 'Back to Home',
-    step_of: 'Step',
-    of: 'of',
+    step_of: 'Step', of: 'of',
 
     // Explore
     explore_title: 'Explore Salaries',
@@ -93,7 +107,7 @@ export const t = {
     // Underpaid
     underpaid_badge: 'AI-Powered Market Analysis',
     underpaid_title: 'Am I Underpaid?',
-    underpaid_sub: 'Get an instant AI market analysis of your salary against real data.',
+    underpaid_sub: 'Get an instant AI-powered market analysis of your salary against real data.',
     current_monthly: 'Your Current Monthly Salary',
     analyze_salary: 'Analyze My Salary →',
     market_verdict: 'Market Verdict',
@@ -106,7 +120,7 @@ export const t = {
     monthly_comparison: '📊 Monthly Salary Comparison',
     ai_analysis: 'AI Market Analysis',
     negotiate_title: 'Ready to negotiate a raise?',
-    negotiate_sub: 'Get a word-for-word script from our AI Coach.',
+    negotiate_sub: 'Get a word-for-word script from our AI Negotiation Coach.',
     negotiate_btn: 'Get My Negotiation Script →',
     well_paid_title: 'You are well paid!',
     well_paid_sub: 'Your salary is above market median. Help others by sharing yours.',
@@ -122,7 +136,7 @@ export const t = {
     // Navbar
     explore: 'اكتشف',
     submit_nav: 'شارك راتبك',
-    coach_nav: 'مساعد AI',
+    coach_nav: 'مساعد التفاوض الذكي',
     underpaid_nav: 'هل راتبي يستاهل أكثر؟',
     toggle: 'English',
 
@@ -143,6 +157,21 @@ export const t = {
     submit_cta: 'شارك راتبك — هويتك محمية',
     submit_sub: 'لا حساب مطلوب. يستغرق 90 ثانية. ساعد غيرك يعرف قيمته.',
     submit_btn: 'ابدأ الآن ←',
+
+    // Feature sections
+    fs_explore_title: 'اكتشف الرواتب الحقيقية',
+    fs_explore_desc: 'تصفح آلاف الرواتب المجهولة في منطقة الشرق الأوسط. فلتر حسب الدولة ونوع الشركة والمستوى.',
+    fs_explore_btn: 'اكتشف الرواتب ←',
+    fs_coach_title: 'مساعد التفاوض الذكي',
+    fs_coach_desc: 'عندك عرض وظيفي؟ مساعدنا الذكي يحلل عرضك ويكتب لك نصاً تفاوضياً كلمة بكلمة. مجاناً.',
+    fs_coach_btn: 'فاوض على عرضي ←',
+    fs_underpaid_title: 'هل راتبي يستاهل أكثر؟',
+    fs_underpaid_desc: 'أدخل راتبك الحالي واحصل على تحليل فوري بالذكاء الاصطناعي. شوف وين تقف مقارنة بالسوق.',
+    fs_underpaid_btn: 'تحقق من راتبي ←',
+    fs_submit_title: 'شارك راتبك',
+    fs_submit_desc: 'ساعد في بناء أشمل قاعدة بيانات رواتب في المنطقة. شارك بشكل مجهول في 90 ثانية.',
+    fs_submit_btn: 'شارك بشكل مجهول ←',
+
     footer: '© 2026 SalaryMENA. مبني للمنطقة.',
 
     // Submit form
@@ -175,8 +204,7 @@ export const t = {
     thank_you_title: 'شكراً جزيلاً!',
     thank_you_msg: 'تم إرسال راتبك بشكل مجهول. سنرسل تقريرك المخصص إلى',
     back_home: 'العودة للرئيسية',
-    step_of: 'خطوة',
-    of: 'من',
+    step_of: 'خطوة', of: 'من',
 
     // Explore
     explore_title: 'اكتشف الرواتب',
@@ -212,7 +240,7 @@ export const t = {
     // Underpaid
     underpaid_badge: 'تحليل السوق بالذكاء الاصطناعي',
     underpaid_title: 'هل راتبي يستاهل أكثر؟',
-    underpaid_sub: 'احصل على تحليل فوري لراتبك مقارنةً ببيانات السوق الحقيقية.',
+    underpaid_sub: 'احصل على تحليل فوري بالذكاء الاصطناعي لراتبك مقارنةً ببيانات السوق الحقيقية.',
     current_monthly: 'راتبك الشهري الحالي',
     analyze_salary: 'حلل راتبي →',
     market_verdict: 'رأي السوق',
