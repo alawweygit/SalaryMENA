@@ -12,7 +12,7 @@ export default function Underpaid() {
   const { lang, isAr } = useLang();
   const txt = t[lang];
   const router = useRouter();
-  const [form, setForm] = useState({jobTitle:'',country:'',currency:'AED',monthlySalary:'',experience:'',companyType:'',nationalityType:''});
+  const [form, setForm] = useState({jobTitle:'',country:'',currency:'AED',monthlySalary:'',experience:'',companyType:'',nationalityType:'',housingProvided:false,carProvided:false});
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -24,9 +24,7 @@ export default function Underpaid() {
     ? (lang==='ar'?['مواطن خليجي','وافد عربي','وافد غربي','وافد آسيوي']:['GCC National','Arab Expat','Western Expat','Asian Expat'])
     : (lang==='ar'?['مواطن محلي','عربي (دولة أخرى)','وافد غربي','وافد آسيوي']:['Local National','Arab (Other)','Western Expat','Asian Expat']);
 
-  const companyTypes = lang==='ar'
-    ? ['خاص','حكومة']
-    : ['Private','Government'];
+  const companyTypes = lang==='ar' ? ['خاص','حكومة'] : ['Private','Government'];
 
   useEffect(() => {
     if(!loading){setProgress(0);return;}
@@ -45,6 +43,7 @@ export default function Underpaid() {
   const lbl = {display:'block',fontSize:'13px',fontWeight:'600',color:'#a0a0b0',marginBottom:'8px',textTransform:'uppercase',letterSpacing:'0.5px'};
   const chip = (a) => ({padding:'10px 20px',borderRadius:'50px',fontSize:'14px',fontWeight:'500',cursor:'pointer',border:'none',background:a?'linear-gradient(135deg,#6366f1,#8b5cf6)':'#13131f',color:a?'#fff':'#606070',outline:a?'none':'1px solid #2a2a3e',transition:'all 0.2s'});
   const countryChip = (a) => ({padding:'8px 16px',borderRadius:'50px',fontSize:'13px',fontWeight:'500',cursor:'pointer',border:'none',background:a?'linear-gradient(135deg,#6366f1,#8b5cf6)':'#13131f',color:a?'#fff':'#606070',outline:a?'none':'1px solid #2a2a3e',whiteSpace:'nowrap'});
+  const toggle = (a) => ({padding:'10px 20px',borderRadius:'50px',fontSize:'14px',fontWeight:'500',cursor:'pointer',border:'none',background:a?'linear-gradient(135deg,#10b981,#059669)':'#13131f',color:a?'#fff':'#606070',outline:a?'none':'1px solid #2a2a3e',transition:'all 0.2s'});
 
   const canAnalyze = form.jobTitle && form.country && form.monthlySalary && form.experience && form.companyType && form.nationalityType;
   const filteredCountries = COUNTRIES.filter(c=>c.toLowerCase().includes(countrySearch.toLowerCase()));
@@ -68,13 +67,9 @@ export default function Underpaid() {
 
   const goToCoach = () => {
     localStorage.setItem('coach_prefill', JSON.stringify({
-      jobTitle: form.jobTitle,
-      country: form.country,
-      nationalityType: form.nationalityType,
-      companyType: form.companyType,
-      experience: form.experience,
-      currency: form.currency,
-      offeredSalary: form.monthlySalary
+      jobTitle:form.jobTitle, country:form.country, nationalityType:form.nationalityType,
+      companyType:form.companyType, experience:form.experience, currency:form.currency,
+      offeredSalary:form.monthlySalary, housingProvided:form.housingProvided, carProvided:form.carProvided
     }));
     router.push('/coach');
   };
@@ -93,7 +88,6 @@ export default function Underpaid() {
     <div style={{fontFamily:'Inter,sans-serif',background:'#0a0a0f',minHeight:'100vh',color:'#fff'}}>
       <style>{`input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}@keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}`}</style>
       <Navbar/>
-
       <div style={{maxWidth:'700px',margin:'0 auto',padding:'60px 24px'}}>
 
         {loading && (
@@ -127,7 +121,6 @@ export default function Underpaid() {
             </div>
 
             <div style={{background:'#0d0d18',border:'1px solid #1e1e2e',borderRadius:'24px',padding:'40px',display:'flex',flexDirection:'column',gap:'24px'}}>
-
               <div><label style={lbl}>{txt.job_title_label}</label><input style={inp} placeholder={txt.job_title_placeholder} value={form.jobTitle} onChange={e=>update('jobTitle',e.target.value)}/></div>
 
               <div>
@@ -163,6 +156,14 @@ export default function Underpaid() {
 
               <div><label style={lbl}>{txt.current_monthly}</label><input style={inp} type="number" placeholder="25000" value={form.monthlySalary} onChange={e=>update('monthlySalary',e.target.value)}/></div>
 
+              <div>
+                <label style={lbl}>{lang==='ar'?'المزايا العينية (اختياري)':'Benefits in Kind (Optional)'}</label>
+                <div style={{display:'flex',gap:'12px',flexWrap:'wrap'}}>
+                  <button style={toggle(form.housingProvided)} onClick={()=>update('housingProvided',!form.housingProvided)}>🏠 {lang==='ar'?'سكن مجاني':'Housing Provided'}</button>
+                  <button style={toggle(form.carProvided)} onClick={()=>update('carProvided',!form.carProvided)}>🚗 {lang==='ar'?'سيارة مجانية':'Car Provided'}</button>
+                </div>
+              </div>
+
               <button onClick={canAnalyze?analyze:undefined}
                 style={{background:canAnalyze?'linear-gradient(135deg,#6366f1,#8b5cf6)':'#1e1e2e',color:canAnalyze?'#fff':'#404050',border:'none',borderRadius:'12px',padding:'16px',fontSize:'16px',fontWeight:'700',cursor:canAnalyze?'pointer':'not-allowed'}}>
                 {txt.analyze_salary}
@@ -173,13 +174,17 @@ export default function Underpaid() {
 
         {!loading && result && !result.error && (
           <div style={{display:'flex',flexDirection:'column',gap:'16px',animation:'fadeIn 0.4s ease'}}>
-
             <div style={{background:`linear-gradient(135deg,${result.verdictColor}25,${result.verdictColor}08)`,border:`1px solid ${result.verdictColor}50`,borderRadius:'24px',padding:'48px',textAlign:'center'}}>
               <div style={{fontSize:'13px',color:result.verdictColor,fontWeight:'700',textTransform:'uppercase',letterSpacing:'2px',marginBottom:'12px'}}>{txt.market_verdict}</div>
               <div style={{fontSize:'42px',fontWeight:'900',color:'#fff',marginBottom:'4px'}}>
                 {result.verdict==='Below Market'?'⚠️ ':result.verdict==='Above Market'?'🚀 ':'✅ '}{verdictLabel}
               </div>
               <div style={{fontSize:'18px',color:'#606070',marginTop:'8px'}}>{form.jobTitle} · {form.country} · {form.nationalityType}</div>
+              {(form.housingProvided||form.carProvided) && (
+                <div style={{marginTop:'12px',fontSize:'14px',color:'#10b981'}}>
+                  {[form.housingProvided&&'🏠 Housing',form.carProvided&&'🚗 Car'].filter(Boolean).join(' · ')} included
+                </div>
+              )}
             </div>
 
             <div style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'40px',textAlign:'center'}}>

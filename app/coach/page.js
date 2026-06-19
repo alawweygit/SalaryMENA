@@ -15,7 +15,7 @@ export default function Coach() {
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState(null);
   const [countrySearch, setCountrySearch] = useState('');
-  const [form, setForm] = useState({jobTitle:'',country:'',currency:'AED',currentSalary:'',offeredSalary:'',experience:'',companyType:'',nationalityType:''});
+  const [form, setForm] = useState({jobTitle:'',country:'',currency:'AED',currentSalary:'',offeredSalary:'',experience:'',companyType:'',nationalityType:'',housingProvided:false,carProvided:false});
   const update = (f,v) => setForm(p=>({...p,[f]:v}));
 
   const isGCC = GCC.includes(form.country);
@@ -23,23 +23,16 @@ export default function Coach() {
     ? (lang==='ar'?['مواطن خليجي','وافد عربي','وافد غربي','وافد آسيوي']:['GCC National','Arab Expat','Western Expat','Asian Expat'])
     : (lang==='ar'?['مواطن محلي','عربي (دولة أخرى)','وافد غربي','وافد آسيوي']:['Local National','Arab (Other)','Western Expat','Asian Expat']);
 
-  const companyTypes = lang==='ar'
-    ? ['خاص','حكومة']
-    : ['Private','Government'];
-
+  const companyTypes = lang==='ar' ? ['خاص','حكومة'] : ['Private','Government'];
   const filteredCountries = COUNTRIES.filter(c=>c.toLowerCase().includes(countrySearch.toLowerCase()));
 
-  // Auto-fill and auto-submit if coming from underpaid page
   useEffect(() => {
     const prefill = localStorage.getItem('coach_prefill');
     if (prefill) {
       const data = JSON.parse(prefill);
       localStorage.removeItem('coach_prefill');
       setForm(p=>({...p,...data}));
-      // Auto-submit after form is set
-      setTimeout(() => {
-        submitForm(data);
-      }, 100);
+      setTimeout(() => { submitForm(data); }, 100);
     }
   }, []);
 
@@ -71,6 +64,7 @@ export default function Coach() {
   const lbl = {display:'block',fontSize:'13px',fontWeight:'600',color:'#a0a0b0',marginBottom:'8px',textTransform:'uppercase',letterSpacing:'0.5px'};
   const chip = (a) => ({padding:'10px 20px',borderRadius:'50px',fontSize:'14px',fontWeight:'500',cursor:'pointer',border:'none',background:a?'linear-gradient(135deg,#6366f1,#8b5cf6)':'#13131f',color:a?'#fff':'#606070',outline:a?'none':'1px solid #2a2a3e',transition:'all 0.2s'});
   const countryChip = (a) => ({padding:'8px 16px',borderRadius:'50px',fontSize:'13px',fontWeight:'500',cursor:'pointer',border:'none',background:a?'linear-gradient(135deg,#6366f1,#8b5cf6)':'#13131f',color:a?'#fff':'#606070',outline:a?'none':'1px solid #2a2a3e',whiteSpace:'nowrap'});
+  const toggle = (a) => ({padding:'10px 20px',borderRadius:'50px',fontSize:'14px',fontWeight:'500',cursor:'pointer',border:'none',background:a?'linear-gradient(135deg,#10b981,#059669)':'#13131f',color:a?'#fff':'#606070',outline:a?'none':'1px solid #2a2a3e',transition:'all 0.2s'});
 
   const canSubmit = form.jobTitle && form.country && form.offeredSalary && form.experience && form.companyType && form.nationalityType;
 
@@ -99,7 +93,6 @@ export default function Coach() {
     <div style={{fontFamily:'Inter,sans-serif',background:'#0a0a0f',minHeight:'100vh',color:'#fff'}}>
       <style>{`input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}@keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}`}</style>
       <Navbar/>
-
       <div style={{maxWidth:'700px',margin:'0 auto',padding:'60px 24px'}}>
 
         {loading && (
@@ -162,6 +155,14 @@ export default function Coach() {
                 {['0-1','1-3','3-5','5-8','8-12','12+'].map(y=><button key={y} style={chip(form.experience===y)} onClick={()=>update('experience',y)}>{y} {lang==='ar'?'سنوات':'yrs'}</button>)}
               </div></div>
 
+              <div>
+                <label style={lbl}>{lang==='ar'?'المزايا العينية (اختياري)':'Benefits in Kind (Optional)'}</label>
+                <div style={{display:'flex',gap:'12px',flexWrap:'wrap'}}>
+                  <button style={toggle(form.housingProvided)} onClick={()=>update('housingProvided',!form.housingProvided)}>🏠 {lang==='ar'?'سكن مجاني':'Housing Provided'}</button>
+                  <button style={toggle(form.carProvided)} onClick={()=>update('carProvided',!form.carProvided)}>🚗 {lang==='ar'?'سيارة مجانية':'Car Provided'}</button>
+                </div>
+              </div>
+
               <div style={{display:'flex',gap:'16px'}}>
                 <div style={{flex:1}}><label style={lbl}>{txt.offered_salary}</label><input style={inp} type="number" placeholder="25000" value={form.offeredSalary} onChange={e=>update('offeredSalary',e.target.value)}/></div>
                 <div style={{flex:1}}><label style={lbl}>{txt.current_salary} <span style={{color:'#404050',fontWeight:'400',textTransform:'none'}}>{txt.current_optional}</span></label><input style={inp} type="number" placeholder="18000" value={form.currentSalary} onChange={e=>update('currentSalary',e.target.value)}/></div>
@@ -188,7 +189,7 @@ export default function Coach() {
               <div>{formatResult(result)}</div>
             </div>
             <div style={{display:'flex',gap:'12px'}}>
-              <button onClick={()=>{setResult(null);setForm({jobTitle:'',country:'',currency:'AED',currentSalary:'',offeredSalary:'',experience:'',companyType:'',nationalityType:''});setCountrySearch('');}}
+              <button onClick={()=>{setResult(null);setForm({jobTitle:'',country:'',currency:'AED',currentSalary:'',offeredSalary:'',experience:'',companyType:'',nationalityType:'',housingProvided:false,carProvided:false});setCountrySearch('');}}
                 style={{flex:1,background:'transparent',border:'1px solid #2a2a3e',color:'#a0a0b0',borderRadius:'12px',padding:'14px',fontSize:'14px',cursor:'pointer',fontWeight:'500'}}>{txt.analyze_another}</button>
               <a href="/submit" style={{flex:1,display:'block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'12px',padding:'14px',fontSize:'14px',fontWeight:'700',textAlign:'center'}}>{txt.submit_nav}</a>
             </div>

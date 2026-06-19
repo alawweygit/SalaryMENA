@@ -13,7 +13,7 @@ export default function Submit() {
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
   const [countrySearch, setCountrySearch] = useState('');
-  const [form, setForm] = useState({jobTitle:'',seniority:'',companyType:'',companyName:'',country:'',city:'',monthlySalary:'',basicSalary:'',currency:'AED',bonus:'',experience:'',education:'',nationalityType:'',gender:'',email:''});
+  const [form, setForm] = useState({jobTitle:'',seniority:'',companyType:'',companyName:'',country:'',city:'',monthlySalary:'',basicSalary:'',currency:'AED',bonus:'',experience:'',education:'',nationalityType:'',gender:'',email:'',housingProvided:false,carProvided:false});
   const update = (f,v) => setForm(p=>({...p,[f]:v}));
 
   const STEPS = [
@@ -54,6 +54,7 @@ export default function Submit() {
   const chip = (a) => ({padding:'10px 20px',borderRadius:'50px',fontSize:'14px',fontWeight:'500',cursor:'pointer',border:'none',background:a?'linear-gradient(135deg,#6366f1,#8b5cf6)':'#13131f',color:a?'#fff':'#606070',outline:a?'none':'1px solid #2a2a3e',transition:'all 0.2s'});
   const rowChip = (a) => ({...chip(a),borderRadius:'12px',padding:'14px 20px',textAlign:isAr?'right':'left',display:'flex',justifyContent:'space-between',alignItems:'center',width:'100%'});
   const countryChip = (a) => ({padding:'8px 16px',borderRadius:'50px',fontSize:'13px',fontWeight:'500',cursor:'pointer',border:'none',background:a?'linear-gradient(135deg,#6366f1,#8b5cf6)':'#13131f',color:a?'#fff':'#606070',outline:a?'none':'1px solid #2a2a3e',whiteSpace:'nowrap'});
+  const toggle = (a) => ({padding:'10px 20px',borderRadius:'50px',fontSize:'14px',fontWeight:'500',cursor:'pointer',border:'none',background:a?'linear-gradient(135deg,#10b981,#059669)':'#13131f',color:a?'#fff':'#606070',outline:a?'none':'1px solid #2a2a3e',transition:'all 0.2s'});
   const progress = ((step-1)/(STEPS.length-1))*100;
   const filteredCountries = COUNTRIES.filter(c=>c.toLowerCase().includes(countrySearch.toLowerCase()));
 
@@ -134,6 +135,14 @@ export default function Submit() {
           <div><label style={lbl}>{txt.monthly_salary_label}</label><p style={hint}>{txt.monthly_salary_hint}</p><input style={inp} type="number" placeholder="25000" value={form.monthlySalary} onChange={e=>update('monthlySalary',e.target.value)}/></div>
           <div><label style={lbl}>{txt.basic_salary_label} <span style={{color:'#404050',fontWeight:'400',textTransform:'none'}}>{txt.basic_salary_optional}</span></label><p style={hint}>{txt.basic_salary_hint}</p><input style={inp} type="number" placeholder="15000" value={form.basicSalary} onChange={e=>update('basicSalary',e.target.value)}/></div>
           <div><label style={lbl}>{txt.bonus_label} <span style={{color:'#404050',fontWeight:'400',textTransform:'none'}}>{txt.bonus_optional}</span></label><p style={hint}>{txt.bonus_hint}</p><input style={inp} type="number" placeholder="10000" value={form.bonus} onChange={e=>update('bonus',e.target.value)}/></div>
+          <div>
+            <label style={lbl}>{lang==='ar'?'المزايا العينية (اختياري)':'Benefits in Kind (Optional)'}</label>
+            <p style={hint}>{lang==='ar'?'هل تشمل حزمتك الوظيفية أياً من هذه المزايا؟':'Does your package include any of these?'}</p>
+            <div style={{display:'flex',gap:'12px',flexWrap:'wrap'}}>
+              <button style={toggle(form.housingProvided)} onClick={()=>update('housingProvided',!form.housingProvided)}>🏠 {lang==='ar'?'سكن مجاني':'Housing Provided'}</button>
+              <button style={toggle(form.carProvided)} onClick={()=>update('carProvided',!form.carProvided)}>🚗 {lang==='ar'?'سيارة مجانية':'Car Provided'}</button>
+            </div>
+          </div>
         </div>}
 
         {step===5 && <div style={{display:'flex',flexDirection:'column',gap:'24px'}}>
