@@ -8,7 +8,24 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 
 export const metadata = {
   title: "SalaryMENA — Know Your Worth",
-  description: "The first anonymous salary platform built for the MENA region.",
+  description: "The first anonymous salary platform built for the MENA region. Real salaries, 100% anonymous, built for UAE, Saudi Arabia, Egypt, Oman and all MENA countries.",
+  keywords: "salary, MENA, UAE, Saudi Arabia, Egypt, Oman, Kuwait, Qatar, salary transparency, how much do people earn, am I underpaid",
+  openGraph: {
+    title: "SalaryMENA — Know Your Worth",
+    description: "The first anonymous salary platform built for the MENA region. Real salaries, 100% anonymous.",
+    url: "https://salarymena.com",
+    siteName: "SalaryMENA",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "SalaryMENA — Know Your Worth",
+    description: "The first anonymous salary platform built for the MENA region.",
+  },
+  icons: {
+    icon: "/logo.svg",
+  },
 };
 
 export default function RootLayout({ children }) {
