@@ -1,7 +1,7 @@
 'use client';
-import { useLang } from './components/LanguageContext';
-import { t } from './components/translations';
-import Navbar from './components/Navbar';
+import { useLang } from '../components/LanguageContext';
+import { t } from '../components/translations';
+import Navbar from '../components/Navbar';
 
 export default function Home() {
   const { lang, isAr } = useLang();
