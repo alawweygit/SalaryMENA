@@ -7,7 +7,7 @@ export async function POST(req) {
     const { email, jobTitle, country, monthlySalary, currency } = await req.json();
 
     await resend.emails.send({
-      from: 'SalaryMENA <hello@cvdropai.com>',
+      from: 'SalaryMENA <support@cvdropai.com>',
       to: email,
       subject: 'Your salary has been submitted — SalaryMENA',
       html: `
