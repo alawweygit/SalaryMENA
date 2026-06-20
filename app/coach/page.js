@@ -1,203 +1,176 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Navbar from '../components/Navbar';
-import { useLang } from '../components/LanguageContext';
-import { t } from '../components/translations';
+import { useLang } from './components/LanguageContext';
+import { t } from './components/translations';
+import Navbar from './components/Navbar';
 
-const COUNTRIES = ['UAE','Saudi Arabia','Egypt','Oman','Kuwait','Qatar','Bahrain','Jordan','Lebanon','Iraq','Syria','Yemen','Libya','Tunisia','Algeria','Morocco','Sudan','Somalia','Comoros','Djibouti','Mauritania','Palestine'];
-const GCC = ['UAE','Saudi Arabia','Kuwait','Qatar','Bahrain','Oman'];
-
-export default function Coach() {
+export default function Home() {
   const { lang, isAr } = useLang();
   const txt = t[lang];
-  const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [result, setResult] = useState(null);
-  const [countrySearch, setCountrySearch] = useState('');
-  const [form, setForm] = useState({jobTitle:'',country:'',currency:'AED',currentSalary:'',offeredSalary:'',experience:'',companyType:'',nationalityType:'',housingProvided:false,carProvided:false});
-  const update = (f,v) => setForm(p=>({...p,[f]:v}));
-
-  const isGCC = GCC.includes(form.country);
-  const nationalityOptions = isGCC
-    ? (lang==='ar'?['مواطن خليجي','وافد عربي','وافد غربي','وافد آسيوي']:['GCC National','Arab Expat','Western Expat','Asian Expat'])
-    : (lang==='ar'?['مواطن محلي','عربي (دولة أخرى)','وافد غربي','وافد آسيوي']:['Local National','Arab (Other)','Western Expat','Asian Expat']);
-
-  const companyTypes = lang==='ar' ? ['خاص','حكومة'] : ['Private','Government'];
-  const filteredCountries = COUNTRIES.filter(c=>c.toLowerCase().includes(countrySearch.toLowerCase()));
-
-  useEffect(() => {
-    const prefill = localStorage.getItem('coach_prefill');
-    if (prefill) {
-      const data = JSON.parse(prefill);
-      localStorage.removeItem('coach_prefill');
-      setForm(p=>({...p,...data}));
-      setTimeout(() => { submitForm(data); }, 100);
-    }
-  }, []);
-
-  const submitForm = async (data) => {
-    setLoading(true);
-    setResult(null);
-    try {
-      const res = await fetch('/api/coach',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-      const json = await res.json();
-      setProgress(100);
-      setTimeout(()=>{setResult(json.text);setLoading(false);},400);
-    } catch(e){setResult(lang==='ar'?'حدث خطأ. حاول مجدداً.':'Something went wrong. Please try again.');setLoading(false);}
-  };
-
-  useEffect(() => {
-    if(!loading){setProgress(0);return;}
-    setProgress(5);
-    const intervals = [
-      setTimeout(()=>setProgress(25),800),
-      setTimeout(()=>setProgress(50),2500),
-      setTimeout(()=>setProgress(70),4500),
-      setTimeout(()=>setProgress(85),6500),
-      setTimeout(()=>setProgress(93),8500),
-    ];
-    return ()=>intervals.forEach(clearTimeout);
-  },[loading]);
-
-  const inp = {width:'100%',background:'#13131f',border:'1px solid #2a2a3e',borderRadius:'10px',padding:'14px 16px',color:'#fff',fontSize:'15px',outline:'none',boxSizing:'border-box',appearance:'none',textAlign:isAr?'right':'left'};
-  const lbl = {display:'block',fontSize:'13px',fontWeight:'600',color:'#a0a0b0',marginBottom:'8px',textTransform:'uppercase',letterSpacing:'0.5px'};
-  const chip = (a) => ({padding:'10px 20px',borderRadius:'50px',fontSize:'14px',fontWeight:'500',cursor:'pointer',border:'none',background:a?'linear-gradient(135deg,#6366f1,#8b5cf6)':'#13131f',color:a?'#fff':'#606070',outline:a?'none':'1px solid #2a2a3e',transition:'all 0.2s'});
-  const countryChip = (a) => ({padding:'8px 16px',borderRadius:'50px',fontSize:'13px',fontWeight:'500',cursor:'pointer',border:'none',background:a?'linear-gradient(135deg,#6366f1,#8b5cf6)':'#13131f',color:a?'#fff':'#606070',outline:a?'none':'1px solid #2a2a3e',whiteSpace:'nowrap'});
-  const toggle = (a) => ({padding:'10px 20px',borderRadius:'50px',fontSize:'14px',fontWeight:'500',cursor:'pointer',border:'none',background:a?'linear-gradient(135deg,#10b981,#059669)':'#13131f',color:a?'#fff':'#606070',outline:a?'none':'1px solid #2a2a3e',transition:'all 0.2s'});
-
-  const canSubmit = form.jobTitle && form.country && form.offeredSalary && form.experience && form.companyType && form.nationalityType;
-
-  const analyze = async () => {
-    setLoading(true);
-    setResult(null);
-    try {
-      const res = await fetch('/api/coach',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(form)});
-      const data = await res.json();
-      setProgress(100);
-      setTimeout(()=>{setResult(data.text);setLoading(false);},400);
-    } catch(e){setResult(lang==='ar'?'حدث خطأ. حاول مجدداً.':'Something went wrong. Please try again.');setLoading(false);}
-  };
-
-  const formatResult = (text) => {
-    const sections = ['VERDICT','MARKET ASSESSMENT','YOUR NEGOTIATION SCRIPT','3 TALKING POINTS','RECOMMENDED COUNTER OFFER'];
-    const lines = text.split('\n');
-    return lines.map((line,i)=>{
-      if(sections.includes(line.trim())) return <div key={i} style={{fontSize:'11px',fontWeight:'800',color:'#6366f1',textTransform:'uppercase',letterSpacing:'1.5px',marginTop:'28px',marginBottom:'8px'}}>{line.trim()}</div>;
-      if(!line.trim()) return <div key={i} style={{height:'8px'}}/>;
-      return <p key={i} style={{color:'#c0c0d0',fontSize:'15px',lineHeight:1.8,margin:'0 0 4px'}}>{line}</p>;
-    });
-  };
 
   return (
     <div style={{fontFamily:'Inter,sans-serif',background:'#0a0a0f',minHeight:'100vh',color:'#fff'}}>
-      <style>{`input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}@keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}`}</style>
+      <style>{`
+        @keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        .hero-title{font-size:64px}
+        .hero-sub{font-size:20px}
+        .section-row{display:flex;gap:60px;align-items:center;flex-wrap:wrap}
+        .section-row-rev{display:flex;gap:60px;align-items:center;flex-wrap:wrap;flex-direction:row-reverse}
+        .section-col{flex:1;min-width:280px}
+        .stat-row{display:flex;justify-content:center;gap:48px;padding:40px 24px;flex-wrap:wrap}
+        @media(max-width:768px){
+          .hero-title{font-size:36px!important}
+          .hero-sub{font-size:16px!important}
+          .section-row{flex-direction:column!important;gap:32px!important}
+          .section-row-rev{flex-direction:column!important;gap:32px!important}
+          .section-col{min-width:unset!important;width:100%!important}
+          .stat-row{gap:24px!important;padding:24px 16px!important}
+          .hide-mobile{display:none!important}
+        }
+      `}</style>
       <Navbar/>
-      <div style={{maxWidth:'700px',margin:'0 auto',padding:'60px 24px'}}>
 
-        {loading && (
-          <div style={{textAlign:'center',padding:'80px 24px',animation:'fadeIn 0.3s ease'}}>
-            <div style={{position:'relative',width:'140px',height:'140px',margin:'0 auto 32px'}}>
-              <svg width="140" height="140" style={{transform:'rotate(-90deg)'}}>
-                <circle cx="70" cy="70" r="60" fill="none" stroke="#1e1e2e" strokeWidth="10"/>
-                <circle cx="70" cy="70" r="60" fill="none" stroke="url(#grad)" strokeWidth="10"
-                  strokeDasharray={`${2*Math.PI*60}`}
-                  strokeDashoffset={`${2*Math.PI*60*(1-progress/100)}`}
-                  strokeLinecap="round" style={{transition:'stroke-dashoffset 0.5s ease'}}/>
-                <defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#6366f1"/><stop offset="100%" stopColor="#8b5cf6"/></linearGradient></defs>
-              </svg>
-              <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                <div style={{fontSize:'28px',fontWeight:'900'}}>{progress}%</div>
-              </div>
-            </div>
-            <h3 style={{fontSize:'22px',fontWeight:'700',marginBottom:'12px'}}>{txt.building_script}</h3>
-            <p style={{color:'#606070',fontSize:'15px'}}>
-              {progress<30?txt.loading_coach_1:progress<60?txt.loading_coach_2:progress<85?txt.loading_coach_3:txt.loading_coach_4}
-            </p>
+      {/* HERO */}
+      <div style={{textAlign:'center',padding:'80px 24px 60px',maxWidth:'800px',margin:'0 auto',animation:'fadeIn 0.6s ease'}}>
+        <div style={{display:'inline-block',background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.3)',borderRadius:'50px',padding:'6px 16px',fontSize:'13px',color:'#a78bfa',marginBottom:'28px',fontWeight:'500'}}>
+          ✨ {txt.hero_badge}
+        </div>
+        <h1 className="hero-title" style={{fontWeight:'900',lineHeight:1.1,marginBottom:'24px',background:'linear-gradient(135deg,#fff 0%,#a78bfa 50%,#6366f1 100%)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>
+          {txt.hero_title}
+        </h1>
+        <p className="hero-sub" style={{color:'#606070',lineHeight:1.7,marginBottom:'40px',maxWidth:'600px',margin:'0 auto 40px'}}>
+          {txt.hero_sub}
+        </p>
+        <div style={{display:'flex',gap:'12px',justifyContent:'center',flexWrap:'wrap'}}>
+          <a href="/submit" style={{background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'12px',padding:'14px 28px',fontWeight:'700',fontSize:'15px'}}>
+            {txt.submit_btn}
+          </a>
+          <a href="/explore" style={{background:'transparent',color:'#a0a0b0',textDecoration:'none',borderRadius:'12px',padding:'14px 28px',fontWeight:'600',fontSize:'15px',border:'1px solid #2a2a3e'}}>
+            {txt.explore} →
+          </a>
+        </div>
+      </div>
+
+      {/* STATS */}
+      <div className="stat-row" style={{borderTop:'1px solid #1e1e2e',borderBottom:'1px solid #1e1e2e'}}>
+        {[
+          {val:txt.stat_1,label:txt.stat_1_label},
+          {val:txt.stat_2,label:txt.stat_2_label},
+          {val:txt.stat_3,label:txt.stat_3_label},
+        ].map((s,i)=>(
+          <div key={i} style={{textAlign:'center'}}>
+            <div style={{fontSize:'32px',fontWeight:'900',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>{s.val}</div>
+            <div style={{color:'#606070',fontSize:'14px',marginTop:'4px'}}>{s.label}</div>
           </div>
-        )}
+        ))}
+      </div>
 
-        {!loading && !result && (
-          <div style={{animation:'fadeIn 0.3s ease'}}>
-            <div style={{textAlign:'center',marginBottom:'48px'}}>
-              <div style={{display:'inline-block',background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.3)',borderRadius:'50px',padding:'6px 16px',fontSize:'13px',color:'#a78bfa',marginBottom:'20px',fontWeight:'500'}}>🤖 {txt.coach_badge}</div>
-              <h1 style={{fontSize:'40px',fontWeight:'900',marginBottom:'16px',background:'linear-gradient(135deg,#fff 0%,#a78bfa 100%)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>{txt.coach_title}</h1>
-              <p style={{color:'#606070',fontSize:'17px',lineHeight:1.7,maxWidth:'500px',margin:'0 auto'}}>{txt.coach_sub}</p>
-            </div>
-
-            <div style={{background:'#0d0d18',border:'1px solid #1e1e2e',borderRadius:'24px',padding:'40px',display:'flex',flexDirection:'column',gap:'24px'}}>
-
-              <div><label style={lbl}>{txt.job_title_label}</label><input style={inp} placeholder={txt.job_title_placeholder} value={form.jobTitle} onChange={e=>update('jobTitle',e.target.value)}/></div>
-
-              <div>
-                <label style={lbl}>{txt.country_work}</label>
-                <input style={{...inp,marginBottom:'12px'}} placeholder={txt.country_search} value={countrySearch} onChange={e=>setCountrySearch(e.target.value)}/>
-                <div style={{display:'flex',flexWrap:'wrap',gap:'8px',maxHeight:'160px',overflowY:'auto',padding:'4px 0'}}>
-                  {filteredCountries.map(c=><button key={c} style={countryChip(form.country===c)} onClick={()=>{update('country',c);update('nationalityType','');}}>{c}</button>)}
-                </div>
-                {form.country && <div style={{marginTop:'10px',padding:'8px 14px',background:'rgba(99,102,241,0.1)',border:'1px solid rgba(99,102,241,0.3)',borderRadius:'8px',fontSize:'13px',color:'#a78bfa'}}>✓ {form.country}</div>}
-              </div>
-
-              {form.country && (
-                <div><label style={lbl}>{txt.local_or_expat}</label>
-                <div style={{display:'flex',flexWrap:'wrap',gap:'8px'}}>
-                  {nationalityOptions.map(n=><button key={n} style={chip(form.nationalityType===n)} onClick={()=>update('nationalityType',n)}>{n}</button>)}
-                </div></div>
-              )}
-
-              <div><label style={lbl}>{txt.company_type_label}</label>
-              <div style={{display:'flex',flexWrap:'wrap',gap:'8px'}}>
-                {companyTypes.map(tp=><button key={tp} style={chip(form.companyType===tp)} onClick={()=>update('companyType',tp)}>{tp}</button>)}
-              </div></div>
-
-              <div><label style={lbl}>{txt.experience_label}</label>
-              <div style={{display:'flex',flexWrap:'wrap',gap:'8px'}}>
-                {['0-1','1-3','3-5','5-8','8-12','12+'].map(y=><button key={y} style={chip(form.experience===y)} onClick={()=>update('experience',y)}>{y} {lang==='ar'?'سنوات':'yrs'}</button>)}
-              </div></div>
-
-              <div>
-                <label style={lbl}>{lang==='ar'?'المزايا العينية (اختياري)':'Benefits in Kind (Optional)'}</label>
-                <div style={{display:'flex',gap:'12px',flexWrap:'wrap'}}>
-                  <button style={toggle(form.housingProvided)} onClick={()=>update('housingProvided',!form.housingProvided)}>🏠 {lang==='ar'?'سكن مجاني':'Housing Provided'}</button>
-                  <button style={toggle(form.carProvided)} onClick={()=>update('carProvided',!form.carProvided)}>🚗 {lang==='ar'?'سيارة مجانية':'Car Provided'}</button>
-                </div>
-              </div>
-
-              <div style={{display:'flex',gap:'16px'}}>
-                <div style={{flex:1}}><label style={lbl}>{txt.offered_salary}</label><input style={inp} type="number" placeholder="25000" value={form.offeredSalary} onChange={e=>update('offeredSalary',e.target.value)}/></div>
-                <div style={{flex:1}}><label style={lbl}>{txt.current_salary} <span style={{color:'#404050',fontWeight:'400',textTransform:'none'}}>{txt.current_optional}</span></label><input style={inp} type="number" placeholder="18000" value={form.currentSalary} onChange={e=>update('currentSalary',e.target.value)}/></div>
-              </div>
-
-              <button onClick={canSubmit?analyze:undefined}
-                style={{background:canSubmit?'linear-gradient(135deg,#6366f1,#8b5cf6)':'#1e1e2e',color:canSubmit?'#fff':'#404050',border:'none',borderRadius:'12px',padding:'16px',fontSize:'16px',fontWeight:'700',cursor:canSubmit?'pointer':'not-allowed'}}>
-                {txt.analyze_offer}
-              </button>
-            </div>
+      {/* FEATURE — EXPLORE */}
+      <div style={{borderBottom:'1px solid #1e1e2e'}}>
+        <div className="section-row" style={{maxWidth:'900px',margin:'0 auto',padding:'60px 24px'}}>
+          <div className="section-col">
+            <div style={{display:'inline-block',background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.3)',borderRadius:'50px',padding:'4px 14px',fontSize:'12px',color:'#a78bfa',marginBottom:'16px',fontWeight:'600'}}>📊 EXPLORE</div>
+            <h2 style={{fontSize:'28px',fontWeight:'900',marginBottom:'16px',lineHeight:1.2}}>{txt.fs_explore_title}</h2>
+            <p style={{color:'#606070',fontSize:'15px',lineHeight:1.8,marginBottom:'28px'}}>{txt.fs_explore_desc}</p>
+            <a href="/explore" style={{display:'inline-block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'10px',padding:'12px 24px',fontWeight:'700',fontSize:'14px'}}>{txt.fs_explore_btn}</a>
           </div>
-        )}
-
-        {!loading && result && (
-          <div style={{animation:'fadeIn 0.4s ease'}}>
-            <div style={{background:'#0d0d18',border:'1px solid #1e1e2e',borderRadius:'24px',padding:'40px',marginBottom:'16px'}}>
-              <div style={{display:'flex',alignItems:'center',gap:'12px',marginBottom:'24px',paddingBottom:'24px',borderBottom:'1px solid #1e1e2e'}}>
-                <div style={{width:'40px',height:'40px',borderRadius:'50%',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'18px',flexShrink:0}}>🤖</div>
+          <div className="section-col hide-mobile" style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'24px',display:'flex',flexDirection:'column',gap:'12px'}}>
+            {[
+              {title:'Software Engineer',country:'UAE 🇦🇪',salary:'AED 35,000',tag:'Senior'},
+              {title:'Pharmacist',country:'Oman 🇴🇲',salary:'OMR 600',tag:'Mid-Level'},
+              {title:'Marketing Manager',country:'Saudi Arabia 🇸🇦',salary:'SAR 18,000',tag:'Manager'},
+            ].map((item,i)=>(
+              <div key={i} style={{background:'#0a0a0f',border:'1px solid #1e1e2e',borderRadius:'12px',padding:'14px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                 <div>
-                  <p style={{margin:0,fontWeight:'700',fontSize:'15px'}}>{txt.coach_title}</p>
-                  <p style={{margin:0,color:'#404050',fontSize:'13px'}}>{form.jobTitle} · {form.country} · {form.nationalityType}</p>
+                  <div style={{fontWeight:'700',fontSize:'13px',marginBottom:'4px'}}>{item.title}</div>
+                  <div style={{color:'#606070',fontSize:'11px'}}>{item.country} · <span style={{color:'#a78bfa'}}>{item.tag}</span></div>
                 </div>
+                <div style={{fontWeight:'800',fontSize:'14px',color:'#a78bfa'}}>{item.salary}</div>
               </div>
-              <div>{formatResult(result)}</div>
-            </div>
-            <div style={{display:'flex',gap:'12px'}}>
-              <button onClick={()=>{setResult(null);setForm({jobTitle:'',country:'',currency:'AED',currentSalary:'',offeredSalary:'',experience:'',companyType:'',nationalityType:'',housingProvided:false,carProvided:false});setCountrySearch('');}}
-                style={{flex:1,background:'transparent',border:'1px solid #2a2a3e',color:'#a0a0b0',borderRadius:'12px',padding:'14px',fontSize:'14px',cursor:'pointer',fontWeight:'500'}}>{txt.analyze_another}</button>
-              <a href="/submit" style={{flex:1,display:'block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'12px',padding:'14px',fontSize:'14px',fontWeight:'700',textAlign:'center'}}>{txt.submit_nav}</a>
-            </div>
-            <p style={{textAlign:'center',marginTop:'20px',fontSize:'12px',color:'#303040'}}>
-              {isAr?'جرب أيضاً: ':'Also try: '}<a href="https://cvdropai.com" target="_blank" rel="noreferrer" style={{color:'#6366f1',textDecoration:'none'}}>CVDropAI</a>
-            </p>
+            ))}
           </div>
-        )}
+        </div>
+      </div>
+
+      {/* FEATURE — AI NEGOTIATION COACH */}
+      <div style={{borderBottom:'1px solid #1e1e2e',background:'#0d0d18'}}>
+        <div className="section-row-rev" style={{maxWidth:'900px',margin:'0 auto',padding:'60px 24px'}}>
+          <div className="section-col">
+            <div style={{display:'inline-block',background:'rgba(139,92,246,0.15)',border:'1px solid rgba(139,92,246,0.3)',borderRadius:'50px',padding:'4px 14px',fontSize:'12px',color:'#a78bfa',marginBottom:'16px',fontWeight:'600'}}>🤖 AI-POWERED</div>
+            <h2 style={{fontSize:'28px',fontWeight:'900',marginBottom:'16px',lineHeight:1.2}}>{txt.fs_coach_title}</h2>
+            <p style={{color:'#606070',fontSize:'15px',lineHeight:1.8,marginBottom:'28px'}}>{txt.fs_coach_desc}</p>
+            <a href="/coach" style={{display:'inline-block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'10px',padding:'12px 24px',fontWeight:'700',fontSize:'14px'}}>{txt.fs_coach_btn}</a>
+          </div>
+          <div className="section-col hide-mobile" style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'24px'}}>
+            <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'20px',paddingBottom:'16px',borderBottom:'1px solid #1e1e2e'}}>
+              <div style={{width:'32px',height:'32px',borderRadius:'50%',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'14px'}}>🤖</div>
+              <div style={{fontWeight:'700',fontSize:'13px'}}>AI Negotiation Coach</div>
+            </div>
+            {['VERDICT','MARKET ASSESSMENT','YOUR NEGOTIATION SCRIPT'].map((section,i)=>(
+              <div key={i} style={{marginBottom:'14px'}}>
+                <div style={{fontSize:'10px',fontWeight:'800',color:'#6366f1',letterSpacing:'1.5px',marginBottom:'6px'}}>{section}</div>
+                <div style={{height:'7px',background:'#1e1e2e',borderRadius:'4px',width:i===0?'60%':i===1?'90%':'75%'}}/>
+                {i<2 && <div style={{height:'7px',background:'#1e1e2e',borderRadius:'4px',width:'50%',marginTop:'4px'}}/>}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* FEATURE — AM I UNDERPAID */}
+      <div style={{borderBottom:'1px solid #1e1e2e'}}>
+        <div className="section-row" style={{maxWidth:'900px',margin:'0 auto',padding:'60px 24px'}}>
+          <div className="section-col">
+            <div style={{display:'inline-block',background:'rgba(16,185,129,0.15)',border:'1px solid rgba(16,185,129,0.3)',borderRadius:'50px',padding:'4px 14px',fontSize:'12px',color:'#10b981',marginBottom:'16px',fontWeight:'600'}}>⚡ AI-POWERED</div>
+            <h2 style={{fontSize:'28px',fontWeight:'900',marginBottom:'16px',lineHeight:1.2}}>{txt.fs_underpaid_title}</h2>
+            <p style={{color:'#606070',fontSize:'15px',lineHeight:1.8,marginBottom:'28px'}}>{txt.fs_underpaid_desc}</p>
+            <a href="/underpaid" style={{display:'inline-block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'10px',padding:'12px 24px',fontWeight:'700',fontSize:'14px'}}>{txt.fs_underpaid_btn}</a>
+          </div>
+          <div className="section-col hide-mobile" style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'24px',textAlign:'center'}}>
+            <div style={{fontSize:'12px',color:'#10b981',fontWeight:'700',textTransform:'uppercase',letterSpacing:'2px',marginBottom:'8px'}}>MARKET VERDICT</div>
+            <div style={{fontSize:'28px',fontWeight:'900',marginBottom:'4px'}}>✅ Fair</div>
+            <div style={{color:'#606070',fontSize:'13px',marginBottom:'20px'}}>Pharmacist · Oman · Arab Expat</div>
+            <div style={{display:'flex',justifyContent:'space-between',gap:'8px'}}>
+              {[{l:'Market Low',v:'OMR 450',c:'#ef4444'},{l:'Median',v:'OMR 600',c:'#6366f1'},{l:'Market High',v:'OMR 850',c:'#10b981'}].map((item,i)=>(
+                <div key={i} style={{flex:1,background:'#0a0a0f',borderRadius:'10px',padding:'10px 6px',border:`1px solid ${item.c}30`}}>
+                  <div style={{fontSize:'9px',color:'#404050',fontWeight:'700',marginBottom:'4px'}}>{item.l}</div>
+                  <div style={{fontSize:'12px',fontWeight:'800',color:item.c}}>{item.v}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* FEATURE — SUBMIT */}
+      <div style={{borderBottom:'1px solid #1e1e2e',background:'#0d0d18'}}>
+        <div className="section-row-rev" style={{maxWidth:'900px',margin:'0 auto',padding:'60px 24px'}}>
+          <div className="section-col">
+            <div style={{display:'inline-block',background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.3)',borderRadius:'50px',padding:'4px 14px',fontSize:'12px',color:'#a78bfa',marginBottom:'16px',fontWeight:'600'}}>🔒 100% ANONYMOUS</div>
+            <h2 style={{fontSize:'28px',fontWeight:'900',marginBottom:'16px',lineHeight:1.2}}>{txt.fs_submit_title}</h2>
+            <p style={{color:'#606070',fontSize:'15px',lineHeight:1.8,marginBottom:'28px'}}>{txt.fs_submit_desc}</p>
+            <a href="/submit" style={{display:'inline-block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'10px',padding:'12px 24px',fontWeight:'700',fontSize:'14px'}}>{txt.fs_submit_btn}</a>
+          </div>
+          <div className="section-col hide-mobile" style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'24px',display:'flex',flexDirection:'column',gap:'10px'}}>
+            {['🧑‍💼 Job Title','🌍 Country','🏢 Company Type','💰 Monthly Salary','🎓 Education','📧 Email (optional)'].map((item,i)=>(
+              <div key={i} style={{display:'flex',alignItems:'center',gap:'12px',padding:'10px 14px',background:'#0a0a0f',borderRadius:'10px',border:'1px solid #1e1e2e'}}>
+                <span style={{fontSize:'13px',color:'#a0a0b0'}}>{item}</span>
+                {i<4 && <div style={{marginLeft:'auto',width:'7px',height:'7px',borderRadius:'50%',background:'#6366f1'}}/>}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* BOTTOM CTA */}
+      <div style={{textAlign:'center',padding:'80px 24px'}}>
+        <h2 style={{fontSize:'32px',fontWeight:'900',marginBottom:'16px',background:'linear-gradient(135deg,#fff 0%,#a78bfa 100%)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>{txt.submit_cta}</h2>
+        <p style={{color:'#606070',fontSize:'15px',marginBottom:'32px',maxWidth:'500px',margin:'0 auto 32px'}}>{txt.submit_sub}</p>
+        <a href="/submit" style={{display:'inline-block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'12px',padding:'14px 36px',fontWeight:'700',fontSize:'15px'}}>{txt.submit_btn}</a>
+      </div>
+
+      {/* FOOTER */}
+      <div style={{borderTop:'1px solid #1e1e2e',padding:'24px',textAlign:'center',color:'#404050',fontSize:'13px'}}>
+        {txt.footer} · <a href="https://cvdropai.com" target="_blank" rel="noreferrer" style={{color:'#6366f1',textDecoration:'none'}}>CVDropAI</a>
       </div>
     </div>
   );
