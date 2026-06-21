@@ -41,21 +41,28 @@ export default function Gate({ children }) {
   };
 
   return (
-    <div style={{ fontFamily: 'Inter, sans-serif', background: '#0a0a0f', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', padding: '24px' }}>
-      <div style={{ maxWidth: '520px', width: '100%', textAlign: 'center' }}>
-        <div style={{ fontSize: '48px', marginBottom: '24px' }}>{message.icon}</div>
-        <h1 style={{ fontSize: '32px', fontWeight: '800', marginBottom: '16px' }}>{message.title}</h1>
-        <p style={{ color: '#a0a0b0', fontSize: '16px', lineHeight: 1.7, marginBottom: '40px' }}>{message.desc}</p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <a href="/submit" style={{ display: 'block', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', textDecoration: 'none', borderRadius: '12px', padding: '16px', fontSize: '16px', fontWeight: '700' }}>
+    <div style={{fontFamily:'Inter,sans-serif',background:'#0a0a0f',minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',padding:'20px'}}>
+      <style>{`
+        @media(max-width:768px){
+          .gate-title{font-size:24px!important}
+          .gate-desc{font-size:14px!important}
+          .gate-icon{font-size:40px!important}
+        }
+      `}</style>
+      <div style={{maxWidth:'520px',width:'100%',textAlign:'center'}}>
+        <div className="gate-icon" style={{fontSize:'48px',marginBottom:'20px'}}>{message.icon}</div>
+        <h1 className="gate-title" style={{fontSize:'32px',fontWeight:'800',marginBottom:'16px'}}>{message.title}</h1>
+        <p className="gate-desc" style={{color:'#a0a0b0',fontSize:'16px',lineHeight:1.7,marginBottom:'32px'}}>{message.desc}</p>
+        <div style={{display:'flex',flexDirection:'column',gap:'12px'}}>
+          <a href="/submit" style={{display:'block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'12px',padding:'16px',fontSize:'16px',fontWeight:'700'}}>
             Share My Salary → Get Full Access
           </a>
           <button onClick={grantAccess}
-            style={{ background: 'transparent', border: '1px solid #2a2a3e', color: '#a0a0b0', borderRadius: '12px', padding: '16px', fontSize: '15px', cursor: 'pointer', fontWeight: '500' }}>
+            style={{background:'transparent',border:'1px solid #2a2a3e',color:'#a0a0b0',borderRadius:'12px',padding:'16px',fontSize:'15px',cursor:'pointer',fontWeight:'500'}}>
             I have never been employed
           </button>
         </div>
-        <p style={{ marginTop: '24px', fontSize: '12px', color: '#404050' }}>
+        <p style={{marginTop:'20px',fontSize:'12px',color:'#404050'}}>
           Your salary is never shown individually. Always anonymous.
         </p>
       </div>
