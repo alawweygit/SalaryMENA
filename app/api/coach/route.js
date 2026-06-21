@@ -38,7 +38,7 @@ Profile:
 - Years of Experience: ${experience}
 - Current Salary: ${currentSalary ? currency + ' ' + currentSalary + '/month' : 'Not disclosed'}
 - Offered Salary: ${currency} ${offeredSalary}/month
-- Additional Benefits: ${benefits || 'None'}
+- Additional Benefits: ${benefits || 'None — do NOT suggest or mention housing or car allowances unless they are listed here'}
 ${benefitsNote}
 
 Respond with ONLY a valid JSON object, no markdown, no extra text:
