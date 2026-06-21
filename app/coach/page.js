@@ -108,7 +108,8 @@ export default function Coach() {
   };
 
   const getGaugeRotation = (low,high,userSalary) => {
-    const pct = Math.min(Math.max((userSalary-low)/(high-low),0),1);
+    if(high===low) return 0;
+    const pct = Math.min(Math.max((Number(userSalary)-Number(low))/(Number(high)-Number(low)),0),1);
     return -120+(pct*240);
   };
 

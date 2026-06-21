@@ -20,9 +20,9 @@ export default function Home() {
         @media(max-width:768px){
           .hero-title{font-size:36px!important}
           .hero-sub{font-size:15px!important}
-          .section-row{flex-direction:column!important;gap:24px!important}
-          .section-row-rev{flex-direction:column!important;gap:24px!important}
-          .section-col{min-width:unset!important;width:100%!important}
+          .section-row{flex-direction:column!important;gap:24px!important;text-align:center!important}
+          .section-row-rev{flex-direction:column!important;gap:24px!important;text-align:center!important}
+          .section-col{min-width:unset!important;width:100%!important;display:flex!important;flex-direction:column!important;align-items:center!important;text-align:center!important}
           .stat-row{gap:20px!important;padding:24px 16px!important}
           .hide-mobile{display:none!important}
           .hero-btns{flex-direction:column!important;align-items:stretch!important}
