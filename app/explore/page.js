@@ -4,11 +4,29 @@ import Navbar from '../components/Navbar';
 import { useLang } from '../components/LanguageContext';
 import { t } from '../components/translations';
 
-const COUNTRIES = ['UAE','Saudi Arabia','Egypt','Oman','Kuwait','Qatar','Bahrain','Jordan','Lebanon','Iraq'];
-const LEVELS_EN = ['Junior','Mid-Level','Senior','Lead','Manager','Director','C-Suite'];
-const LEVELS_AR = ['مبتدئ','متوسط','متقدم','قائد','مدير','مدير أول','الإدارة العليا'];
-const TYPES_EN = ['Multinational','Local Company','Government','Family Business'];
-const TYPES_AR = ['متعددة الجنسيات','شركة محلية','حكومة','شركة عائلية'];
+const COUNTRIES = ['UAE','Saudi Arabia','Egypt','Oman','Kuwait','Qatar','Bahrain','Jordan','Lebanon','Iraq','Syria','Yemen','Libya','Tunisia','Algeria','Morocco','Sudan','Somalia','Comoros','Djibouti','Mauritania','Palestine'];
+
+const LEVELS_EN = [
+  {label:'Junior',years:'0–2 yrs'},
+  {label:'Mid-Level',years:'2–5 yrs'},
+  {label:'Senior',years:'5–8 yrs'},
+  {label:'Lead',years:'8+ yrs'},
+  {label:'Manager',years:'5+ yrs'},
+  {label:'Director',years:'10+ yrs'},
+  {label:'C-Suite',years:'15+ yrs'},
+];
+const LEVELS_AR = [
+  {label:'مبتدئ',years:'0–2 سنة'},
+  {label:'متوسط',years:'2–5 سنوات'},
+  {label:'متقدم',years:'5–8 سنوات'},
+  {label:'قائد',years:'8+ سنوات'},
+  {label:'مدير',years:'5+ سنوات'},
+  {label:'مدير أول',years:'10+ سنوات'},
+  {label:'الإدارة العليا',years:'15+ سنوات'},
+];
+
+const TYPES_EN = ['Private','Government'];
+const TYPES_AR = ['خاص','حكومة'];
 
 export default function Explore() {
   const { lang, isAr } = useLang();
@@ -18,7 +36,6 @@ export default function Explore() {
   const [levelFilter, setLevelFilter] = useState('');
   const [companyFilter, setCompanyFilter] = useState('');
   const [openDropdown, setOpenDropdown] = useState(null);
-  const [countrySearch, setCountrySearch] = useState('');
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -36,40 +53,46 @@ export default function Explore() {
     const q = search.toLowerCase();
     const matchSearch = !q || (d.title||'').toLowerCase().includes(q) || (d.country||'').toLowerCase().includes(q) || (d.city||'').toLowerCase().includes(q);
     const matchCountry = !countryFilter || d.country === countryFilter;
-    const matchLevel = !levelFilter || d.seniority === levelFilter || d.seniority_ar === levelFilter;
-    const matchCompany = !companyFilter || d.company === companyFilter || d.company_ar === companyFilter;
+    const matchLevel = !levelFilter || d.seniority === levelFilter;
+    const matchCompany = !companyFilter || d.company === companyFilter;
     return matchSearch && matchCountry && matchLevel && matchCompany;
   });
 
   const hasFilters = countryFilter || levelFilter || companyFilter;
 
-  const dropdown = (id, label, value, options, onSelect, searchable) => (
+  const shareOnWhatsApp = (d) => {
+    const text = `💰 ${d.title} in ${d.country}\nSalary: ${d.currency} ${Number(d.monthlySalary).toLocaleString()}/month${d.seniority?' · '+d.seniority:''}\n\nSee more real salaries at salarymena.com 👇`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,'_blank');
+  };
+
+  const dropdown = (id, label, value, options, onSelect) => (
     <div style={{position:'relative',flex:1,minWidth:'0'}}>
       <div onClick={()=>setOpenDropdown(openDropdown===id?null:id)}
         style={{background:'#13131f',border:'1px solid #2a2a3e',borderRadius:'10px',padding:'10px 12px',cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'center',userSelect:'none'}}>
         <span style={{fontSize:'11px',fontWeight:'700',color:'#606070',textTransform:'uppercase',letterSpacing:'0.5px',whiteSpace:'nowrap'}}>{label}</span>
-        <span style={{fontSize:'13px',color:'#fff',fontWeight:'600',marginLeft:'8px',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{value || (id==='country'?txt.all_countries:id==='level'?txt.all_levels:txt.all_types)} ▾</span>
+        <span style={{fontSize:'13px',color:'#fff',fontWeight:'600',marginLeft:'8px',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
+          {value || (id==='country'?txt.all_countries:id==='level'?txt.all_levels:txt.all_types)} ▾
+        </span>
       </div>
       {openDropdown===id && (
-        <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#13131f',border:'1px solid #2a2a3e',borderRadius:'10px',zIndex:50,marginTop:'4px',maxHeight:'220px',overflowY:'auto'}}>
-          {searchable && (
-            <div style={{padding:'8px'}}>
-              <input autoFocus placeholder={txt.country_search} value={countrySearch} onChange={e=>setCountrySearch(e.target.value)}
-                style={{width:'100%',background:'#0a0a0f',border:'1px solid #2a2a3e',borderRadius:'8px',padding:'8px 12px',color:'#fff',fontSize:'13px',outline:'none',boxSizing:'border-box'}}/>
-            </div>
-          )}
-          <div onClick={()=>{onSelect('');setOpenDropdown(null);setCountrySearch('');}}
+        <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#13131f',border:'1px solid #2a2a3e',borderRadius:'10px',zIndex:50,marginTop:'4px',maxHeight:'260px',overflowY:'auto'}}>
+          <div onClick={()=>{onSelect('');setOpenDropdown(null);}}
             style={{padding:'10px 16px',cursor:'pointer',color:'#606070',fontSize:'14px'}}
             onMouseEnter={e=>e.target.style.background='#1e1e2e'} onMouseLeave={e=>e.target.style.background='transparent'}>
             {id==='country'?txt.all_countries:id==='level'?txt.all_levels:txt.all_types}
           </div>
-          {options.filter(o=>!countrySearch||o.toLowerCase().includes(countrySearch.toLowerCase())).map(o=>(
-            <div key={o} onClick={()=>{onSelect(o);setOpenDropdown(null);setCountrySearch('');}}
-              style={{padding:'10px 16px',cursor:'pointer',color:value===o?'#a78bfa':'#fff',fontSize:'14px',background:value===o?'rgba(99,102,241,0.1)':'transparent'}}
-              onMouseEnter={e=>e.currentTarget.style.background='#1e1e2e'} onMouseLeave={e=>e.currentTarget.style.background=value===o?'rgba(99,102,241,0.1)':'transparent'}>
-              {o}
-            </div>
-          ))}
+          {options.map((o,i)=>{
+            const optLabel = typeof o === 'object' ? o.label : o;
+            const optYears = typeof o === 'object' ? o.years : null;
+            return (
+              <div key={i} onClick={()=>{onSelect(optLabel);setOpenDropdown(null);}}
+                style={{padding:'10px 16px',cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'center',color:value===optLabel?'#a78bfa':'#fff',fontSize:'14px',background:value===optLabel?'rgba(99,102,241,0.1)':'transparent'}}
+                onMouseEnter={e=>e.currentTarget.style.background='#1e1e2e'} onMouseLeave={e=>e.currentTarget.style.background=value===optLabel?'rgba(99,102,241,0.1)':'transparent'}>
+                <span>{optLabel}</span>
+                {optYears && <span style={{fontSize:'11px',color:'#404050'}}>{optYears}</span>}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
@@ -88,18 +111,18 @@ export default function Explore() {
       <Navbar/>
 
       <div style={{maxWidth:'900px',margin:'0 auto',padding:'40px 16px'}}>
-        <div style={{marginBottom:'32px'}}>
-          <h1 className="explore-title" style={{fontSize:'40px',fontWeight:'900',marginBottom:'12px',background:'linear-gradient(135deg,#fff 0%,#a78bfa 100%)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>{txt.explore_title}</h1>
-          <p style={{color:'#606070',fontSize:'15px'}}>{txt.explore_sub}</p>
+        <div style={{marginBottom:'28px'}}>
+          <h1 className="explore-title" style={{fontSize:'36px',fontWeight:'900',marginBottom:'8px',background:'linear-gradient(135deg,#fff 0%,#a78bfa 100%)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>{txt.explore_title}</h1>
+          <p style={{color:'#606070',fontSize:'14px'}}>{txt.explore_sub}</p>
         </div>
 
-        <div style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'16px',padding:'16px',marginBottom:'24px'}}>
+        <div style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'16px',padding:'16px',marginBottom:'20px'}}>
           <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={txt.search_explore}
-            style={{width:'100%',background:'transparent',border:'none',outline:'none',color:'#fff',fontSize:'15px',marginBottom:'12px',boxSizing:'border-box',textAlign:isAr?'right':'left'}}/>
+            style={{width:'100%',background:'transparent',border:'none',outline:'none',color:'#fff',fontSize:'16px',marginBottom:'12px',boxSizing:'border-box',textAlign:isAr?'right':'left'}}/>
           <div className="explore-filters" style={{display:'flex',gap:'8px'}} onClick={e=>e.stopPropagation()}>
-            {dropdown('country',txt.country_filter,countryFilter,COUNTRIES,setCountryFilter,true)}
-            {dropdown('level',txt.level_filter,levelFilter,LEVELS,setLevelFilter,false)}
-            {dropdown('company',txt.company_filter,companyFilter,TYPES,setCompanyFilter,false)}
+            {dropdown('country',txt.country_filter,countryFilter,COUNTRIES,setCountryFilter)}
+            {dropdown('level',txt.level_filter,levelFilter,LEVELS,setLevelFilter)}
+            {dropdown('company',txt.company_filter,companyFilter,TYPES,setCompanyFilter)}
           </div>
         </div>
 
@@ -142,13 +165,16 @@ export default function Explore() {
                     {(d.city||d.country) && <span style={{color:'#606070',fontSize:'12px'}}>📍 {[d.city,d.country].filter(Boolean).join(', ')}</span>}
                     {d.company && <span style={{color:'#606070',fontSize:'12px'}}>🏢 {d.company}</span>}
                     {d.experience && <span style={{color:'#606070',fontSize:'12px'}}>⏱ {d.experience}</span>}
-                    {d.education && <span style={{color:'#606070',fontSize:'12px'}}>🎓 {d.education}</span>}
                   </div>
                 </div>
                 <div className="explore-salary" style={{textAlign:isAr?'left':'right',flexShrink:0,marginLeft:isAr?0:'16px',marginRight:isAr?'16px':0}}>
                   <div style={{fontSize:'20px',fontWeight:'800',color:'#a78bfa'}}>{d.currency} {Number(d.monthlySalary).toLocaleString()}</div>
-                  <div style={{color:'#606070',fontSize:'12px'}}>{txt.per_month}</div>
-                  {d.bonus>0 && <div style={{color:'#404050',fontSize:'11px'}}>+ {d.currency} {Number(d.bonus).toLocaleString()} {txt.yr_bonus}</div>}
+                  <div style={{color:'#606070',fontSize:'12px',marginBottom:'8px'}}>{txt.per_month}</div>
+                  <button onClick={()=>shareOnWhatsApp(d)}
+                    style={{background:'#25D366',border:'none',borderRadius:'8px',padding:'5px 10px',fontSize:'11px',fontWeight:'700',cursor:'pointer',color:'#fff',display:'flex',alignItems:'center',gap:'4px'}}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                    Share
+                  </button>
                 </div>
               </div>
             ))}

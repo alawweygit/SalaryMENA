@@ -7,128 +7,130 @@ export default function Home() {
   const { lang, isAr } = useLang();
   const txt = t[lang];
 
-  const featureCard = (icon, title, desc) => (
-    <div style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'16px',padding:'28px',display:'flex',flexDirection:'column',gap:'12px'}}>
-      <div style={{fontSize:'32px'}}>{icon}</div>
-      <div style={{fontWeight:'700',fontSize:'16px'}}>{title}</div>
-      <div style={{color:'#606070',fontSize:'14px',lineHeight:1.7}}>{desc}</div>
-    </div>
-  );
-
-  const sectionStyle = (reverse) => ({
-    display:'flex',flexDirection:'column',gap:'20px',padding:'80px 24px',maxWidth:'900px',margin:'0 auto',
-  });
-
   return (
     <div style={{fontFamily:'Inter,sans-serif',background:'#0a0a0f',minHeight:'100vh',color:'#fff'}}>
-      <style>{`@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}`}</style>
+      <style>{`
+        @keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        .hero-title{font-size:64px}
+        .hero-sub{font-size:18px}
+        .section-row{display:flex;gap:60px;align-items:center;flex-wrap:wrap}
+        .section-row-rev{display:flex;gap:60px;align-items:center;flex-wrap:wrap;flex-direction:row-reverse}
+        .section-col{flex:1;min-width:280px}
+        .stat-row{display:flex;justify-content:center;gap:48px;padding:40px 24px;flex-wrap:wrap}
+        @media(max-width:768px){
+          .hero-title{font-size:36px!important}
+          .hero-sub{font-size:15px!important}
+          .section-row{flex-direction:column!important;gap:24px!important}
+          .section-row-rev{flex-direction:column!important;gap:24px!important}
+          .section-col{min-width:unset!important;width:100%!important}
+          .stat-row{gap:20px!important;padding:24px 16px!important}
+          .hide-mobile{display:none!important}
+          .hero-btns{flex-direction:column!important;align-items:stretch!important}
+          .hero-btns a{text-align:center!important}
+        }
+      `}</style>
       <Navbar/>
 
       {/* HERO */}
-      <div style={{textAlign:'center',padding:'100px 24px 80px',maxWidth:'800px',margin:'0 auto',animation:'fadeIn 0.6s ease'}}>
-        <div style={{display:'inline-block',background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.3)',borderRadius:'50px',padding:'6px 16px',fontSize:'13px',color:'#a78bfa',marginBottom:'28px',fontWeight:'500'}}>
+      <div style={{textAlign:'center',padding:'80px 24px 60px',maxWidth:'800px',margin:'0 auto',animation:'fadeIn 0.6s ease'}}>
+        <div style={{display:'inline-block',background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.3)',borderRadius:'50px',padding:'6px 16px',fontSize:'13px',color:'#a78bfa',marginBottom:'24px',fontWeight:'500'}}>
           ✨ {txt.hero_badge}
         </div>
-        <h1 style={{fontSize:'64px',fontWeight:'900',lineHeight:1.1,marginBottom:'24px',background:'linear-gradient(135deg,#fff 0%,#a78bfa 50%,#6366f1 100%)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>
+        <h1 className="hero-title" style={{fontWeight:'900',lineHeight:1.1,marginBottom:'20px',background:'linear-gradient(135deg,#fff 0%,#a78bfa 50%,#6366f1 100%)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>
           {txt.hero_title}
         </h1>
-        <p style={{fontSize:'20px',color:'#606070',lineHeight:1.7,marginBottom:'40px',maxWidth:'600px',margin:'0 auto 40px'}}>
+        <p className="hero-sub" style={{color:'#a0a0b0',lineHeight:1.7,marginBottom:'36px',maxWidth:'560px',margin:'0 auto 36px'}}>
           {txt.hero_sub}
         </p>
-        <div style={{display:'flex',gap:'16px',justifyContent:'center',flexWrap:'wrap'}}>
-          <a href="/submit" style={{background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'12px',padding:'16px 32px',fontWeight:'700',fontSize:'16px'}}>
+        <div className="hero-btns" style={{display:'flex',gap:'12px',justifyContent:'center',flexWrap:'wrap'}}>
+          <a href="/submit" style={{background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'12px',padding:'14px 28px',fontWeight:'700',fontSize:'15px'}}>
             {txt.submit_btn}
           </a>
-          <a href="/explore" style={{background:'transparent',color:'#a0a0b0',textDecoration:'none',borderRadius:'12px',padding:'16px 32px',fontWeight:'600',fontSize:'16px',border:'1px solid #2a2a3e'}}>
-            {txt.explore} →
+          <a href="/explore" style={{background:'transparent',color:'#a0a0b0',textDecoration:'none',borderRadius:'12px',padding:'14px 28px',fontWeight:'600',fontSize:'15px',border:'1px solid #2a2a3e'}}>
+            {txt.fs_explore_btn}
           </a>
         </div>
       </div>
 
       {/* STATS */}
-      <div style={{display:'flex',justifyContent:'center',gap:'48px',padding:'40px 24px',borderTop:'1px solid #1e1e2e',borderBottom:'1px solid #1e1e2e',flexWrap:'wrap'}}>
+      <div className="stat-row" style={{borderTop:'1px solid #1e1e2e',borderBottom:'1px solid #1e1e2e'}}>
         {[
           {val:txt.stat_1,label:txt.stat_1_label},
           {val:txt.stat_2,label:txt.stat_2_label},
           {val:txt.stat_3,label:txt.stat_3_label},
         ].map((s,i)=>(
           <div key={i} style={{textAlign:'center'}}>
-            <div style={{fontSize:'36px',fontWeight:'900',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>{s.val}</div>
+            <div style={{fontSize:'32px',fontWeight:'900',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>{s.val}</div>
             <div style={{color:'#606070',fontSize:'14px',marginTop:'4px'}}>{s.label}</div>
           </div>
         ))}
       </div>
 
-      {/* FEATURE SECTION — EXPLORE */}
+      {/* 1 — EXPLORE */}
       <div style={{borderBottom:'1px solid #1e1e2e'}}>
-        <div style={{maxWidth:'900px',margin:'0 auto',padding:'80px 24px',display:'flex',gap:'60px',alignItems:'center',flexWrap:'wrap'}}>
-          <div style={{flex:1,minWidth:'280px'}}>
+        <div className="section-row" style={{maxWidth:'900px',margin:'0 auto',padding:'60px 24px'}}>
+          <div className="section-col">
             <div style={{display:'inline-block',background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.3)',borderRadius:'50px',padding:'4px 14px',fontSize:'12px',color:'#a78bfa',marginBottom:'16px',fontWeight:'600'}}>📊 EXPLORE</div>
-            <h2 style={{fontSize:'36px',fontWeight:'900',marginBottom:'16px',lineHeight:1.2}}>{txt.fs_explore_title}</h2>
-            <p style={{color:'#606070',fontSize:'16px',lineHeight:1.8,marginBottom:'28px'}}>{txt.fs_explore_desc}</p>
-            <a href="/explore" style={{display:'inline-block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'10px',padding:'14px 28px',fontWeight:'700',fontSize:'15px'}}>{txt.fs_explore_btn}</a>
+            <h2 style={{fontSize:'28px',fontWeight:'900',marginBottom:'14px',lineHeight:1.2}}>{txt.fs_explore_title}</h2>
+            <p style={{color:'#606070',fontSize:'15px',lineHeight:1.8,marginBottom:'24px'}}>{txt.fs_explore_desc}</p>
+            <a href="/explore" style={{display:'inline-block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'10px',padding:'12px 24px',fontWeight:'700',fontSize:'14px'}}>{txt.fs_explore_btn}</a>
           </div>
-          <div style={{flex:1,minWidth:'280px',background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'28px',display:'flex',flexDirection:'column',gap:'14px'}}>
+          <div className="section-col hide-mobile" style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'24px',display:'flex',flexDirection:'column',gap:'12px'}}>
             {[
               {title:'Software Engineer',country:'UAE 🇦🇪',salary:'AED 35,000',tag:'Senior'},
               {title:'Pharmacist',country:'Oman 🇴🇲',salary:'OMR 600',tag:'Mid-Level'},
-              {title:'Marketing Manager',country:'Saudi Arabia 🇸🇦',salary:'SAR 18,000',tag:'Manager'},
+              {title:'Marketing Manager',country:'Saudi Arabia 🇸🇦',salary:'SAR 18,000',tag:'Private'},
             ].map((item,i)=>(
-              <div key={i} style={{background:'#0a0a0f',border:'1px solid #1e1e2e',borderRadius:'12px',padding:'16px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <div key={i} style={{background:'#0a0a0f',border:'1px solid #1e1e2e',borderRadius:'12px',padding:'14px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                 <div>
-                  <div style={{fontWeight:'700',fontSize:'14px',marginBottom:'4px'}}>{item.title}</div>
-                  <div style={{color:'#606070',fontSize:'12px'}}>{item.country} · <span style={{color:'#a78bfa'}}>{item.tag}</span></div>
+                  <div style={{fontWeight:'700',fontSize:'13px',marginBottom:'4px'}}>{item.title}</div>
+                  <div style={{color:'#606070',fontSize:'11px'}}>{item.country} · <span style={{color:'#a78bfa'}}>{item.tag}</span></div>
                 </div>
-                <div style={{fontWeight:'800',fontSize:'16px',color:'#a78bfa'}}>{item.salary}</div>
+                <div style={{fontWeight:'800',fontSize:'14px',color:'#a78bfa'}}>{item.salary}</div>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* FEATURE SECTION — AI NEGOTIATION COACH */}
+      {/* 2 — SUBMIT */}
       <div style={{borderBottom:'1px solid #1e1e2e',background:'#0d0d18'}}>
-        <div style={{maxWidth:'900px',margin:'0 auto',padding:'80px 24px',display:'flex',gap:'60px',alignItems:'center',flexWrap:'wrap',flexDirection:isAr?'row':'row-reverse'}}>
-          <div style={{flex:1,minWidth:'280px'}}>
-            <div style={{display:'inline-block',background:'rgba(139,92,246,0.15)',border:'1px solid rgba(139,92,246,0.3)',borderRadius:'50px',padding:'4px 14px',fontSize:'12px',color:'#a78bfa',marginBottom:'16px',fontWeight:'600'}}>🤖 AI-POWERED</div>
-            <h2 style={{fontSize:'36px',fontWeight:'900',marginBottom:'16px',lineHeight:1.2}}>{txt.fs_coach_title}</h2>
-            <p style={{color:'#606070',fontSize:'16px',lineHeight:1.8,marginBottom:'28px'}}>{txt.fs_coach_desc}</p>
-            <a href="/coach" style={{display:'inline-block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'10px',padding:'14px 28px',fontWeight:'700',fontSize:'15px'}}>{txt.fs_coach_btn}</a>
+        <div className="section-row-rev" style={{maxWidth:'900px',margin:'0 auto',padding:'60px 24px'}}>
+          <div className="section-col">
+            <div style={{display:'inline-block',background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.3)',borderRadius:'50px',padding:'4px 14px',fontSize:'12px',color:'#a78bfa',marginBottom:'16px',fontWeight:'600'}}>🔒 ANONYMOUS</div>
+            <h2 style={{fontSize:'28px',fontWeight:'900',marginBottom:'14px',lineHeight:1.2}}>{txt.fs_submit_title}</h2>
+            <p style={{color:'#606070',fontSize:'15px',lineHeight:1.8,marginBottom:'24px'}}>{txt.fs_submit_desc}</p>
+            <a href="/submit" style={{display:'inline-block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'10px',padding:'12px 24px',fontWeight:'700',fontSize:'14px'}}>{txt.fs_submit_btn}</a>
           </div>
-          <div style={{flex:1,minWidth:'280px',background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'28px'}}>
-            <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'20px',paddingBottom:'16px',borderBottom:'1px solid #1e1e2e'}}>
-              <div style={{width:'36px',height:'36px',borderRadius:'50%',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'16px'}}>🤖</div>
-              <div style={{fontWeight:'700',fontSize:'14px'}}>AI Negotiation Coach</div>
-            </div>
-            {['VERDICT','MARKET ASSESSMENT','YOUR NEGOTIATION SCRIPT'].map((section,i)=>(
-              <div key={i} style={{marginBottom:'14px'}}>
-                <div style={{fontSize:'10px',fontWeight:'800',color:'#6366f1',letterSpacing:'1.5px',marginBottom:'6px'}}>{section}</div>
-                <div style={{height:'8px',background:'#1e1e2e',borderRadius:'4px',width:i===0?'60%':i===1?'90%':'75%'}}/>
-                {i<2 && <div style={{height:'8px',background:'#1e1e2e',borderRadius:'4px',width:'50%',marginTop:'4px'}}/>}
+          <div className="section-col hide-mobile" style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'24px',display:'flex',flexDirection:'column',gap:'10px'}}>
+            {['🧑‍💼 Job Title','🌍 Country','🏢 Company Type','💰 Monthly Salary','🎓 Education','📧 Email'].map((item,i)=>(
+              <div key={i} style={{display:'flex',alignItems:'center',gap:'12px',padding:'10px 14px',background:'#0a0a0f',borderRadius:'10px',border:'1px solid #1e1e2e'}}>
+                <span style={{fontSize:'13px',color:'#a0a0b0'}}>{item}</span>
+                {i<4 && <div style={{marginLeft:'auto',width:'7px',height:'7px',borderRadius:'50%',background:'#6366f1'}}/>}
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* FEATURE SECTION — AM I UNDERPAID */}
+      {/* 3 — AM I UNDERPAID */}
       <div style={{borderBottom:'1px solid #1e1e2e'}}>
-        <div style={{maxWidth:'900px',margin:'0 auto',padding:'80px 24px',display:'flex',gap:'60px',alignItems:'center',flexWrap:'wrap'}}>
-          <div style={{flex:1,minWidth:'280px'}}>
+        <div className="section-row" style={{maxWidth:'900px',margin:'0 auto',padding:'60px 24px'}}>
+          <div className="section-col">
             <div style={{display:'inline-block',background:'rgba(16,185,129,0.15)',border:'1px solid rgba(16,185,129,0.3)',borderRadius:'50px',padding:'4px 14px',fontSize:'12px',color:'#10b981',marginBottom:'16px',fontWeight:'600'}}>⚡ AI-POWERED</div>
-            <h2 style={{fontSize:'36px',fontWeight:'900',marginBottom:'16px',lineHeight:1.2}}>{txt.fs_underpaid_title}</h2>
-            <p style={{color:'#606070',fontSize:'16px',lineHeight:1.8,marginBottom:'28px'}}>{txt.fs_underpaid_desc}</p>
-            <a href="/underpaid" style={{display:'inline-block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'10px',padding:'14px 28px',fontWeight:'700',fontSize:'15px'}}>{txt.fs_underpaid_btn}</a>
+            <h2 style={{fontSize:'28px',fontWeight:'900',marginBottom:'14px',lineHeight:1.2}}>{txt.fs_underpaid_title}</h2>
+            <p style={{color:'#606070',fontSize:'15px',lineHeight:1.8,marginBottom:'24px'}}>{txt.fs_underpaid_desc}</p>
+            <a href="/underpaid" style={{display:'inline-block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'10px',padding:'12px 24px',fontWeight:'700',fontSize:'14px'}}>{txt.fs_underpaid_btn}</a>
           </div>
-          <div style={{flex:1,minWidth:'280px',background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'28px',textAlign:'center'}}>
-            <div style={{fontSize:'13px',color:'#10b981',fontWeight:'700',textTransform:'uppercase',letterSpacing:'2px',marginBottom:'8px'}}>MARKET VERDICT</div>
-            <div style={{fontSize:'36px',fontWeight:'900',marginBottom:'4px'}}>✅ Fair</div>
-            <div style={{color:'#606070',fontSize:'14px',marginBottom:'24px'}}>Pharmacist · Oman · Arab Expat</div>
+          <div className="section-col hide-mobile" style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'24px',textAlign:'center'}}>
+            <div style={{fontSize:'12px',color:'#10b981',fontWeight:'700',textTransform:'uppercase',letterSpacing:'2px',marginBottom:'8px'}}>MARKET VERDICT</div>
+            <div style={{fontSize:'28px',fontWeight:'900',marginBottom:'4px'}}>✅ Fair</div>
+            <div style={{color:'#606070',fontSize:'13px',marginBottom:'20px'}}>Pharmacist · Oman · Arab Expat</div>
             <div style={{display:'flex',justifyContent:'space-between',gap:'8px'}}>
               {[{l:'Market Low',v:'OMR 450',c:'#ef4444'},{l:'Median',v:'OMR 600',c:'#6366f1'},{l:'Market High',v:'OMR 850',c:'#10b981'}].map((item,i)=>(
-                <div key={i} style={{flex:1,background:'#0a0a0f',borderRadius:'10px',padding:'12px 8px',border:`1px solid ${item.c}30`}}>
-                  <div style={{fontSize:'10px',color:'#404050',fontWeight:'700',marginBottom:'4px'}}>{item.l}</div>
-                  <div style={{fontSize:'13px',fontWeight:'800',color:item.c}}>{item.v}</div>
+                <div key={i} style={{flex:1,background:'#0a0a0f',borderRadius:'10px',padding:'10px 6px',border:`1px solid ${item.c}30`}}>
+                  <div style={{fontSize:'9px',color:'#404050',fontWeight:'700',marginBottom:'4px'}}>{item.l}</div>
+                  <div style={{fontSize:'12px',fontWeight:'800',color:item.c}}>{item.v}</div>
                 </div>
               ))}
             </div>
@@ -136,36 +138,66 @@ export default function Home() {
         </div>
       </div>
 
-      {/* FEATURE SECTION — SUBMIT */}
+      {/* 4 — AI NEGOTIATION COACH */}
       <div style={{borderBottom:'1px solid #1e1e2e',background:'#0d0d18'}}>
-        <div style={{maxWidth:'900px',margin:'0 auto',padding:'80px 24px',display:'flex',gap:'60px',alignItems:'center',flexWrap:'wrap',flexDirection:isAr?'row':'row-reverse'}}>
-          <div style={{flex:1,minWidth:'280px'}}>
-            <div style={{display:'inline-block',background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.3)',borderRadius:'50px',padding:'4px 14px',fontSize:'12px',color:'#a78bfa',marginBottom:'16px',fontWeight:'600'}}>🔒 100% ANONYMOUS</div>
-            <h2 style={{fontSize:'36px',fontWeight:'900',marginBottom:'16px',lineHeight:1.2}}>{txt.fs_submit_title}</h2>
-            <p style={{color:'#606070',fontSize:'16px',lineHeight:1.8,marginBottom:'28px'}}>{txt.fs_submit_desc}</p>
-            <a href="/submit" style={{display:'inline-block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'10px',padding:'14px 28px',fontWeight:'700',fontSize:'15px'}}>{txt.fs_submit_btn}</a>
+        <div className="section-row-rev" style={{maxWidth:'900px',margin:'0 auto',padding:'60px 24px'}}>
+          <div className="section-col">
+            <div style={{display:'inline-block',background:'rgba(139,92,246,0.15)',border:'1px solid rgba(139,92,246,0.3)',borderRadius:'50px',padding:'4px 14px',fontSize:'12px',color:'#a78bfa',marginBottom:'16px',fontWeight:'600'}}>🤖 AI-POWERED</div>
+            <h2 style={{fontSize:'28px',fontWeight:'900',marginBottom:'14px',lineHeight:1.2}}>{txt.fs_coach_title}</h2>
+            <p style={{color:'#606070',fontSize:'15px',lineHeight:1.8,marginBottom:'24px'}}>{txt.fs_coach_desc}</p>
+            <a href="/coach" style={{display:'inline-block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'10px',padding:'12px 24px',fontWeight:'700',fontSize:'14px'}}>{txt.fs_coach_btn}</a>
           </div>
-          <div style={{flex:1,minWidth:'280px',background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'28px',display:'flex',flexDirection:'column',gap:'12px'}}>
-            {['🧑‍💼 Job Title','🌍 Country','🏢 Company Type','💰 Monthly Salary','🎓 Education','📧 Email (optional)'].map((item,i)=>(
-              <div key={i} style={{display:'flex',alignItems:'center',gap:'12px',padding:'12px 16px',background:'#0a0a0f',borderRadius:'10px',border:'1px solid #1e1e2e'}}>
-                <span style={{fontSize:'14px',color:'#a0a0b0'}}>{item}</span>
-                {i<4 && <div style={{marginLeft:'auto',width:'8px',height:'8px',borderRadius:'50%',background:'#6366f1'}}/>}
-              </div>
-            ))}
+          <div className="section-col hide-mobile" style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'24px'}}>
+            <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'16px',paddingBottom:'14px',borderBottom:'1px solid #1e1e2e'}}>
+              <div style={{width:'32px',height:'32px',borderRadius:'50%',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'14px'}}>🤖</div>
+              <div style={{fontWeight:'700',fontSize:'13px'}}>AI Negotiation Coach</div>
+            </div>
+            <div style={{marginBottom:'12px'}}>
+              <div style={{fontSize:'10px',fontWeight:'800',color:'#6366f1',letterSpacing:'1.5px',marginBottom:'6px'}}>VERDICT</div>
+              <div style={{background:'#0a0a0f',borderRadius:'8px',padding:'10px 14px',fontSize:'13px',color:'#10b981',fontWeight:'700'}}>✅ Above Market — You can negotiate higher</div>
+            </div>
+            <div style={{marginBottom:'12px'}}>
+              <div style={{fontSize:'10px',fontWeight:'800',color:'#6366f1',letterSpacing:'1.5px',marginBottom:'6px'}}>MARKET ASSESSMENT</div>
+              <div style={{background:'#0a0a0f',borderRadius:'8px',padding:'10px 14px',fontSize:'12px',color:'#a0a0b0',lineHeight:1.6}}>Senior engineers in UAE typically earn AED 28,000–42,000/month. Your offer of AED 35,000 is within range.</div>
+            </div>
+            <div>
+              <div style={{fontSize:'10px',fontWeight:'800',color:'#6366f1',letterSpacing:'1.5px',marginBottom:'6px'}}>YOUR SCRIPT</div>
+              <div style={{background:'#0a0a0f',borderRadius:'8px',padding:'10px 14px',fontSize:'12px',color:'#a0a0b0',lineHeight:1.6,fontStyle:'italic'}}>"Based on my research, the market range for this role in Dubai is AED 35–42K. I'd like to discuss..."</div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* BOTTOM CTA */}
-      <div style={{textAlign:'center',padding:'100px 24px'}}>
-        <h2 style={{fontSize:'40px',fontWeight:'900',marginBottom:'16px',background:'linear-gradient(135deg,#fff 0%,#a78bfa 100%)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>{txt.submit_cta}</h2>
-        <p style={{color:'#606070',fontSize:'16px',marginBottom:'32px'}}>{txt.submit_sub}</p>
-        <a href="/submit" style={{display:'inline-block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'12px',padding:'16px 40px',fontWeight:'700',fontSize:'16px'}}>{txt.submit_btn}</a>
+      {/* 5 — CVDROPAI */}
+      <div style={{borderBottom:'1px solid #1e1e2e'}}>
+        <div className="section-row" style={{maxWidth:'900px',margin:'0 auto',padding:'60px 24px'}}>
+          <div className="section-col">
+            <div style={{display:'inline-block',background:'rgba(251,191,36,0.15)',border:'1px solid rgba(251,191,36,0.3)',borderRadius:'50px',padding:'4px 14px',fontSize:'12px',color:'#fbbf24',marginBottom:'16px',fontWeight:'600'}}>💼 CV TOOL</div>
+            <h2 style={{fontSize:'28px',fontWeight:'900',marginBottom:'14px',lineHeight:1.2}}>{txt.fs_cvdrop_title}</h2>
+            <p style={{color:'#606070',fontSize:'15px',lineHeight:1.8,marginBottom:'24px'}}>{txt.fs_cvdrop_desc}</p>
+            <a href="https://cvdropai.com" target="_blank" rel="noreferrer" style={{display:'inline-block',background:'linear-gradient(135deg,#fbbf24,#f59e0b)',color:'#000',textDecoration:'none',borderRadius:'10px',padding:'12px 24px',fontWeight:'700',fontSize:'14px'}}>{txt.fs_cvdrop_btn}</a>
+          </div>
+          <div className="section-col hide-mobile" style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'24px'}}>
+            <div style={{marginBottom:'16px',paddingBottom:'14px',borderBottom:'1px solid #1e1e2e',display:'flex',alignItems:'center',gap:'10px'}}>
+              <div style={{width:'32px',height:'32px',borderRadius:'8px',background:'linear-gradient(135deg,#fbbf24,#f59e0b)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'16px'}}>💧</div>
+              <div style={{fontWeight:'700',fontSize:'13px'}}>CVDropAI</div>
+            </div>
+            <div style={{marginBottom:'12px'}}>
+              <div style={{fontSize:'10px',fontWeight:'800',color:'#fbbf24',letterSpacing:'1.5px',marginBottom:'6px'}}>JOB DESCRIPTION</div>
+              <div style={{background:'#0a0a0f',borderRadius:'8px',padding:'10px 14px',fontSize:'12px',color:'#a0a0b0',lineHeight:1.6}}>Senior Software Engineer at Noon — 5+ years React, Node.js, AWS experience required...</div>
+            </div>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'center',padding:'8px',color:'#fbbf24',fontSize:'20px'}}>↓ AI rewrites your CV</div>
+            <div>
+              <div style={{fontSize:'10px',fontWeight:'800',color:'#fbbf24',letterSpacing:'1.5px',marginBottom:'6px'}}>YOUR TAILORED CV</div>
+              <div style={{background:'#0a0a0f',borderRadius:'8px',padding:'10px 14px',fontSize:'12px',color:'#10b981',lineHeight:1.6,fontWeight:'600'}}>✅ CV matched to job description and ready to send</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* FOOTER */}
       <div style={{borderTop:'1px solid #1e1e2e',padding:'24px',textAlign:'center',color:'#404050',fontSize:'13px'}}>
-        {txt.footer} · <a href="https://cvdropai.com" target="_blank" rel="noreferrer" style={{color:'#6366f1',textDecoration:'none'}}>CVDropAI</a>
+        {txt.footer} · <a href="mailto:support@salarymena.com" style={{color:'#606070',textDecoration:'none'}}>support@salarymena.com</a>
       </div>
     </div>
   );
