@@ -244,9 +244,9 @@ export default function Coach() {
                     const y=130+85*Math.sin(rad);
                     return(<><line x1="120" y1="130" x2={x} y2={y} stroke="#fff" strokeWidth="3" strokeLinecap="round"/><circle cx="120" cy="130" r="8" fill={result.verdictColor}/><circle cx={x} cy={y} r="6" fill="#fff" stroke={result.verdictColor} strokeWidth="3"/></>);
                   })()}
-                  <text x="20" y="138" fill="#606070" fontSize="11" fontWeight="600">LOW</text>
-                  <text x="98" y="115" fill="#606070" fontSize="11" fontWeight="600">MID</text>
-                  <text x="190" y="138" fill="#606070" fontSize="11" fontWeight="600">HIGH</text>
+                  <text x="8" y="155" fill="#606070" fontSize="11" fontWeight="600">LOW</text>
+                  <text x="105" y="108" fill="#606070" fontSize="11" fontWeight="600">MID</text>
+                  <text x="200" y="155" fill="#606070" fontSize="11" fontWeight="600">HIGH</text>
                 </svg>
                 <div style={{marginTop:'12px'}}>
                   <div style={{fontSize:'28px',fontWeight:'900',color:result.verdictColor}}>{form.currency} {fmt(form.offeredSalary)}</div>
