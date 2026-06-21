@@ -12,21 +12,19 @@ export default function Home() {
       <style>{`
         @keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
         .hero-title{font-size:64px}
-        .hero-sub{font-size:18px}
-        .section-row{display:flex;gap:60px;align-items:center;flex-wrap:wrap}
-        .section-row-rev{display:flex;gap:60px;align-items:center;flex-wrap:wrap;flex-direction:row-reverse}
-        .section-col{flex:1;min-width:280px}
-        .stat-row{display:flex;justify-content:center;gap:48px;padding:40px 24px;flex-wrap:wrap}
+        .section-row{display:flex;gap:60px;align-items:center}
+        .section-row-rev{display:flex;gap:60px;align-items:center;flex-direction:row-reverse}
+        .section-text{flex:1;min-width:280px}
+        .section-preview{flex:1;min-width:280px}
+        .stat-row{display:flex;justify-content:center;gap:48px;padding:40px 24px}
         @media(max-width:768px){
           .hero-title{font-size:36px!important}
-          .hero-sub{font-size:15px!important}
-          .section-row{flex-direction:column!important;gap:24px!important;text-align:center!important}
-          .section-row-rev{flex-direction:column!important;gap:24px!important;text-align:center!important}
-          .section-col{min-width:unset!important;width:100%!important;display:flex!important;flex-direction:column!important;align-items:center!important;text-align:center!important}
+          .section-row{flex-direction:column!important;gap:32px!important;text-align:center!important}
+          .section-row-rev{flex-direction:column!important;gap:32px!important;text-align:center!important}
+          .section-text{display:flex!important;flex-direction:column!important;align-items:center!important}
+          .section-preview{width:100%!important;min-width:unset!important}
           .stat-row{gap:20px!important;padding:24px 16px!important}
-          .hide-mobile{display:none!important}
           .hero-btns{flex-direction:column!important;align-items:stretch!important}
-          .hero-btns a{text-align:center!important}
         }
       `}</style>
       <Navbar/>
@@ -39,7 +37,7 @@ export default function Home() {
         <h1 className="hero-title" style={{fontWeight:'900',lineHeight:1.1,marginBottom:'20px',background:'linear-gradient(135deg,#fff 0%,#a78bfa 50%,#6366f1 100%)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>
           {txt.hero_title}
         </h1>
-        <p className="hero-sub" style={{color:'#a0a0b0',lineHeight:1.7,marginBottom:'36px',maxWidth:'560px',margin:'0 auto 36px'}}>
+        <p style={{color:'#a0a0b0',lineHeight:1.7,marginBottom:'36px',maxWidth:'560px',margin:'0 auto 36px',fontSize:'18px'}}>
           {txt.hero_sub}
         </p>
         <div className="hero-btns" style={{display:'flex',gap:'12px',justifyContent:'center',flexWrap:'wrap'}}>
@@ -69,13 +67,13 @@ export default function Home() {
       {/* 1 — EXPLORE */}
       <div style={{borderBottom:'1px solid #1e1e2e'}}>
         <div className="section-row" style={{maxWidth:'900px',margin:'0 auto',padding:'60px 24px'}}>
-          <div className="section-col">
+          <div className="section-text">
             <div style={{display:'inline-block',background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.3)',borderRadius:'50px',padding:'4px 14px',fontSize:'12px',color:'#a78bfa',marginBottom:'16px',fontWeight:'600'}}>📊 EXPLORE</div>
             <h2 style={{fontSize:'28px',fontWeight:'900',marginBottom:'14px',lineHeight:1.2}}>{txt.fs_explore_title}</h2>
             <p style={{color:'#606070',fontSize:'15px',lineHeight:1.8,marginBottom:'24px'}}>{txt.fs_explore_desc}</p>
             <a href="/explore" style={{display:'inline-block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'10px',padding:'12px 24px',fontWeight:'700',fontSize:'14px'}}>{txt.fs_explore_btn}</a>
           </div>
-          <div className="section-col hide-mobile" style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'24px',display:'flex',flexDirection:'column',gap:'12px'}}>
+          <div className="section-preview" style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'20px',display:'flex',flexDirection:'column',gap:'10px'}}>
             {[
               {title:'Software Engineer',country:'UAE 🇦🇪',salary:'AED 35,000',tag:'Senior'},
               {title:'Pharmacist',country:'Oman 🇴🇲',salary:'OMR 600',tag:'Mid-Level'},
@@ -96,13 +94,13 @@ export default function Home() {
       {/* 2 — SUBMIT */}
       <div style={{borderBottom:'1px solid #1e1e2e',background:'#0d0d18'}}>
         <div className="section-row-rev" style={{maxWidth:'900px',margin:'0 auto',padding:'60px 24px'}}>
-          <div className="section-col">
+          <div className="section-text">
             <div style={{display:'inline-block',background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.3)',borderRadius:'50px',padding:'4px 14px',fontSize:'12px',color:'#a78bfa',marginBottom:'16px',fontWeight:'600'}}>🔒 ANONYMOUS</div>
             <h2 style={{fontSize:'28px',fontWeight:'900',marginBottom:'14px',lineHeight:1.2}}>{txt.fs_submit_title}</h2>
             <p style={{color:'#606070',fontSize:'15px',lineHeight:1.8,marginBottom:'24px'}}>{txt.fs_submit_desc}</p>
             <a href="/submit" style={{display:'inline-block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'10px',padding:'12px 24px',fontWeight:'700',fontSize:'14px'}}>{txt.fs_submit_btn}</a>
           </div>
-          <div className="section-col hide-mobile" style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'24px',display:'flex',flexDirection:'column',gap:'10px'}}>
+          <div className="section-preview" style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'20px',display:'flex',flexDirection:'column',gap:'10px'}}>
             {['🧑‍💼 Job Title','🌍 Country','🏢 Company Type','💰 Monthly Salary','🎓 Education','📧 Email'].map((item,i)=>(
               <div key={i} style={{display:'flex',alignItems:'center',gap:'12px',padding:'10px 14px',background:'#0a0a0f',borderRadius:'10px',border:'1px solid #1e1e2e'}}>
                 <span style={{fontSize:'13px',color:'#a0a0b0'}}>{item}</span>
@@ -116,13 +114,13 @@ export default function Home() {
       {/* 3 — AM I UNDERPAID */}
       <div style={{borderBottom:'1px solid #1e1e2e'}}>
         <div className="section-row" style={{maxWidth:'900px',margin:'0 auto',padding:'60px 24px'}}>
-          <div className="section-col">
+          <div className="section-text">
             <div style={{display:'inline-block',background:'rgba(16,185,129,0.15)',border:'1px solid rgba(16,185,129,0.3)',borderRadius:'50px',padding:'4px 14px',fontSize:'12px',color:'#10b981',marginBottom:'16px',fontWeight:'600'}}>⚡ AI-POWERED</div>
             <h2 style={{fontSize:'28px',fontWeight:'900',marginBottom:'14px',lineHeight:1.2}}>{txt.fs_underpaid_title}</h2>
             <p style={{color:'#606070',fontSize:'15px',lineHeight:1.8,marginBottom:'24px'}}>{txt.fs_underpaid_desc}</p>
             <a href="/underpaid" style={{display:'inline-block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'10px',padding:'12px 24px',fontWeight:'700',fontSize:'14px'}}>{txt.fs_underpaid_btn}</a>
           </div>
-          <div className="section-col hide-mobile" style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'24px',textAlign:'center'}}>
+          <div className="section-preview" style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'20px',textAlign:'center'}}>
             <div style={{fontSize:'12px',color:'#10b981',fontWeight:'700',textTransform:'uppercase',letterSpacing:'2px',marginBottom:'8px'}}>MARKET VERDICT</div>
             <div style={{fontSize:'28px',fontWeight:'900',marginBottom:'4px'}}>✅ Fair</div>
             <div style={{color:'#606070',fontSize:'13px',marginBottom:'20px'}}>Pharmacist · Oman · Arab Expat</div>
@@ -141,28 +139,28 @@ export default function Home() {
       {/* 4 — AI NEGOTIATION COACH */}
       <div style={{borderBottom:'1px solid #1e1e2e',background:'#0d0d18'}}>
         <div className="section-row-rev" style={{maxWidth:'900px',margin:'0 auto',padding:'60px 24px'}}>
-          <div className="section-col">
+          <div className="section-text">
             <div style={{display:'inline-block',background:'rgba(139,92,246,0.15)',border:'1px solid rgba(139,92,246,0.3)',borderRadius:'50px',padding:'4px 14px',fontSize:'12px',color:'#a78bfa',marginBottom:'16px',fontWeight:'600'}}>🤖 AI-POWERED</div>
             <h2 style={{fontSize:'28px',fontWeight:'900',marginBottom:'14px',lineHeight:1.2}}>{txt.fs_coach_title}</h2>
             <p style={{color:'#606070',fontSize:'15px',lineHeight:1.8,marginBottom:'24px'}}>{txt.fs_coach_desc}</p>
             <a href="/coach" style={{display:'inline-block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'10px',padding:'12px 24px',fontWeight:'700',fontSize:'14px'}}>{txt.fs_coach_btn}</a>
           </div>
-          <div className="section-col hide-mobile" style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'24px'}}>
-            <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'16px',paddingBottom:'14px',borderBottom:'1px solid #1e1e2e'}}>
-              <div style={{width:'32px',height:'32px',borderRadius:'50%',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'14px'}}>🤖</div>
-              <div style={{fontWeight:'700',fontSize:'13px'}}>AI Negotiation Coach</div>
+          <div className="section-preview" style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'20px'}}>
+            <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'14px',paddingBottom:'12px',borderBottom:'1px solid #1e1e2e'}}>
+              <div style={{width:'28px',height:'28px',borderRadius:'50%',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'12px'}}>🤖</div>
+              <div style={{fontWeight:'700',fontSize:'12px'}}>AI Negotiation Coach</div>
             </div>
-            <div style={{marginBottom:'12px'}}>
-              <div style={{fontSize:'10px',fontWeight:'800',color:'#6366f1',letterSpacing:'1.5px',marginBottom:'6px'}}>VERDICT</div>
-              <div style={{background:'#0a0a0f',borderRadius:'8px',padding:'10px 14px',fontSize:'13px',color:'#10b981',fontWeight:'700'}}>✅ Above Market — You can negotiate higher</div>
+            <div style={{marginBottom:'10px'}}>
+              <div style={{fontSize:'9px',fontWeight:'800',color:'#6366f1',letterSpacing:'1.5px',marginBottom:'4px'}}>VERDICT</div>
+              <div style={{background:'#0a0a0f',borderRadius:'8px',padding:'8px 12px',fontSize:'12px',color:'#10b981',fontWeight:'700'}}>✅ Above Market — You can negotiate higher</div>
             </div>
-            <div style={{marginBottom:'12px'}}>
-              <div style={{fontSize:'10px',fontWeight:'800',color:'#6366f1',letterSpacing:'1.5px',marginBottom:'6px'}}>MARKET ASSESSMENT</div>
-              <div style={{background:'#0a0a0f',borderRadius:'8px',padding:'10px 14px',fontSize:'12px',color:'#a0a0b0',lineHeight:1.6}}>Senior engineers in UAE typically earn AED 28,000–42,000/month. Your offer of AED 35,000 is within range.</div>
+            <div style={{marginBottom:'10px'}}>
+              <div style={{fontSize:'9px',fontWeight:'800',color:'#6366f1',letterSpacing:'1.5px',marginBottom:'4px'}}>MARKET ASSESSMENT</div>
+              <div style={{background:'#0a0a0f',borderRadius:'8px',padding:'8px 12px',fontSize:'11px',color:'#a0a0b0',lineHeight:1.6}}>Senior engineers in UAE earn AED 28,000–42,000/month. Your offer is within range.</div>
             </div>
             <div>
-              <div style={{fontSize:'10px',fontWeight:'800',color:'#6366f1',letterSpacing:'1.5px',marginBottom:'6px'}}>YOUR SCRIPT</div>
-              <div style={{background:'#0a0a0f',borderRadius:'8px',padding:'10px 14px',fontSize:'12px',color:'#a0a0b0',lineHeight:1.6,fontStyle:'italic'}}>"Based on my research, the market range for this role in Dubai is AED 35–42K. I'd like to discuss..."</div>
+              <div style={{fontSize:'9px',fontWeight:'800',color:'#6366f1',letterSpacing:'1.5px',marginBottom:'4px'}}>YOUR SCRIPT</div>
+              <div style={{background:'#0a0a0f',borderRadius:'8px',padding:'8px 12px',fontSize:'11px',color:'#a0a0b0',lineHeight:1.6,fontStyle:'italic'}}>"Based on my research, the market range for this role is AED 35–42K..."</div>
             </div>
           </div>
         </div>
@@ -171,25 +169,25 @@ export default function Home() {
       {/* 5 — CVDROPAI */}
       <div style={{borderBottom:'1px solid #1e1e2e'}}>
         <div className="section-row" style={{maxWidth:'900px',margin:'0 auto',padding:'60px 24px'}}>
-          <div className="section-col">
+          <div className="section-text">
             <div style={{display:'inline-block',background:'rgba(251,191,36,0.15)',border:'1px solid rgba(251,191,36,0.3)',borderRadius:'50px',padding:'4px 14px',fontSize:'12px',color:'#fbbf24',marginBottom:'16px',fontWeight:'600'}}>💼 CV TOOL</div>
             <h2 style={{fontSize:'28px',fontWeight:'900',marginBottom:'14px',lineHeight:1.2}}>{txt.fs_cvdrop_title}</h2>
             <p style={{color:'#606070',fontSize:'15px',lineHeight:1.8,marginBottom:'24px'}}>{txt.fs_cvdrop_desc}</p>
             <a href="https://cvdropai.com" target="_blank" rel="noreferrer" style={{display:'inline-block',background:'linear-gradient(135deg,#fbbf24,#f59e0b)',color:'#000',textDecoration:'none',borderRadius:'10px',padding:'12px 24px',fontWeight:'700',fontSize:'14px'}}>{txt.fs_cvdrop_btn}</a>
           </div>
-          <div className="section-col hide-mobile" style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'24px'}}>
-            <div style={{marginBottom:'16px',paddingBottom:'14px',borderBottom:'1px solid #1e1e2e',display:'flex',alignItems:'center',gap:'10px'}}>
-              <div style={{width:'32px',height:'32px',borderRadius:'8px',background:'linear-gradient(135deg,#fbbf24,#f59e0b)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'16px'}}>💧</div>
-              <div style={{fontWeight:'700',fontSize:'13px'}}>CVDropAI</div>
+          <div className="section-preview" style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'20px'}}>
+            <div style={{marginBottom:'14px',paddingBottom:'12px',borderBottom:'1px solid #1e1e2e',display:'flex',alignItems:'center',gap:'10px'}}>
+              <div style={{width:'28px',height:'28px',borderRadius:'8px',background:'linear-gradient(135deg,#fbbf24,#f59e0b)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'14px'}}>💧</div>
+              <div style={{fontWeight:'700',fontSize:'12px'}}>CVDropAI</div>
             </div>
-            <div style={{marginBottom:'12px'}}>
-              <div style={{fontSize:'10px',fontWeight:'800',color:'#fbbf24',letterSpacing:'1.5px',marginBottom:'6px'}}>JOB DESCRIPTION</div>
-              <div style={{background:'#0a0a0f',borderRadius:'8px',padding:'10px 14px',fontSize:'12px',color:'#a0a0b0',lineHeight:1.6}}>Senior Software Engineer at Noon — 5+ years React, Node.js, AWS experience required...</div>
+            <div style={{marginBottom:'10px'}}>
+              <div style={{fontSize:'9px',fontWeight:'800',color:'#fbbf24',letterSpacing:'1.5px',marginBottom:'4px'}}>JOB DESCRIPTION</div>
+              <div style={{background:'#0a0a0f',borderRadius:'8px',padding:'8px 12px',fontSize:'11px',color:'#a0a0b0',lineHeight:1.6}}>Senior Software Engineer at Noon — 5+ years React, Node.js...</div>
             </div>
-            <div style={{display:'flex',alignItems:'center',justifyContent:'center',padding:'8px',color:'#fbbf24',fontSize:'20px'}}>↓ AI rewrites your CV</div>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'center',padding:'6px',color:'#fbbf24',fontSize:'16px'}}>↓ AI rewrites your CV</div>
             <div>
-              <div style={{fontSize:'10px',fontWeight:'800',color:'#fbbf24',letterSpacing:'1.5px',marginBottom:'6px'}}>YOUR TAILORED CV</div>
-              <div style={{background:'#0a0a0f',borderRadius:'8px',padding:'10px 14px',fontSize:'12px',color:'#10b981',lineHeight:1.6,fontWeight:'600'}}>✅ CV matched to job description and ready to send</div>
+              <div style={{fontSize:'9px',fontWeight:'800',color:'#fbbf24',letterSpacing:'1.5px',marginBottom:'4px'}}>YOUR TAILORED CV</div>
+              <div style={{background:'#0a0a0f',borderRadius:'8px',padding:'8px 12px',fontSize:'11px',color:'#10b981',lineHeight:1.6,fontWeight:'600'}}>✅ CV matched and ready to send</div>
             </div>
           </div>
         </div>
