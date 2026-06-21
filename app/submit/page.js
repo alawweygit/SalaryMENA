@@ -48,7 +48,7 @@ export default function Submit() {
     setSubmitted(true);
   };
 
-  const inp = {width:'100%',background:'#13131f',border:'1px solid #2a2a3e',borderRadius:'10px',padding:'14px 16px',color:'#fff',fontSize:'15px',outline:'none',boxSizing:'border-box',appearance:'none',textAlign:isAr?'right':'left'};
+  const inp = {width:'100%',background:'#13131f',border:'1px solid #2a2a3e',borderRadius:'10px',padding:'14px 16px',color:'#fff',fontSize:'16px',outline:'none',boxSizing:'border-box',appearance:'none',textAlign:isAr?'right':'left'};
   const lbl = {display:'block',fontSize:'13px',fontWeight:'600',color:'#a0a0b0',marginBottom:'8px',textTransform:'uppercase',letterSpacing:'0.5px'};
   const hint = {fontSize:'12px',color:'#505060',marginBottom:'12px',lineHeight:1.6};
   const chip = (a) => ({padding:'10px 16px',borderRadius:'50px',fontSize:'13px',fontWeight:'500',cursor:'pointer',border:'none',background:a?'linear-gradient(135deg,#6366f1,#8b5cf6)':'#13131f',color:a?'#fff':'#606070',outline:a?'none':'1px solid #2a2a3e',transition:'all 0.2s'});
@@ -60,12 +60,9 @@ export default function Submit() {
 
   const seniorities = lang==='ar'
     ? [['مبتدئ','0–2 سنة'],['متوسط','2–5 سنوات'],['متقدم','5–8 سنوات'],['قائد','يقود فريقاً'],['مدير','يدير أشخاصاً'],['مدير أول','رئيس قسم'],['الإدارة العليا','رئيس تنفيذي، مالي...']]
-    : [['Junior','0–2 years'],['Mid-Level','2–5 years'],['Senior','5–8 years'],['Lead','Leading a team'],['Manager','Managing people'],['Director','Head of department'],['C-Suite','CEO, CFO, COO...']];
+    : [['Junior','0–2 yrs'],['Mid-Level','2–5 yrs'],['Senior','5–8 yrs'],['Lead','Leading a team'],['Manager','Managing people'],['Director','Head of dept'],['C-Suite','CEO, CFO, COO...']];
 
-  const companyTypes = lang==='ar'
-    ? ['شركة متعددة الجنسيات','شركة محلية','حكومة','شركة عائلية']
-    : ['Multinational','Local Company','Government','Family Business'];
-
+  const companyTypes = lang==='ar' ? ['خاص','حكومة'] : ['Private','Government'];
   const experiences = ['0-1','1-3','3-5','5-8','8-12','12+'];
   const educations = lang==='ar'
     ? ['ثانوية عامة','بكالوريوس','ماجستير','دكتوراه','شهادة مهنية']
@@ -116,7 +113,7 @@ export default function Submit() {
             <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
               {seniorities.map(([s,desc])=>(
                 <button key={s} onClick={()=>update('seniority',s)} style={rowChip(form.seniority===s)}>
-                  <span>{s}</span><span style={{fontSize:'11px',opacity:0.6,marginLeft:'8px',textAlign:'right'}}>{desc}</span>
+                  <span>{s}</span><span style={{fontSize:'11px',opacity:0.6,marginLeft:'8px'}}>{desc}</span>
                 </button>
               ))}
             </div>
@@ -126,8 +123,8 @@ export default function Submit() {
         {step===2 && <div style={{display:'flex',flexDirection:'column',gap:'20px'}}>
           <div>
             <label style={lbl}>{txt.company_type_label}</label>
-            <div style={{display:'flex',flexWrap:'wrap',gap:'8px'}}>
-              {companyTypes.map(t=><button key={t} style={chip(form.companyType===t)} onClick={()=>update('companyType',t)}>{t}</button>)}
+            <div style={{display:'flex',gap:'10px',flexWrap:'wrap'}}>
+              {companyTypes.map(tp=><button key={tp} style={{...chip(form.companyType===tp),padding:'14px 28px',fontSize:'15px'}} onClick={()=>update('companyType',tp)}>{tp}</button>)}
             </div>
           </div>
           <div><label style={lbl}>{txt.company_name_label} <span style={{color:'#404050',fontWeight:'400',textTransform:'none'}}>{txt.company_name_optional}</span></label><input style={inp} placeholder={txt.company_name_placeholder} value={form.companyName} onChange={e=>update('companyName',e.target.value)}/></div>
@@ -136,7 +133,12 @@ export default function Submit() {
         {step===3 && <div style={{display:'flex',flexDirection:'column',gap:'20px'}}>
           <div>
             <label style={lbl}>{txt.country_label}</label>
-            <input style={{...inp,marginBottom:'12px'}} placeholder={txt.country_search} value={countrySearch} onChange={e=>setCountrySearch(e.target.value)}/>
+            <input
+              style={{...inp,marginBottom:'12px',fontSize:'16px'}}
+              placeholder={txt.country_search}
+              value={countrySearch}
+              onChange={e=>setCountrySearch(e.target.value)}
+            />
             <div style={{display:'flex',flexWrap:'wrap',gap:'8px',maxHeight:'200px',overflowY:'auto',padding:'4px 0'}}>
               {filteredCountries.map(c=><button key={c} style={countryChip(form.country===c)} onClick={()=>update('country',c)}>{c}</button>)}
             </div>

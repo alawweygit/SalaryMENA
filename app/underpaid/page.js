@@ -31,15 +31,14 @@ export default function Underpaid() {
 
   useEffect(() => {
     if(!loading){setProgress(0);return;}
-    setProgress(5);
-    const intervals = [
-      setTimeout(()=>setProgress(20),500),
-      setTimeout(()=>setProgress(40),2000),
-      setTimeout(()=>setProgress(60),4000),
-      setTimeout(()=>setProgress(75),6000),
-      setTimeout(()=>setProgress(88),8000),
-    ];
-    return ()=>intervals.forEach(clearTimeout);
+    setProgress(0);
+    const timer = setInterval(()=>{
+      setProgress(p => {
+        if(p >= 95) return p;
+        return p + 1;
+      });
+    }, 150);
+    return ()=>clearInterval(timer);
   },[loading]);
 
   const inp = {width:'100%',background:'#13131f',border:'1px solid #2a2a3e',borderRadius:'10px',padding:'14px 16px',color:'#fff',fontSize:'15px',outline:'none',boxSizing:'border-box',textAlign:isAr?'right':'left'};
