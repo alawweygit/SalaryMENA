@@ -20,15 +20,15 @@ export async function POST(req) {
 
     const message = await client.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 1024,
+      max_tokens: 1500,
       messages: [{
         role: 'user',
-        content: `You are an expert salary negotiation coach for the MENA region with deep knowledge of compensation across UAE, Saudi Arabia, Egypt, Oman, Kuwait, Qatar, Bahrain, Jordan, Lebanon and all Arab countries.
+        content: `You are an expert salary negotiation coach for the MENA region.
 
-CRITICAL CONTEXT — MENA salaries differ significantly by nationality:
-- Expats (Arab, Asian, Western) earn considerably less than GCC nationals/local citizens for identical roles
+CRITICAL CONTEXT:
+- Expats earn considerably less than GCC nationals/local citizens for identical roles
 - Government sector compensation differs greatly from private sector
-- When benefits like housing or car are included, they significantly increase the total package value — factor this into your assessment
+- When benefits like housing or car are included, factor them into total package value
 
 Profile:
 - Job Title: ${jobTitle}
@@ -39,30 +39,38 @@ Profile:
 - Current Salary: ${currentSalary ? currency + ' ' + currentSalary + '/month' : 'Not disclosed'}
 - Offered Salary: ${currency} ${offeredSalary}/month
 - Additional Benefits: ${benefits || 'None'}
-
 ${benefitsNote}
 
-Based on your knowledge of MENA salary markets for ${nationalityType} professionals in ${country}, provide:
-1. A clear verdict on whether this offer is below market, fair, or above market — factoring in any housing or car benefits as part of the total package value
-2. A brief market assessment using realistic figures for ${nationalityType} in ${country}, mentioning how the benefits affect the total package
-3. A word-for-word negotiation script they can use with HR
-4. 3 specific talking points to strengthen their position
-5. A realistic counter offer range based on ${nationalityType} market rates
-
-Use these exact section headers on their own line:
-VERDICT
-MARKET ASSESSMENT
-YOUR NEGOTIATION SCRIPT
-3 TALKING POINTS
-RECOMMENDED COUNTER OFFER
-
-Be specific, direct, and practical. Give real numbers appropriate for ${nationalityType} in ${country}.`
+Respond with ONLY a valid JSON object, no markdown, no extra text:
+{
+  "verdict": "Fair",
+  "verdictColor": "#10b981",
+  "verdictIcon": "✅",
+  "marketLow": 8000,
+  "marketMedian": 12000,
+  "marketHigh": 16000,
+  "difference": 500,
+  "differencePercent": 4,
+  "summary": "2-3 sentences about this offer vs market for this nationality/company type",
+  "talkingPoints": [
+    "Talking point 1 to use in negotiation",
+    "Talking point 2 to use in negotiation",
+    "Talking point 3 to use in negotiation"
+  ],
+  "counterOffer": 13000,
+  "script": "A short 2-3 sentence word-for-word script to say to HR"
+}`
       }]
     });
 
-    return Response.json({ text: message.content[0].text });
+    const textContent = message.content.find(c => c.type === 'text');
+    if (!textContent) throw new Error('No text response');
+    const jsonMatch = textContent.text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('No JSON found');
+    const data = JSON.parse(jsonMatch[0]);
+    return Response.json({ success: true, data });
   } catch (error) {
     console.error(error);
-    return Response.json({ text: 'Something went wrong. Please try again.' }, { status: 500 });
+    return Response.json({ success: false, error: error.message }, { status: 500 });
   }
 }

@@ -46,8 +46,8 @@ export default function Coach() {
       const res = await fetch('/api/coach',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
       const json = await res.json();
       setProgress(100);
-      setTimeout(()=>{setResult(json.text);setLoading(false);},400);
-    } catch(e){setResult(lang==='ar'?'حدث خطأ. حاول مجدداً.':'Something went wrong. Please try again.');setLoading(false);}
+      setTimeout(()=>{setResult(json.success ? json.data : null);setLoading(false);},400);
+    } catch(e){setResult(null);setLoading(false);}
   };
 
   useEffect(() => {
@@ -62,13 +62,14 @@ export default function Coach() {
     return ()=>clearInterval(timer);
   },[loading]);
 
-  const inp = {width:'100%',background:'#13131f',border:'1px solid #2a2a3e',borderRadius:'10px',padding:'14px 16px',color:'#fff',fontSize:'15px',outline:'none',boxSizing:'border-box',appearance:'none',textAlign:isAr?'right':'left'};
+  const inp = {width:'100%',background:'#13131f',border:'1px solid #2a2a3e',borderRadius:'10px',padding:'14px 16px',color:'#fff',fontSize:'16px',outline:'none',boxSizing:'border-box',appearance:'none',textAlign:isAr?'right':'left'};
   const lbl = {display:'block',fontSize:'13px',fontWeight:'600',color:'#a0a0b0',marginBottom:'8px',textTransform:'uppercase',letterSpacing:'0.5px'};
   const chip = (a) => ({padding:'10px 20px',borderRadius:'50px',fontSize:'14px',fontWeight:'500',cursor:'pointer',border:'none',background:a?'linear-gradient(135deg,#6366f1,#8b5cf6)':'#13131f',color:a?'#fff':'#606070',outline:a?'none':'1px solid #2a2a3e',transition:'all 0.2s'});
   const countryChip = (a) => ({padding:'8px 16px',borderRadius:'50px',fontSize:'13px',fontWeight:'500',cursor:'pointer',border:'none',background:a?'linear-gradient(135deg,#6366f1,#8b5cf6)':'#13131f',color:a?'#fff':'#606070',outline:a?'none':'1px solid #2a2a3e',whiteSpace:'nowrap'});
   const toggle = (a) => ({padding:'10px 20px',borderRadius:'50px',fontSize:'14px',fontWeight:'500',cursor:'pointer',border:'none',background:a?'linear-gradient(135deg,#10b981,#059669)':'#13131f',color:a?'#fff':'#606070',outline:a?'none':'1px solid #2a2a3e',transition:'all 0.2s'});
 
   const canSubmit = form.jobTitle && form.country && form.offeredSalary && form.experience && form.companyType && form.nationalityType;
+  const fmt = (n) => Math.round(n).toLocaleString();
 
   const analyze = async () => {
     setLoading(true);
@@ -78,8 +79,8 @@ export default function Coach() {
       const res = await fetch('/api/coach',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(form)});
       const data = await res.json();
       setProgress(100);
-      setTimeout(()=>{setResult(data.text);setLoading(false);},400);
-    } catch(e){setResult(lang==='ar'?'حدث خطأ. حاول مجدداً.':'Something went wrong. Please try again.');setLoading(false);}
+      setTimeout(()=>{setResult(data.success ? data.data : null);setLoading(false);},400);
+    } catch(e){setResult(null);setLoading(false);}
   };
 
   const sendReport = async () => {
@@ -89,7 +90,7 @@ export default function Coach() {
       await fetch('/api/send-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
         email, jobTitle:form.jobTitle, country:form.country,
         monthlySalary:form.offeredSalary, currency:form.currency,
-        type:'coach', result,
+        type:'coach', result: result ? JSON.stringify(result) : '',
         nationalityType:form.nationalityType,
         housingProvided:form.housingProvided,
         carProvided:form.carProvided
@@ -100,19 +101,15 @@ export default function Coach() {
   };
 
   const shareOnWhatsApp = () => {
+    if(!result) return;
     const benefits = [form.housingProvided&&'🏠 Housing',form.carProvided&&'🚗 Car'].filter(Boolean).join(' + ');
-    const text = `I just got my salary negotiation script from SalaryMENA 🤖💼\n\nRole: ${form.jobTitle} in ${form.country}\nOffer: ${form.currency} ${Number(form.offeredSalary).toLocaleString()}/month${benefits?'\nBenefits: '+benefits:''}\n\nGet your FREE AI negotiation script at salarymena.com 👇`;
+    const text = `I just got my salary negotiation script from SalaryMENA 🤖💼\n\nRole: ${form.jobTitle} in ${form.country}\nOffer: ${form.currency} ${Number(form.offeredSalary).toLocaleString()}/month${benefits?'\nBenefits: '+benefits:''}\nVerdict: ${result.verdict}\n\nGet your FREE AI negotiation script at salarymena.com 👇`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,'_blank');
   };
 
-  const formatResult = (text) => {
-    const sections = ['VERDICT','MARKET ASSESSMENT','YOUR NEGOTIATION SCRIPT','3 TALKING POINTS','RECOMMENDED COUNTER OFFER'];
-    const lines = text.split('\n');
-    return lines.map((line,i)=>{
-      if(sections.includes(line.trim())) return <div key={i} style={{fontSize:'11px',fontWeight:'800',color:'#6366f1',textTransform:'uppercase',letterSpacing:'1.5px',marginTop:'28px',marginBottom:'8px'}}>{line.trim()}</div>;
-      if(!line.trim()) return <div key={i} style={{height:'8px'}}/>;
-      return <p key={i} style={{color:'#c0c0d0',fontSize:'15px',lineHeight:1.8,margin:'0 0 4px'}}>{line}</p>;
-    });
+  const getGaugeRotation = (low,high,userSalary) => {
+    const pct = Math.min(Math.max((userSalary-low)/(high-low),0),1);
+    return -120+(pct*240);
   };
 
   return (
@@ -123,6 +120,7 @@ export default function Coach() {
         @media(max-width:768px){
           .coach-title{font-size:28px!important}
           .coach-salary-row{flex-direction:column!important;gap:12px!important}
+          .coach-cards{grid-template-columns:repeat(3,1fr)!important}
         }
       `}</style>
       <Navbar/>
@@ -137,7 +135,7 @@ export default function Coach() {
                 <circle cx="70" cy="70" r="60" fill="none" stroke="url(#grad)" strokeWidth="10"
                   strokeDasharray={`${2*Math.PI*60}`}
                   strokeDashoffset={`${2*Math.PI*60*(1-progress/100)}`}
-                  strokeLinecap="round" style={{transition:'stroke-dashoffset 0.5s ease'}}/>
+                  strokeLinecap="round" style={{transition:'stroke-dashoffset 0.3s ease'}}/>
                 <defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#6366f1"/><stop offset="100%" stopColor="#8b5cf6"/></linearGradient></defs>
               </svg>
               <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
@@ -165,7 +163,7 @@ export default function Coach() {
 
               <div>
                 <label style={lbl}>{txt.country_work}</label>
-                <input style={{...inp,marginBottom:'12px'}} placeholder={txt.country_search} value={countrySearch} onChange={e=>setCountrySearch(e.target.value)}/>
+                <input style={{...inp,marginBottom:'12px',fontSize:'16px'}} placeholder={txt.country_search} value={countrySearch} onChange={e=>setCountrySearch(e.target.value)}/>
                 <div style={{display:'flex',flexWrap:'wrap',gap:'8px',maxHeight:'160px',overflowY:'auto',padding:'4px 0'}}>
                   {filteredCountries.map(c=><button key={c} style={countryChip(form.country===c)} onClick={()=>{update('country',c);update('nationalityType','');}}>{c}</button>)}
                 </div>
@@ -216,28 +214,112 @@ export default function Coach() {
         )}
 
         {!loading && result && (
-          <div style={{animation:'fadeIn 0.4s ease'}}>
-            <div style={{background:'#0d0d18',border:'1px solid #1e1e2e',borderRadius:'24px',padding:'24px',marginBottom:'14px'}}>
-              <div style={{display:'flex',alignItems:'center',gap:'12px',marginBottom:'24px',paddingBottom:'20px',borderBottom:'1px solid #1e1e2e'}}>
-                <div style={{width:'36px',height:'36px',borderRadius:'50%',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'16px',flexShrink:0}}>🤖</div>
-                <div>
-                  <p style={{margin:0,fontWeight:'700',fontSize:'15px'}}>{txt.coach_title}</p>
-                  <p style={{margin:0,color:'#404050',fontSize:'12px'}}>{form.jobTitle} · {form.country} · {form.nationalityType}</p>
+          <div style={{display:'flex',flexDirection:'column',gap:'14px',animation:'fadeIn 0.4s ease'}}>
+
+            {/* VERDICT */}
+            <div style={{background:`linear-gradient(135deg,${result.verdictColor}25,${result.verdictColor}08)`,border:`1px solid ${result.verdictColor}50`,borderRadius:'24px',padding:'36px',textAlign:'center'}}>
+              <div style={{fontSize:'13px',color:result.verdictColor,fontWeight:'700',textTransform:'uppercase',letterSpacing:'2px',marginBottom:'12px'}}>{txt.market_verdict}</div>
+              <div style={{fontSize:'36px',fontWeight:'900',color:'#fff',marginBottom:'4px'}}>{result.verdictIcon} {result.verdict}</div>
+              <div style={{fontSize:'15px',color:'#606070',marginTop:'8px'}}>{form.jobTitle} · {form.country} · {form.nationalityType}</div>
+              {(form.housingProvided||form.carProvided) && (
+                <div style={{marginTop:'10px',fontSize:'13px',color:'#10b981'}}>
+                  {[form.housingProvided&&'🏠 Housing',form.carProvided&&'🚗 Car'].filter(Boolean).join(' · ')} included
                 </div>
-              </div>
-              <div>{formatResult(result)}</div>
+              )}
             </div>
 
-            {/* WhatsApp Share */}
+            {/* GAUGE */}
+            <div style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'32px',textAlign:'center'}}>
+              <div style={{fontWeight:'700',fontSize:'15px',marginBottom:'24px'}}>📊 {lang==='ar'?'مقارنة الراتب بالسوق':'Salary vs Market'}</div>
+              <div style={{position:'relative',width:'240px',height:'140px',margin:'0 auto'}}>
+                <svg width="240" height="140" viewBox="0 0 240 140">
+                  <defs><linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#ef4444"/><stop offset="50%" stopColor="#f59e0b"/><stop offset="100%" stopColor="#10b981"/></linearGradient></defs>
+                  <path d="M 20 130 A 100 100 0 0 1 220 130" fill="none" stroke="#1e1e2e" strokeWidth="20" strokeLinecap="round"/>
+                  <path d="M 20 130 A 100 100 0 0 1 220 130" fill="none" stroke="url(#gaugeGrad)" strokeWidth="20" strokeLinecap="round"/>
+                  {(()=>{
+                    const rot = (()=>{const pct=Math.min(Math.max((Number(form.offeredSalary)-result.marketLow)/(result.marketHigh-result.marketLow),0),1);return -120+(pct*240);})();
+                    const rad=(rot*Math.PI)/180;
+                    const x=120+85*Math.cos(rad);
+                    const y=130+85*Math.sin(rad);
+                    return(<><line x1="120" y1="130" x2={x} y2={y} stroke="#fff" strokeWidth="3" strokeLinecap="round"/><circle cx="120" cy="130" r="8" fill={result.verdictColor}/><circle cx={x} cy={y} r="6" fill="#fff" stroke={result.verdictColor} strokeWidth="3"/></>);
+                  })()}
+                  <text x="20" y="138" fill="#606070" fontSize="11" fontWeight="600">LOW</text>
+                  <text x="98" y="115" fill="#606070" fontSize="11" fontWeight="600">MID</text>
+                  <text x="190" y="138" fill="#606070" fontSize="11" fontWeight="600">HIGH</text>
+                </svg>
+                <div style={{marginTop:'12px'}}>
+                  <div style={{fontSize:'28px',fontWeight:'900',color:result.verdictColor}}>{form.currency} {fmt(form.offeredSalary)}</div>
+                  <div style={{color:'#606070',fontSize:'12px',marginTop:'4px'}}>{txt.per_month}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* MARKET NUMBERS */}
+            <div className="coach-cards" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'10px'}}>
+              {[
+                {label:txt.market_low,value:result.marketLow,color:'#ef4444',icon:'📉'},
+                {label:txt.median,value:result.marketMedian,color:'#6366f1',icon:'⚖️'},
+                {label:txt.market_high,value:result.marketHigh,color:'#10b981',icon:'📈'},
+              ].map((card,i)=>{
+                const diff=Number(form.offeredSalary)-card.value;
+                return(
+                  <div key={i} style={{background:'#13131f',border:`1px solid ${card.color}30`,borderRadius:'16px',padding:'16px',textAlign:'center'}}>
+                    <div style={{fontSize:'20px',marginBottom:'6px'}}>{card.icon}</div>
+                    <div style={{fontSize:'10px',color:'#404050',fontWeight:'700',textTransform:'uppercase',marginBottom:'4px'}}>{card.label}</div>
+                    <div style={{fontSize:'14px',fontWeight:'800',color:card.color}}>{form.currency} {fmt(card.value)}</div>
+                    <div style={{fontSize:'11px',marginTop:'4px',color:diff>=0?'#10b981':'#ef4444',fontWeight:'600'}}>{diff>=0?'+':''}{form.currency} {fmt(Math.abs(diff))}</div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* AI SUMMARY */}
+            <div style={{background:'linear-gradient(135deg,rgba(99,102,241,0.12),rgba(139,92,246,0.06))',border:'1px solid rgba(99,102,241,0.25)',borderRadius:'20px',padding:'24px'}}>
+              <div style={{display:'flex',alignItems:'center',gap:'12px',marginBottom:'12px'}}>
+                <div style={{width:'36px',height:'36px',borderRadius:'50%',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'16px',flexShrink:0}}>🤖</div>
+                <div style={{fontWeight:'700',fontSize:'15px'}}>{txt.ai_analysis}</div>
+              </div>
+              <p style={{color:'#c0c0d0',fontSize:'15px',lineHeight:1.8,margin:0}}>{result.summary}</p>
+            </div>
+
+            {/* TALKING POINTS */}
+            <div style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'24px'}}>
+              <div style={{fontSize:'11px',fontWeight:'800',color:'#6366f1',letterSpacing:'1.5px',marginBottom:'16px'}}>💬 {lang==='ar'?'نقاط التفاوض':'TALKING POINTS'}</div>
+              {result.talkingPoints && result.talkingPoints.map((point,i)=>(
+                <div key={i} style={{display:'flex',gap:'12px',marginBottom:'12px',alignItems:'flex-start'}}>
+                  <div style={{width:'24px',height:'24px',borderRadius:'50%',background:'rgba(99,102,241,0.2)',color:'#a78bfa',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'12px',fontWeight:'700',flexShrink:0}}>{i+1}</div>
+                  <p style={{color:'#c0c0d0',fontSize:'14px',lineHeight:1.7,margin:0}}>{point}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* NEGOTIATION SCRIPT */}
+            <div style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'24px'}}>
+              <div style={{fontSize:'11px',fontWeight:'800',color:'#6366f1',letterSpacing:'1.5px',marginBottom:'16px'}}>📝 {lang==='ar'?'نصك التفاوضي':'YOUR SCRIPT'}</div>
+              <div style={{background:'#0a0a0f',borderRadius:'12px',padding:'16px',borderLeft:'3px solid #6366f1'}}>
+                <p style={{color:'#c0c0d0',fontSize:'15px',lineHeight:1.8,margin:0,fontStyle:'italic'}}>"{result.script}"</p>
+              </div>
+            </div>
+
+            {/* COUNTER OFFER */}
+            {result.counterOffer && (
+              <div style={{background:'rgba(16,185,129,0.08)',border:'1px solid rgba(16,185,129,0.25)',borderRadius:'20px',padding:'24px',textAlign:'center'}}>
+                <div style={{fontSize:'11px',fontWeight:'800',color:'#10b981',letterSpacing:'1.5px',marginBottom:'8px'}}>🎯 {lang==='ar'?'العرض المقترح':'RECOMMENDED COUNTER OFFER'}</div>
+                <div style={{fontSize:'32px',fontWeight:'900',color:'#10b981'}}>{form.currency} {fmt(result.counterOffer)}</div>
+                <div style={{color:'#606070',fontSize:'13px',marginTop:'4px'}}>{txt.per_month}</div>
+              </div>
+            )}
+
+            {/* WHATSAPP */}
             <button onClick={shareOnWhatsApp}
-              style={{width:'100%',background:'#25D366',border:'none',borderRadius:'12px',padding:'14px',fontSize:'15px',fontWeight:'700',cursor:'pointer',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',marginBottom:'12px'}}>
+              style={{background:'#25D366',border:'none',borderRadius:'12px',padding:'14px',fontSize:'15px',fontWeight:'700',cursor:'pointer',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px'}}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
               {lang==='ar'?'شارك نتيجتك على واتساب':'Share My Result on WhatsApp'}
             </button>
 
-            {/* Email report */}
+            {/* EMAIL */}
             {!emailSent ? (
-              <div style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'16px',padding:'20px',marginBottom:'12px'}}>
+              <div style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'16px',padding:'20px'}}>
                 <p style={{margin:'0 0 12px',fontSize:'14px',color:'#a0a0b0'}}>{lang==='ar'?'احفظ نصك التفاوضي — أرسله لبريدك':'Save your negotiation script — send it to your email'}</p>
                 <div style={{display:'flex',gap:'10px',flexWrap:'wrap'}}>
                   <input type="email" placeholder="your@email.com" value={email} onChange={e=>setEmail(e.target.value)}
@@ -249,7 +331,7 @@ export default function Coach() {
                 </div>
               </div>
             ) : (
-              <div style={{background:'rgba(16,185,129,0.1)',border:'1px solid rgba(16,185,129,0.3)',borderRadius:'16px',padding:'16px',textAlign:'center',color:'#10b981',fontWeight:'600',marginBottom:'12px'}}>
+              <div style={{background:'rgba(16,185,129,0.1)',border:'1px solid rgba(16,185,129,0.3)',borderRadius:'16px',padding:'16px',textAlign:'center',color:'#10b981',fontWeight:'600'}}>
                 ✅ {lang==='ar'?'تم إرسال النص التفاوضي!':'Negotiation script sent!'}
               </div>
             )}
@@ -259,10 +341,14 @@ export default function Coach() {
                 style={{flex:1,background:'transparent',border:'1px solid #2a2a3e',color:'#a0a0b0',borderRadius:'12px',padding:'14px',fontSize:'14px',cursor:'pointer',fontWeight:'500'}}>{txt.analyze_another}</button>
               <a href="/submit" style={{flex:1,display:'block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'12px',padding:'14px',fontSize:'14px',fontWeight:'700',textAlign:'center'}}>{txt.submit_nav}</a>
             </div>
-            <p style={{textAlign:'center',marginTop:'16px',fontSize:'12px',color:'#303040'}}>
+            <p style={{textAlign:'center',marginTop:'8px',fontSize:'12px',color:'#303040'}}>
               {isAr?'جرب أيضاً: ':'Also try: '}<a href="https://cvdropai.com" target="_blank" rel="noreferrer" style={{color:'#6366f1',textDecoration:'none'}}>CVDropAI</a>
             </p>
           </div>
+        )}
+
+        {!loading && result === null && !loading && (
+          <div style={{display:'none'}}/>
         )}
       </div>
     </div>
