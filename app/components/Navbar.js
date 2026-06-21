@@ -42,9 +42,8 @@ export default function Navbar() {
           <button onClick={toggleLang} style={{background:'transparent',border:'1px solid #2a2a3e',color:'#a0a0b0',borderRadius:'8px',padding:'8px 14px',fontSize:'13px',cursor:'pointer',fontWeight:'600'}}>{txt.toggle}</button>
         </div>
 
-        {/* Mobile right side */}
-        <div style={{display:'flex',gap:'10px',alignItems:'center'}} className="mobile-nav">
-          <button onClick={toggleLang} style={{background:'transparent',border:'1px solid #2a2a3e',color:'#a0a0b0',borderRadius:'8px',padding:'6px 12px',fontSize:'12px',cursor:'pointer',fontWeight:'600'}}>{txt.toggle}</button>
+        {/* Mobile right side - hamburger only */}
+        <div style={{display:'none',gap:'10px',alignItems:'center'}} className="mobile-nav">
           <button onClick={()=>setMenuOpen(!menuOpen)} style={{background:'transparent',border:'1px solid #2a2a3e',color:'#fff',borderRadius:'8px',padding:'6px 12px',fontSize:'18px',cursor:'pointer',lineHeight:1}}>
             {menuOpen ? '✕' : '☰'}
           </button>
@@ -53,7 +52,7 @@ export default function Navbar() {
 
       {/* Mobile dropdown */}
       {menuOpen && (
-        <div style={{borderTop:'1px solid #1e1e2e',padding:'16px 20px',display:'flex',flexDirection:'column',gap:'4px'}} className="mobile-menu">
+        <div style={{borderTop:'1px solid #1e1e2e',padding:'16px 20px',display:'flex',flexDirection:'column',gap:'4px'}}>
           {[
             {href:'/explore',label:txt.explore},
             {href:'/coach',label:txt.coach_nav},
@@ -68,13 +67,15 @@ export default function Navbar() {
             style={{display:'block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'10px',padding:'14px',fontSize:'15px',fontWeight:'700',textAlign:'center',marginTop:'12px'}}>
             {txt.submit_nav}
           </a>
+          <button onClick={()=>{toggleLang();setMenuOpen(false);}} style={{background:'transparent',border:'1px solid #2a2a3e',color:'#a0a0b0',borderRadius:'10px',padding:'12px',fontSize:'14px',cursor:'pointer',fontWeight:'600',marginTop:'8px'}}>
+            {txt.toggle}
+          </button>
         </div>
       )}
 
       <style>{`
         .desktop-nav { display: flex; }
         .mobile-nav { display: none; }
-        .mobile-menu { display: flex; }
         @media (max-width: 768px) {
           .desktop-nav { display: none !important; }
           .mobile-nav { display: flex !important; }
