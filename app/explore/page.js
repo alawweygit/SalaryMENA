@@ -167,6 +167,7 @@ export default function Explore() {
   );
 
   const displayCurrency = (code) => lang==='ar' && CURRENCY_AR[code] ? CURRENCY_AR[code] : code;
+  const displayTitle = (d) => lang==='ar' && d.job_title_ar ? d.job_title_ar : d.title;
   const displayCountry = (country) => {
     if (lang==='ar') {
       const idx = COUNTRIES_EN.indexOf(country);
@@ -231,7 +232,7 @@ export default function Explore() {
                 onMouseLeave={e=>e.currentTarget.style.borderColor='#1e1e2e'}>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'8px',flexWrap:'wrap'}}>
-                    <h3 style={{margin:0,fontSize:'16px',fontWeight:'700'}}>{d.title}</h3>
+                    <h3 style={{margin:0,fontSize:'16px',fontWeight:'700'}}>{displayTitle(d)}</h3>
                     {d.seniority && (
                       <span style={{background:'rgba(99,102,241,0.2)',color:'#a78bfa',padding:'3px 10px',borderRadius:'50px',fontSize:'11px',fontWeight:'600',whiteSpace:'nowrap'}}>
                         {d.seniority}
