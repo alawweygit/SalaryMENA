@@ -4,7 +4,17 @@ import Navbar from '../components/Navbar';
 import { useLang } from '../components/LanguageContext';
 import { t } from '../components/translations';
 
-const COUNTRIES = ['UAE','Saudi Arabia','Egypt','Oman','Kuwait','Qatar','Bahrain','Jordan','Lebanon','Iraq','Syria','Yemen','Libya','Tunisia','Algeria','Morocco','Sudan','Somalia','Comoros','Djibouti','Mauritania','Palestine'];
+const COUNTRIES_EN = ['UAE','Saudi Arabia','Egypt','Oman','Kuwait','Qatar','Bahrain','Jordan','Lebanon','Iraq','Syria','Yemen','Libya','Tunisia','Algeria','Morocco','Sudan','Somalia','Comoros','Djibouti','Mauritania','Palestine'];
+const COUNTRIES_AR = ['الإمارات','السعودية','مصر','عُمان','الكويت','قطر','البحرين','الأردن','لبنان','العراق','سوريا','اليمن','ليبيا','تونس','الجزائر','المغرب','السودان','الصومال','جزر القمر','جيبوتي','موريتانيا','فلسطين'];
+
+const COUNTRY_MAP_AR_TO_EN = {
+  'الإمارات':'UAE','السعودية':'Saudi Arabia','مصر':'Egypt','عُمان':'Oman',
+  'الكويت':'Kuwait','قطر':'Qatar','البحرين':'Bahrain','الأردن':'Jordan',
+  'لبنان':'Lebanon','العراق':'Iraq','سوريا':'Syria','اليمن':'Yemen',
+  'ليبيا':'Libya','تونس':'Tunisia','الجزائر':'Algeria','المغرب':'Morocco',
+  'السودان':'Sudan','الصومال':'Somalia','جزر القمر':'Comoros','جيبوتي':'Djibouti',
+  'موريتانيا':'Mauritania','فلسطين':'Palestine'
+};
 
 const LEVELS_EN = [
   {label:'Junior',years:'0–2 yrs'},
@@ -25,8 +35,55 @@ const LEVELS_AR = [
   {label:'الإدارة العليا',years:'15+ سنوات'},
 ];
 
+const LEVEL_MAP_AR_TO_EN = {
+  'مبتدئ':'Junior','متوسط':'Mid-Level','متقدم':'Senior',
+  'قائد':'Lead','مدير':'Manager','مدير أول':'Director','الإدارة العليا':'C-Suite'
+};
+
 const TYPES_EN = ['Private','Government'];
 const TYPES_AR = ['خاص','حكومة'];
+const TYPE_MAP_AR_TO_EN = {'خاص':'Private','حكومة':'Government'};
+
+const CURRENCY_AR = {
+  'AED':'درهم إماراتي','SAR':'ريال سعودي','EGP':'جنيه مصري',
+  'OMR':'ريال عماني','KWD':'دينار كويتي','QAR':'ريال قطري',
+  'BHD':'دينار بحريني','JOD':'دينار أردني','USD':'دولار أمريكي'
+};
+
+// Smart search — job title synonyms
+const JOB_SYNONYMS = [
+  ['pharmacist','صيدلاني','pharmacy'],
+  ['medical representative','medical rep','مندوب طبي','مندوب مبيعات طبية','product specialist','sales representative medical'],
+  ['software engineer','software developer','مهندس برمجيات','مطور برمجيات','developer','programmer','مبرمج'],
+  ['teacher','معلم','مدرس','instructor','educator'],
+  ['nurse','ممرض','ممرضة','nursing'],
+  ['doctor','physician','طبيب','دكتور'],
+  ['accountant','محاسب','accounting','finance'],
+  ['marketing manager','مدير تسويق','marketing'],
+  ['civil engineer','مهندس مدني','civil engineering'],
+  ['hr manager','human resources','مدير موارد بشرية','موارد بشرية'],
+  ['financial analyst','محلل مالي','finance analyst'],
+  ['data scientist','عالم بيانات','data analyst','محلل بيانات'],
+  ['project manager','مدير مشروع','pm'],
+  ['sales executive','مدير مبيعات','sales manager','مبيعات'],
+  ['graphic designer','مصمم جرافيك','designer','مصمم'],
+  ['lawyer','محامي','attorney','legal'],
+  ['chef','طباخ','cook','طهاة'],
+  ['driver','سائق','chauffeur'],
+  ['security guard','حارس أمن','security'],
+  ['receptionist','موظف استقبال','front desk'],
+];
+
+function expandSearch(query) {
+  const q = query.toLowerCase().trim();
+  if (!q) return [];
+  for (const group of JOB_SYNONYMS) {
+    if (group.some(term => term.toLowerCase().includes(q) || q.includes(term.toLowerCase()))) {
+      return group;
+    }
+  }
+  return [q];
+}
 
 export default function Explore() {
   const { lang, isAr } = useLang();
@@ -46,15 +103,26 @@ export default function Explore() {
       .catch(() => setLoading(false));
   }, []);
 
+  const COUNTRIES = lang==='ar' ? COUNTRIES_AR : COUNTRIES_EN;
   const LEVELS = lang==='ar' ? LEVELS_AR : LEVELS_EN;
   const TYPES = lang==='ar' ? TYPES_AR : TYPES_EN;
 
   const filtered = data.filter(d => {
-    const q = search.toLowerCase();
-    const matchSearch = !q || (d.title||'').toLowerCase().includes(q) || (d.country||'').toLowerCase().includes(q) || (d.city||'').toLowerCase().includes(q);
-    const matchCountry = !countryFilter || d.country === countryFilter;
-    const matchLevel = !levelFilter || d.seniority === levelFilter;
-    const matchCompany = !companyFilter || d.company === companyFilter;
+    const searchTerms = expandSearch(search);
+    const matchSearch = !search || searchTerms.some(term =>
+      (d.title||'').toLowerCase().includes(term.toLowerCase()) ||
+      (d.country||'').toLowerCase().includes(term.toLowerCase()) ||
+      (d.city||'').toLowerCase().includes(term.toLowerCase())
+    );
+
+    // Convert AR filter to EN for matching
+    const countryEN = COUNTRY_MAP_AR_TO_EN[countryFilter] || countryFilter;
+    const levelEN = LEVEL_MAP_AR_TO_EN[levelFilter] || levelFilter;
+    const companyEN = TYPE_MAP_AR_TO_EN[companyFilter] || companyFilter;
+
+    const matchCountry = !countryFilter || d.country === countryEN || d.country === countryFilter;
+    const matchLevel = !levelFilter || d.seniority === levelEN || d.seniority === levelFilter;
+    const matchCompany = !companyFilter || d.company === companyEN || d.company === companyFilter;
     return matchSearch && matchCountry && matchLevel && matchCompany;
   });
 
@@ -97,6 +165,15 @@ export default function Explore() {
       )}
     </div>
   );
+
+  const displayCurrency = (code) => lang==='ar' && CURRENCY_AR[code] ? CURRENCY_AR[code] : code;
+  const displayCountry = (country) => {
+    if (lang==='ar') {
+      const idx = COUNTRIES_EN.indexOf(country);
+      return idx >= 0 ? COUNTRIES_AR[idx] : country;
+    }
+    return country;
+  };
 
   return (
     <div style={{fontFamily:'Inter,sans-serif',background:'#0a0a0f',minHeight:'100vh',color:'#fff'}} onClick={()=>setOpenDropdown(null)}>
@@ -162,18 +239,18 @@ export default function Explore() {
                     )}
                   </div>
                   <div style={{display:'flex',gap:'12px',flexWrap:'wrap'}}>
-                    {(d.city||d.country) && <span style={{color:'#606070',fontSize:'12px'}}>📍 {[d.city,d.country].filter(Boolean).join(', ')}</span>}
-                    {d.company && <span style={{color:'#606070',fontSize:'12px'}}>🏢 {d.company}</span>}
+                    {(d.city||d.country) && <span style={{color:'#606070',fontSize:'12px'}}>📍 {[d.city,displayCountry(d.country)].filter(Boolean).join(', ')}</span>}
+                    {d.company && <span style={{color:'#606070',fontSize:'12px'}}>🏢 {lang==='ar'&&d.company==='Private'?'خاص':lang==='ar'&&d.company==='Government'?'حكومة':d.company}</span>}
                     {d.experience && <span style={{color:'#606070',fontSize:'12px'}}>⏱ {d.experience}</span>}
                   </div>
                 </div>
                 <div className="explore-salary" style={{textAlign:isAr?'left':'right',flexShrink:0,marginLeft:isAr?0:'16px',marginRight:isAr?'16px':0}}>
-                  <div style={{fontSize:'20px',fontWeight:'800',color:'#a78bfa'}}>{d.currency} {Number(d.monthlySalary).toLocaleString()}</div>
+                  <div style={{fontSize:'20px',fontWeight:'800',color:'#a78bfa'}}>{displayCurrency(d.currency)} {Number(d.monthlySalary).toLocaleString()}</div>
                   <div style={{color:'#606070',fontSize:'12px',marginBottom:'8px'}}>{txt.per_month}</div>
                   <button onClick={()=>shareOnWhatsApp(d)}
                     style={{background:'#25D366',border:'none',borderRadius:'8px',padding:'5px 10px',fontSize:'11px',fontWeight:'700',cursor:'pointer',color:'#fff',display:'flex',alignItems:'center',gap:'4px'}}>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                    Share
+                    {lang==='ar'?'شارك':'Share'}
                   </button>
                 </div>
               </div>
