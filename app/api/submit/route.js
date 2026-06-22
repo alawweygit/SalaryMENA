@@ -15,46 +15,40 @@ export async function POST(req) {
       education, nationalityType, gender, email, housingProvided, carProvided
     } = body;
 
-    // Save immediately — no waiting for translation
     const result = await pool.query(
       `INSERT INTO salaries (job_title, job_title_ar, seniority, company_type, company_name, country, city,
         monthly_salary, basic_salary, currency, bonus, experience, education,
         nationality_type, gender, email, housing_provided, car_provided)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING id`,
       [
-        jobTitle,
-        null,
-        seniority || null,
-        companyType || null,
-        companyName || null,
-        country || null,
-        city || null,
+        jobTitle, null, seniority || null, companyType || null, companyName || null,
+        country || null, city || null,
         monthlySalary ? Number(monthlySalary) : null,
         basicSalary ? Number(basicSalary) : null,
         currency || null,
         bonus ? Number(bonus) : null,
-        experience || null,
-        education || null,
-        nationalityType || null,
-        gender || null,
-        email || null,
-        housingProvided || false,
-        carProvided || false
+        experience || null, education || null, nationalityType || null,
+        gender || null, email || null,
+        housingProvided || false, carProvided || false
       ]
     );
 
-    // Translate in background — user doesn't wait
     const savedId = result.rows[0].id;
-    client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 100,
-      messages:[{role:'user',content:'Translate this job title to Arabic. Reply with ONLY the Arabic translation, nothing else: ' + jobTitle}]
-    }).then(msg => {
-      const arabic = msg.content[0].text.trim();
-      pool.query('UPDATE salaries SET job_title_ar = $1 WHERE id = $2', [arabic, savedId]);
-    }).catch(e => console.error('Translation error:', e));
+    (async () => {
+      try {
+        const msg = await client.messages.create({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 100,
+          messages:[{role:'user',content:'Translate this job title to Arabic. Reply with ONLY the Arabic translation, nothing else: ' + jobTitle}]
+        });
+        const arabic = msg.content[0].text.trim();
+        await pool.query('UPDATE salaries SET job_title_ar = $1 WHERE id = $2', [arabic, savedId]);
+        console.log('Translated:', jobTitle, '->', arabic);
+      } catch(e) {
+        console.error('Translation error:', e);
+      }
+    })();
 
-    // Send email
     if (email) {
       try {
         await resend.emails.send({
@@ -73,17 +67,17 @@ export async function POST(req) {
               <p style="color:#a0a0b0;font-size:15px;line-height:1.7;margin-bottom:24px;">Your salary has been submitted anonymously and is now helping others in the MENA region know their worth.</p>
               <div style="background:#13131f;border:1px solid #2a2a3e;border-radius:12px;padding:24px;margin-bottom:24px;">
                 <p style="color:#606070;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">What you submitted</p>
-                <div style="margin-bottom:8px;display:flex;justify-content:space-between;">
-                  <span style="color:#a0a0b0;">Role</span>
-                  <span style="color:#ffffff;font-weight:600;">${jobTitle}</span>
+                <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #2a2a3e;">
+                  <div style="color:#a0a0b0;font-size:12px;margin-bottom:4px;">Role</div>
+                  <div style="color:#ffffff;font-weight:600;font-size:15px;">${jobTitle}</div>
                 </div>
-                <div style="margin-bottom:8px;display:flex;justify-content:space-between;">
-                  <span style="color:#a0a0b0;">Country</span>
-                  <span style="color:#ffffff;font-weight:600;">${country}</span>
+                <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #2a2a3e;">
+                  <div style="color:#a0a0b0;font-size:12px;margin-bottom:4px;">Country</div>
+                  <div style="color:#ffffff;font-weight:600;font-size:15px;">${country}</div>
                 </div>
-                <div style="display:flex;justify-content:space-between;">
-                  <span style="color:#a0a0b0;">Monthly Salary</span>
-                  <span style="color:#a78bfa;font-weight:800;">${currency} ${Number(monthlySalary).toLocaleString()}</span>
+                <div>
+                  <div style="color:#a0a0b0;font-size:12px;margin-bottom:4px;">Monthly Salary</div>
+                  <div style="color:#a78bfa;font-weight:800;font-size:18px;">${currency} ${Number(monthlySalary).toLocaleString()}</div>
                 </div>
               </div>
               <a href="https://salarymena.com/explore" style="display:inline-block;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#ffffff;text-decoration:none;border-radius:10px;padding:12px 24px;font-weight:700;font-size:14px;margin-bottom:24px;">Explore Salaries →</a>
