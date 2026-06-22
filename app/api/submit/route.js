@@ -21,9 +21,26 @@ export async function POST(req) {
         monthly_salary, basic_salary, currency, bonus, experience, education,
         nationality_type, gender, email, housing_provided, car_provided)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING id`,
-      [jobTitle, null, seniority, companyType, companyName, country, city,
-       monthlySalary, basicSalary, currency, bonus, experience, education,
-       nationalityType, gender, email, housingProvided, carProvided]
+      [
+        jobTitle,
+        null,
+        seniority || null,
+        companyType || null,
+        companyName || null,
+        country || null,
+        city || null,
+        monthlySalary ? Number(monthlySalary) : null,
+        basicSalary ? Number(basicSalary) : null,
+        currency || null,
+        bonus ? Number(bonus) : null,
+        experience || null,
+        education || null,
+        nationalityType || null,
+        gender || null,
+        email || null,
+        housingProvided || false,
+        carProvided || false
+      ]
     );
 
     // Translate in background — user doesn't wait
