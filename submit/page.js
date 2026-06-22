@@ -1,22 +1,13 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useLang } from '../components/LanguageContext';
 import { t } from '../components/translations';
 import Navbar from '../components/Navbar';
 
 const COUNTRIES_EN = ['UAE','Saudi Arabia','Egypt','Oman','Kuwait','Qatar','Bahrain','Jordan','Lebanon','Iraq','Syria','Yemen','Libya','Tunisia','Algeria','Morocco','Sudan','Somalia','Comoros','Djibouti','Mauritania','Palestine'];
 const COUNTRIES_AR = ['الإمارات','السعودية','مصر','عُمان','الكويت','قطر','البحرين','الأردن','لبنان','العراق','سوريا','اليمن','ليبيا','تونس','الجزائر','المغرب','السودان','الصومال','جزر القمر','جيبوتي','موريتانيا','فلسطين'];
-const COUNTRY_MAP_AR_TO_EN = {
-  'الإمارات':'UAE','السعودية':'Saudi Arabia','مصر':'Egypt','عُمان':'Oman',
-  'الكويت':'Kuwait','قطر':'Qatar','البحرين':'Bahrain','الأردن':'Jordan',
-  'لبنان':'Lebanon','العراق':'Iraq','سوريا':'Syria','اليمن':'Yemen',
-  'ليبيا':'Libya','تونس':'Tunisia','الجزائر':'Algeria','المغرب':'Morocco',
-  'السودان':'Sudan','الصومال':'Somalia','جزر القمر':'Comoros','جيبوتي':'Djibouti',
-  'موريتانيا':'Mauritania','فلسطين':'Palestine'
-};
 const GCC_EN = ['UAE','Saudi Arabia','Kuwait','Qatar','Bahrain','Oman'];
 const GCC_AR = ['الإمارات','السعودية','الكويت','قطر','البحرين','عُمان'];
-
 const CURRENCIES_EN = ['AED','SAR','EGP','OMR','KWD','QAR','BHD','JOD','USD'];
 const CURRENCY_AR = {
   'AED':'درهم إماراتي','SAR':'ريال سعودي','EGP':'جنيه مصري',
@@ -30,6 +21,7 @@ export default function Submit() {
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
   const [countrySearch, setCountrySearch] = useState('');
+  const topRef = useRef(null);
   const [form, setForm] = useState({
     jobTitle:'',seniority:'',companyType:'',companyName:'',
     country:'',countryEN:'',city:'',monthlySalary:'',basicSalary:'',
@@ -37,6 +29,15 @@ export default function Submit() {
     nationalityType:'',gender:'',email:'',housingProvided:false,carProvided:false
   });
   const update = (f,v) => setForm(p=>({...p,[f]:v}));
+
+  const scrollTop = () => {
+    if(topRef.current) {
+      topRef.current.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+    try { window.scrollTo({top:0,behavior:'smooth'}); } catch(e) {}
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+  };
 
   const STEPS = [
     {title:txt.step_role_title,subtitle:txt.step_role_sub},
@@ -47,22 +48,20 @@ export default function Submit() {
     {title:txt.step_done_title,subtitle:txt.step_done_sub},
   ];
 
-  const COUNTRIES = lang==='ar' ? COUNTRIES_AR : COUNTRIES_EN;
   const isGCC = GCC_EN.includes(form.countryEN) || GCC_AR.includes(form.country);
-
   const nationalityOptions = isGCC
     ? (lang==='ar'?['مواطن خليجي','وافد عربي','وافد أوروبي/أجنبي','وافد آسيوي']:['GCC National','Arab Expat','Western Expat','Asian Expat'])
     : (lang==='ar'?['مواطن محلي','عربي (دولة أخرى)','وافد أوروبي/أجنبي','وافد آسيوي']:['Local National','Arab (Other)','Western Expat','Asian Expat']);
 
   const selectCountry = (countryLabel) => {
-    if (lang==='ar') {
+    if(lang==='ar') {
       const idx = COUNTRIES_AR.indexOf(countryLabel);
       const en = idx >= 0 ? COUNTRIES_EN[idx] : countryLabel;
-      update('country', countryLabel);
-      update('countryEN', en);
+      update('country',countryLabel);
+      update('countryEN',en);
     } else {
-      update('country', countryLabel);
-      update('countryEN', countryLabel);
+      update('country',countryLabel);
+      update('countryEN',countryLabel);
     }
     update('nationalityType','');
   };
@@ -77,17 +76,8 @@ export default function Submit() {
     return true;
   };
 
-  const goNext = () => {
-    if(canNext()) {
-      setStep(s=>s+1);
-      window.scrollTo(0,0);
-    }
-  };
-
-  const goBack = () => {
-    setStep(s=>s-1);
-    window.scrollTo(0,0);
-  };
+  const goNext = () => { if(canNext()){ setStep(s=>s+1); setTimeout(scrollTop,50); } };
+  const goBack = () => { setStep(s=>s-1); setTimeout(scrollTop,50); };
 
   const handleSubmit = async () => {
     try {
@@ -96,8 +86,8 @@ export default function Submit() {
         country: form.countryEN || form.country,
         companyType: form.companyType==='خاص'?'Private':form.companyType==='حكومة'?'Government':form.companyType,
       };
-      await fetch('/api/submit', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    } catch(e) {}
+      await fetch('/api/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    } catch(e){}
     localStorage.setItem('salarymena_access','true');
     setSubmitted(true);
   };
@@ -110,12 +100,11 @@ export default function Submit() {
   const countryChip = (a) => ({padding:'8px 14px',borderRadius:'50px',fontSize:'13px',fontWeight:'500',cursor:'pointer',border:'none',background:a?'linear-gradient(135deg,#6366f1,#8b5cf6)':'#13131f',color:a?'#fff':'#606070',outline:a?'none':'1px solid #2a2a3e',whiteSpace:'nowrap'});
   const toggle = (a) => ({padding:'10px 16px',borderRadius:'50px',fontSize:'13px',fontWeight:'500',cursor:'pointer',border:'none',background:a?'linear-gradient(135deg,#10b981,#059669)':'#13131f',color:a?'#fff':'#606070',outline:a?'none':'1px solid #2a2a3e',transition:'all 0.2s'});
   const progress = ((step-1)/(STEPS.length-1))*100;
+  const COUNTRIES = lang==='ar' ? COUNTRIES_AR : COUNTRIES_EN;
   const filteredCountries = COUNTRIES.filter(c=>c.toLowerCase().includes(countrySearch.toLowerCase()));
-
   const seniorities = lang==='ar'
     ? [['مبتدئ','0–2 سنة'],['متوسط','2–5 سنوات'],['متقدم','5–8 سنوات'],['قائد','يقود فريقاً'],['مدير','يدير أشخاصاً'],['مدير أول','رئيس قسم'],['الإدارة العليا','رئيس تنفيذي، مالي...']]
     : [['Junior','0–2 yrs'],['Mid-Level','2–5 yrs'],['Senior','5–8 yrs'],['Lead','Leading a team'],['Manager','Managing people'],['Director','Head of dept'],['C-Suite','CEO, CFO, COO...']];
-
   const companyTypes = lang==='ar' ? ['خاص','حكومة'] : ['Private','Government'];
   const experiences = ['0-1','1-3','3-5','5-8','8-12','12+'];
   const educations = lang==='ar'
@@ -148,7 +137,7 @@ export default function Submit() {
         }
       `}</style>
       <Navbar/>
-      <div style={{height:'3px',background:'#1e1e2e'}}>
+      <div ref={topRef} style={{height:'3px',background:'#1e1e2e'}}>
         <div style={{height:'100%',width:progress+'%',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',transition:'width 0.4s ease'}}/>
       </div>
 
