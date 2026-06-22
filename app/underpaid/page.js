@@ -5,14 +5,24 @@ import Navbar from '../components/Navbar';
 import { useLang } from '../components/LanguageContext';
 import { t } from '../components/translations';
 
-const COUNTRIES = ['UAE','Saudi Arabia','Egypt','Oman','Kuwait','Qatar','Bahrain','Jordan','Lebanon','Iraq','Syria','Yemen','Libya','Tunisia','Algeria','Morocco','Sudan','Somalia','Comoros','Djibouti','Mauritania','Palestine'];
-const GCC = ['UAE','Saudi Arabia','Kuwait','Qatar','Bahrain','Oman'];
+const COUNTRIES_EN = ['UAE','Saudi Arabia','Egypt','Oman','Kuwait','Qatar','Bahrain','Jordan','Lebanon','Iraq','Syria','Yemen','Libya','Tunisia','Algeria','Morocco','Sudan','Somalia','Comoros','Djibouti','Mauritania','Palestine'];
+const COUNTRIES_AR = ['الإمارات','السعودية','مصر','عُمان','الكويت','قطر','البحرين','الأردن','لبنان','العراق','سوريا','اليمن','ليبيا','تونس','الجزائر','المغرب','السودان','الصومال','جزر القمر','جيبوتي','موريتانيا','فلسطين'];
+const GCC_EN = ['UAE','Saudi Arabia','Kuwait','Qatar','Bahrain','Oman'];
+const GCC_AR = ['الإمارات','السعودية','الكويت','قطر','البحرين','عُمان'];
+
+const CURRENCY_AR = {
+  'AED':'درهم إماراتي','SAR':'ريال سعودي','EGP':'جنيه مصري',
+  'OMR':'ريال عماني','KWD':'دينار كويتي','QAR':'ريال قطري',
+  'BHD':'دينار بحريني','JOD':'دينار أردني','USD':'دولار أمريكي'
+};
+
+const CURRENCIES_EN = ['AED','SAR','EGP','OMR','KWD','QAR','BHD','JOD','USD'];
 
 export default function Underpaid() {
   const { lang, isAr } = useLang();
   const txt = t[lang];
   const router = useRouter();
-  const [form, setForm] = useState({jobTitle:'',country:'',currency:'AED',monthlySalary:'',experience:'',companyType:'',nationalityType:'',housingProvided:false,carProvided:false});
+  const [form, setForm] = useState({jobTitle:'',country:'',countryEN:'',currency:'AED',monthlySalary:'',experience:'',companyType:'',nationalityType:'',housingProvided:false,carProvided:false});
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -22,26 +32,38 @@ export default function Underpaid() {
   const [sendingEmail, setSendingEmail] = useState(false);
   const update = (f,v) => setForm(p=>({...p,[f]:v}));
 
-  const isGCC = GCC.includes(form.country);
+  const COUNTRIES = lang==='ar' ? COUNTRIES_AR : COUNTRIES_EN;
+  const isGCC = GCC_EN.includes(form.countryEN) || GCC_AR.includes(form.country);
+
   const nationalityOptions = isGCC
     ? (lang==='ar'?['مواطن خليجي','وافد عربي','وافد غربي','وافد آسيوي']:['GCC National','Arab Expat','Western Expat','Asian Expat'])
     : (lang==='ar'?['مواطن محلي','عربي (دولة أخرى)','وافد غربي','وافد آسيوي']:['Local National','Arab (Other)','Western Expat','Asian Expat']);
 
   const companyTypes = lang==='ar' ? ['خاص','حكومة'] : ['Private','Government'];
 
+  const selectCountry = (countryLabel) => {
+    if (lang==='ar') {
+      const idx = COUNTRIES_AR.indexOf(countryLabel);
+      const en = idx >= 0 ? COUNTRIES_EN[idx] : countryLabel;
+      update('country', countryLabel);
+      update('countryEN', en);
+    } else {
+      update('country', countryLabel);
+      update('countryEN', countryLabel);
+    }
+    update('nationalityType','');
+  };
+
   useEffect(() => {
     if(!loading){setProgress(0);return;}
     setProgress(0);
     const timer = setInterval(()=>{
-      setProgress(p => {
-        if(p >= 95) return p;
-        return p + 1;
-      });
+      setProgress(p => { if(p >= 95) return p; return p + 1; });
     }, 150);
     return ()=>clearInterval(timer);
   },[loading]);
 
-  const inp = {width:'100%',background:'#13131f',border:'1px solid #2a2a3e',borderRadius:'10px',padding:'14px 16px',color:'#fff',fontSize:'15px',outline:'none',boxSizing:'border-box',textAlign:isAr?'right':'left'};
+  const inp = {width:'100%',background:'#13131f',border:'1px solid #2a2a3e',borderRadius:'10px',padding:'14px 16px',color:'#fff',fontSize:'16px',outline:'none',boxSizing:'border-box',textAlign:isAr?'right':'left'};
   const lbl = {display:'block',fontSize:'13px',fontWeight:'600',color:'#a0a0b0',marginBottom:'8px',textTransform:'uppercase',letterSpacing:'0.5px'};
   const chip = (a) => ({padding:'10px 20px',borderRadius:'50px',fontSize:'14px',fontWeight:'500',cursor:'pointer',border:'none',background:a?'linear-gradient(135deg,#6366f1,#8b5cf6)':'#13131f',color:a?'#fff':'#606070',outline:a?'none':'1px solid #2a2a3e',transition:'all 0.2s'});
   const countryChip = (a) => ({padding:'8px 16px',borderRadius:'50px',fontSize:'13px',fontWeight:'500',cursor:'pointer',border:'none',background:a?'linear-gradient(135deg,#6366f1,#8b5cf6)':'#13131f',color:a?'#fff':'#606070',outline:a?'none':'1px solid #2a2a3e',whiteSpace:'nowrap'});
@@ -52,12 +74,24 @@ export default function Underpaid() {
   const fmt = (n) => Math.round(n).toLocaleString();
   const experiences = ['0-1','1-3','3-5','5-8','8-12','12+'];
 
+  const getAPICountry = () => form.countryEN || form.country;
+  const getAPICompany = () => {
+    if (form.companyType === 'خاص') return 'Private';
+    if (form.companyType === 'حكومة') return 'Government';
+    return form.companyType;
+  };
+
   const analyze = async () => {
     setLoading(true);
     setResult(null);
     setEmailSent(false);
     try {
-      const res = await fetch('/api/underpaid',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(form)});
+      const payload = {
+        ...form,
+        country: getAPICountry(),
+        companyType: getAPICompany(),
+      };
+      const res = await fetch('/api/underpaid',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
       const json = await res.json();
       setProgress(100);
       setTimeout(()=>{
@@ -73,7 +107,7 @@ export default function Underpaid() {
     setSendingEmail(true);
     try {
       await fetch('/api/send-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-        email, jobTitle:form.jobTitle, country:form.country,
+        email, jobTitle:form.jobTitle, country:getAPICountry(),
         monthlySalary:form.monthlySalary, currency:form.currency,
         type:'underpaid', result,
         nationalityType:form.nationalityType,
@@ -87,8 +121,8 @@ export default function Underpaid() {
 
   const goToCoach = () => {
     localStorage.setItem('coach_prefill', JSON.stringify({
-      jobTitle:form.jobTitle, country:form.country, nationalityType:form.nationalityType,
-      companyType:form.companyType, experience:form.experience, currency:form.currency,
+      jobTitle:form.jobTitle, country:getAPICountry(), nationalityType:form.nationalityType,
+      companyType:getAPICompany(), experience:form.experience, currency:form.currency,
       offeredSalary:form.monthlySalary, housingProvided:form.housingProvided, carProvided:form.carProvided
     }));
     router.push('/coach');
@@ -101,11 +135,13 @@ export default function Underpaid() {
   };
 
   const shareOnWhatsApp = () => {
-    const verdict = result.verdict==='Below Market'?'Below Market 📉':result.verdict==='Above Market'?'Above Market 🚀':'Fair ✅';
-    const benefits = [form.housingProvided&&'🏠 Housing',form.carProvided&&'🚗 Car'].filter(Boolean).join(' + ');
-    const text = `I just checked my salary on SalaryMENA 📊\n\nRole: ${form.jobTitle} in ${form.country}\nMy Salary: ${form.currency} ${Number(form.monthlySalary).toLocaleString()}/month${benefits?'\nBenefits: '+benefits:''}\nVerdict: ${verdict}\n\nMarket Range: ${form.currency} ${fmt(result.marketLow)} – ${fmt(result.marketHigh)}/month\n\nCheck yours at salarymena.com 👇`;
+    const verdict = result.verdict==='Below Market'?'أقل من السوق 📉':result.verdict==='Above Market'?'أعلى من السوق 🚀':'عادل ✅';
+    const benefits = [form.housingProvided&&'🏠',form.carProvided&&'🚗'].filter(Boolean).join(' ');
+    const text = `فحصت راتبي على SalaryMENA 📊\n\nالوظيفة: ${form.jobTitle} في ${form.country}\nراتبي: ${displayCurrency(form.currency)} ${Number(form.monthlySalary).toLocaleString()} شهرياً${benefits?' '+benefits:''}\nالنتيجة: ${verdict}\n\nتحقق من راتبك على salarymena.com 👇`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,'_blank');
   };
+
+  const displayCurrency = (code) => lang==='ar' && CURRENCY_AR[code] ? CURRENCY_AR[code] : code;
 
   const verdictLabel = result ? (
     result.verdict==='Below Market' ? txt.below_market :
@@ -120,7 +156,6 @@ export default function Underpaid() {
         @media(max-width:768px){
           .underpaid-title{font-size:28px!important}
           .verdict-title{font-size:28px!important}
-          .gauge-wrap{width:200px!important;height:120px!important}
           .cards-grid{grid-template-columns:repeat(3,1fr)!important}
           .result-salary{font-size:24px!important}
         }
@@ -137,7 +172,7 @@ export default function Underpaid() {
                 <circle cx="70" cy="70" r="60" fill="none" stroke="url(#grad)" strokeWidth="10"
                   strokeDasharray={`${2*Math.PI*60}`}
                   strokeDashoffset={`${2*Math.PI*60*(1-progress/100)}`}
-                  strokeLinecap="round" style={{transition:'stroke-dashoffset 0.5s ease'}}/>
+                  strokeLinecap="round" style={{transition:'stroke-dashoffset 0.3s ease'}}/>
                 <defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#6366f1"/><stop offset="100%" stopColor="#8b5cf6"/></linearGradient></defs>
               </svg>
               <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
@@ -164,9 +199,9 @@ export default function Underpaid() {
 
               <div>
                 <label style={lbl}>{txt.country_work}</label>
-                <input style={{...inp,marginBottom:'12px'}} placeholder={txt.country_search} value={countrySearch} onChange={e=>setCountrySearch(e.target.value)}/>
+                <input style={{...inp,marginBottom:'12px',fontSize:'16px'}} placeholder={txt.country_search} value={countrySearch} onChange={e=>setCountrySearch(e.target.value)}/>
                 <div style={{display:'flex',flexWrap:'wrap',gap:'8px',maxHeight:'160px',overflowY:'auto',padding:'4px 0'}}>
-                  {filteredCountries.map(c=><button key={c} style={countryChip(form.country===c)} onClick={()=>{update('country',c);update('nationalityType','');}}>{c}</button>)}
+                  {filteredCountries.map(c=><button key={c} style={countryChip(form.country===c)} onClick={()=>selectCountry(c)}>{c}</button>)}
                 </div>
                 {form.country && <div style={{marginTop:'10px',padding:'8px 14px',background:'rgba(99,102,241,0.1)',border:'1px solid rgba(99,102,241,0.3)',borderRadius:'8px',fontSize:'13px',color:'#a78bfa'}}>✓ {form.country}</div>}
               </div>
@@ -190,7 +225,11 @@ export default function Underpaid() {
 
               <div><label style={lbl}>{txt.currency_label}</label>
               <div style={{display:'flex',flexWrap:'wrap',gap:'8px'}}>
-                {['AED','SAR','EGP','OMR','KWD','QAR','BHD','JOD','USD'].map(c=><button key={c} style={chip(form.currency===c)} onClick={()=>update('currency',c)}>{c}</button>)}
+                {CURRENCIES_EN.map(c=>(
+                  <button key={c} style={chip(form.currency===c)} onClick={()=>update('currency',c)}>
+                    {lang==='ar' ? CURRENCY_AR[c] : c}
+                  </button>
+                ))}
               </div></div>
 
               <div><label style={lbl}>{txt.current_monthly}</label><input style={inp} type="number" placeholder="25000" value={form.monthlySalary} onChange={e=>update('monthlySalary',e.target.value)}/></div>
@@ -222,14 +261,14 @@ export default function Underpaid() {
               <div style={{fontSize:'15px',color:'#606070',marginTop:'8px'}}>{form.jobTitle} · {form.country} · {form.nationalityType}</div>
               {(form.housingProvided||form.carProvided) && (
                 <div style={{marginTop:'10px',fontSize:'13px',color:'#10b981'}}>
-                  {[form.housingProvided&&'🏠 Housing',form.carProvided&&'🚗 Car'].filter(Boolean).join(' · ')} included
+                  {[form.housingProvided&&'🏠',form.carProvided&&'🚗'].filter(Boolean).join(' ')} {lang==='ar'?'مشمول':'included'}
                 </div>
               )}
             </div>
 
             <div style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'32px',textAlign:'center'}}>
               <div style={{fontWeight:'700',fontSize:'15px',marginBottom:'24px'}}>{txt.salary_gauge}</div>
-              <div className="gauge-wrap" style={{position:'relative',width:'240px',height:'140px',margin:'0 auto'}}>
+              <div style={{position:'relative',width:'240px',height:'140px',margin:'0 auto'}}>
                 <svg width="240" height="140" viewBox="0 0 240 140">
                   <defs><linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#ef4444"/><stop offset="50%" stopColor="#f59e0b"/><stop offset="100%" stopColor="#10b981"/></linearGradient></defs>
                   <path d="M 20 130 A 100 100 0 0 1 220 130" fill="none" stroke="#1e1e2e" strokeWidth="20" strokeLinecap="round"/>
@@ -246,7 +285,7 @@ export default function Underpaid() {
                   <text x="200" y="155" fill="#606070" fontSize="11" fontWeight="600">{lang==='ar'?'أعلى':'HIGH'}</text>
                 </svg>
                 <div style={{marginTop:'12px'}}>
-                  <div className="result-salary" style={{fontSize:'28px',fontWeight:'900',color:result.verdictColor}}>{form.currency} {fmt(form.monthlySalary)}</div>
+                  <div className="result-salary" style={{fontSize:'28px',fontWeight:'900',color:result.verdictColor}}>{displayCurrency(form.currency)} {fmt(form.monthlySalary)}</div>
                   <div style={{color:'#606070',fontSize:'12px',marginTop:'4px'}}>{txt.per_month}</div>
                 </div>
               </div>
@@ -263,8 +302,8 @@ export default function Underpaid() {
                   <div key={i} style={{background:'#13131f',border:`1px solid ${card.color}30`,borderRadius:'16px',padding:'16px',textAlign:'center'}}>
                     <div style={{fontSize:'20px',marginBottom:'6px'}}>{card.icon}</div>
                     <div style={{fontSize:'10px',color:'#404050',fontWeight:'700',textTransform:'uppercase',marginBottom:'4px'}}>{card.label}</div>
-                    <div style={{fontSize:'14px',fontWeight:'800',color:card.color}}>{form.currency} {fmt(card.value)}</div>
-                    <div style={{fontSize:'11px',marginTop:'4px',color:diff>=0?'#10b981':'#ef4444',fontWeight:'600'}}>{diff>=0?'+':''}{form.currency} {fmt(Math.abs(diff))}</div>
+                    <div style={{fontSize:'14px',fontWeight:'800',color:card.color}}>{displayCurrency(form.currency)} {fmt(card.value)}</div>
+                    <div style={{fontSize:'11px',marginTop:'4px',color:diff>=0?'#10b981':'#ef4444',fontWeight:'600'}}>{diff>=0?'+':''}{displayCurrency(form.currency)} {fmt(Math.abs(diff))}</div>
                   </div>
                 );
               })}
@@ -281,7 +320,7 @@ export default function Underpaid() {
                 <div key={i} style={{marginBottom:'14px'}}>
                   <div style={{display:'flex',justifyContent:'space-between',marginBottom:'6px'}}>
                     <span style={{fontSize:'13px',color:item.isUser?result.verdictColor:'#a0a0b0',fontWeight:item.isUser?'700':'400'}}>{item.label}{item.isUser?' ★':''}</span>
-                    <span style={{fontSize:'13px',color:item.isUser?result.verdictColor:'#fff',fontWeight:'700'}}>{form.currency} {fmt(item.value)}</span>
+                    <span style={{fontSize:'13px',color:item.isUser?result.verdictColor:'#fff',fontWeight:'700'}}>{displayCurrency(form.currency)} {fmt(item.value)}</span>
                   </div>
                   <div style={{height:'10px',background:'#0a0a0f',borderRadius:'50px',overflow:'hidden',border:'1px solid #1e1e2e'}}>
                     <div style={{height:'100%',width:`${(item.value/result.marketHigh)*100}%`,background:item.color,borderRadius:'50px',transition:'width 1s ease'}}/>
@@ -291,7 +330,7 @@ export default function Underpaid() {
             </div>
 
             <div style={{background:'linear-gradient(135deg,rgba(99,102,241,0.12),rgba(139,92,246,0.06))',border:'1px solid rgba(99,102,241,0.25)',borderRadius:'20px',padding:'24px'}}>
-              <div style={{display:'flex',alignItems:'center',gap:'12px',marginBottom:'16px'}}>
+              <div style={{display:'flex',alignItems:'center',gap:'12px',marginBottom:'12px'}}>
                 <div style={{width:'36px',height:'36px',borderRadius:'50%',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'16px',flexShrink:0}}>🤖</div>
                 <div style={{fontWeight:'700',fontSize:'15px'}}>{txt.ai_analysis}</div>
               </div>
@@ -299,14 +338,12 @@ export default function Underpaid() {
               <p style={{color:'#a78bfa',fontSize:'14px',lineHeight:1.7,margin:0,fontStyle:'italic'}}>{result.advice}</p>
             </div>
 
-            {/* WhatsApp Share */}
             <button onClick={shareOnWhatsApp}
               style={{background:'#25D366',border:'none',borderRadius:'12px',padding:'14px',fontSize:'15px',fontWeight:'700',cursor:'pointer',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px'}}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
               {lang==='ar'?'شارك نتيجتك على واتساب':'Share My Result on WhatsApp'}
             </button>
 
-            {/* Email report */}
             {!emailSent ? (
               <div style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'16px',padding:'20px'}}>
                 <p style={{margin:'0 0 12px',fontSize:'14px',color:'#a0a0b0'}}>{lang==='ar'?'احفظ تقريرك — أرسله لبريدك الإلكتروني':'Save this report — send it to your email'}</p>
@@ -315,7 +352,7 @@ export default function Underpaid() {
                     style={{flex:1,minWidth:'200px',background:'#0a0a0f',border:'1px solid #2a2a3e',borderRadius:'10px',padding:'12px 16px',color:'#fff',fontSize:'14px',outline:'none'}}/>
                   <button onClick={sendReport} disabled={!email||sendingEmail}
                     style={{background:email?'linear-gradient(135deg,#6366f1,#8b5cf6)':'#1e1e2e',color:email?'#fff':'#404050',border:'none',borderRadius:'10px',padding:'12px 20px',fontSize:'14px',fontWeight:'700',cursor:email?'pointer':'not-allowed',whiteSpace:'nowrap'}}>
-                    {sendingEmail?'Sending...':lang==='ar'?'أرسل التقرير':'Send Report'}
+                    {sendingEmail?'...':lang==='ar'?'أرسل التقرير':'Send Report'}
                   </button>
                 </div>
               </div>
