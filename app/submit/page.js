@@ -51,8 +51,8 @@ export default function Submit() {
   const isGCC = GCC_EN.includes(form.countryEN) || GCC_AR.includes(form.country);
 
   const nationalityOptions = isGCC
-    ? (lang==='ar'?['مواطن خليجي','وافد عربي','وافد غربي','وافد آسيوي']:['GCC National','Arab Expat','Western Expat','Asian Expat'])
-    : (lang==='ar'?['مواطن محلي','عربي (دولة أخرى)','وافد غربي','وافد آسيوي']:['Local National','Arab (Other)','Western Expat','Asian Expat']);
+    ? (lang==='ar'?['مواطن خليجي','وافد عربي','وافد أوروبي/أجنبي','وافد آسيوي']:['GCC National','Arab Expat','Western Expat','Asian Expat'])
+    : (lang==='ar'?['مواطن محلي','عربي (دولة أخرى)','وافد أوروبي/أجنبي','وافد آسيوي']:['Local National','Arab (Other)','Western Expat','Asian Expat']);
 
   const selectCountry = (countryLabel) => {
     if (lang==='ar') {

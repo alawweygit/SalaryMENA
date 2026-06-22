@@ -1,90 +1,87 @@
-import Anthropic from '@anthropic-ai/sdk';
 import { Pool } from 'pg';
+import Anthropic from '@anthropic-ai/sdk';
+import { Resend } from 'resend';
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const pool = new Pool({ connectionString: process.env.DATABASE_PUBLIC_URL });
+const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { jobTitle, country, currency, currentSalary, offeredSalary, experience, companyType, nationalityType, housingProvided, carProvided, lang } = body;
+    const {
+      jobTitle, seniority, companyType, companyName, country, city,
+      monthlySalary, basicSalary, currency, bonus, experience,
+      education, nationalityType, gender, email, housingProvided, carProvided
+    } = body;
 
-    pool.query(
-      `INSERT INTO salaries (job_title, company_type, country, monthly_salary, currency, experience, nationality_type)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [jobTitle, companyType || null, country, offeredSalary || currentSalary || null, currency, experience, nationalityType || null]
-    ).catch(err => console.error('Coach DB save error:', err));
+    // Save immediately — no waiting for translation
+    const result = await pool.query(
+      `INSERT INTO salaries (job_title, job_title_ar, seniority, company_type, company_name, country, city,
+        monthly_salary, basic_salary, currency, bonus, experience, education,
+        nationality_type, gender, email, housing_provided, car_provided)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING id`,
+      [jobTitle, null, seniority, companyType, companyName, country, city,
+       monthlySalary, basicSalary, currency, bonus, experience, education,
+       nationalityType, gender, email, housingProvided, carProvided]
+    );
 
-    const benefits = [housingProvided && 'free housing', carProvided && 'a company car'].filter(Boolean).join(' and ');
-    const benefitsNote = benefits ? `The offer also includes ${benefits} as part of the package.` : '';
-    const isArabic = lang === 'ar';
-
-    const message = await client.messages.create({
+    // Translate in background — user doesn't wait
+    const savedId = result.rows[0].id;
+    client.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 1500,
-      messages: [{
-        role: 'user',
-        content: `You are an expert salary negotiation coach for the MENA region.
-${isArabic ? 'IMPORTANT: Respond with all text fields in Arabic language.' : ''}
+      max_tokens: 100,
+      messages:[{role:'user',content:'Translate this job title to Arabic. Reply with ONLY the Arabic translation, nothing else: ' + jobTitle}]
+    }).then(msg => {
+      const arabic = msg.content[0].text.trim();
+      pool.query('UPDATE salaries SET job_title_ar = $1 WHERE id = $2', [arabic, savedId]);
+    }).catch(e => console.error('Translation error:', e));
 
-CRITICAL CONTEXT:
-- Expats earn considerably less than GCC nationals/local citizens for identical roles
-- Government sector compensation differs greatly from private sector
-- When benefits like housing or car are included, factor them into total package value
-
-Profile:
-- Job Title: ${jobTitle}
-- Country: ${country}
-- Nationality Type: ${nationalityType}
-- Company Type: ${companyType || 'Not specified'}
-- Years of Experience: ${experience}
-- Current Salary: ${currentSalary ? currency + ' ' + currentSalary + '/month' : 'Not disclosed'}
-- Offered Salary: ${currency} ${offeredSalary}/month
-- Additional Benefits: ${benefits || 'None — do NOT suggest or mention housing or car allowances unless they are listed here'}
-${benefitsNote}
-
-Respond with ONLY a valid JSON object, no markdown, no extra text:
-{
-  "verdict": "${isArabic ? 'عادل OR أقل من السوق OR أعلى من السوق' : 'Fair OR Below Market OR Above Market'}",
-  "verdictColor": "#10b981",
-  "verdictIcon": "✅",
-  "marketLow": 8000,
-  "marketMedian": 12000,
-  "marketHigh": 16000,
-  "difference": 500,
-  "differencePercent": 4,
-  "summary": "${isArabic ? 'ملخص عربي عن العرض مقارنة بالسوق' : '2-3 sentences about this offer vs market'}",
-  "talkingPoints": [
-    "${isArabic ? 'نقطة تفاوض 1' : 'Talking point 1'}",
-    "${isArabic ? 'نقطة تفاوض 2' : 'Talking point 2'}",
-    "${isArabic ? 'نقطة تفاوض 3' : 'Talking point 3'}"
-  ],
-  "counterOffer": 13000,
-  "script": "${isArabic ? 'نص تفاوضي جاهز كلمة بكلمة بالعربي' : 'A short 2-3 sentence word-for-word script to say to HR'}"
-}`
-      }]
-    });
-
-    const textContent = message.content.find(c => c.type === 'text');
-    if (!textContent) throw new Error('No text response');
-    const jsonMatch = textContent.text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error('No JSON found');
-    const data = JSON.parse(jsonMatch[0]);
-
-    // Fix verdict color based on Arabic verdict
-    if (isArabic) {
-      if (data.verdict === 'أقل من السوق') data.verdictColor = '#ef4444';
-      else if (data.verdict === 'أعلى من السوق') data.verdictColor = '#10b981';
-      else data.verdictColor = '#6366f1';
-      data.verdictIcon = data.verdict === 'أقل من السوق' ? '⚠️' : data.verdict === 'أعلى من السوق' ? '🚀' : '✅';
-    } else {
-      if (data.verdict === 'Below Market') data.verdictColor = '#ef4444';
-      else if (data.verdict === 'Above Market') data.verdictColor = '#10b981';
-      else data.verdictColor = '#6366f1';
-      data.verdictIcon = data.verdict === 'Below Market' ? '⚠️' : data.verdict === 'Above Market' ? '🚀' : '✅';
+    // Send email
+    if (email) {
+      try {
+        await resend.emails.send({
+          from: 'SalaryMENA <support@cvdropai.com>',
+          to: email,
+          subject: 'Your salary has been submitted — SalaryMENA',
+          html: `
+            <div style="font-family:Inter,sans-serif;background:#0a0a0f;color:#ffffff;padding:32px;max-width:600px;margin:0 auto;border-radius:16px;">
+              <div style="margin-bottom:24px;display:flex;align-items:center;gap:12px;">
+                <img src="https://salarymena.com/logo-email.png" width="44" height="44" alt="SalaryMENA logo" style="border-radius:8px;"/>
+                <div>
+                  <span style="font-size:20px;font-weight:900;color:#ffffff;">Salary</span><span style="font-size:20px;font-weight:900;color:#8b5cf6;">MENA</span>
+                </div>
+              </div>
+              <h1 style="font-size:24px;font-weight:800;margin-bottom:8px;">Thank you! 🎉</h1>
+              <p style="color:#a0a0b0;font-size:15px;line-height:1.7;margin-bottom:24px;">Your salary has been submitted anonymously and is now helping others in the MENA region know their worth.</p>
+              <div style="background:#13131f;border:1px solid #2a2a3e;border-radius:12px;padding:24px;margin-bottom:24px;">
+                <p style="color:#606070;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">What you submitted</p>
+                <div style="margin-bottom:8px;display:flex;justify-content:space-between;">
+                  <span style="color:#a0a0b0;">Role</span>
+                  <span style="color:#ffffff;font-weight:600;">${jobTitle}</span>
+                </div>
+                <div style="margin-bottom:8px;display:flex;justify-content:space-between;">
+                  <span style="color:#a0a0b0;">Country</span>
+                  <span style="color:#ffffff;font-weight:600;">${country}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;">
+                  <span style="color:#a0a0b0;">Monthly Salary</span>
+                  <span style="color:#a78bfa;font-weight:800;">${currency} ${Number(monthlySalary).toLocaleString()}</span>
+                </div>
+              </div>
+              <a href="https://salarymena.com/explore" style="display:inline-block;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#ffffff;text-decoration:none;border-radius:10px;padding:12px 24px;font-weight:700;font-size:14px;margin-bottom:24px;">Explore Salaries →</a>
+              <div style="border-top:1px solid #1e1e2e;padding-top:20px;">
+                <p style="color:#404050;font-size:12px;margin:0;">© 2026 SalaryMENA · <a href="https://salarymena.com" style="color:#6366f1;text-decoration:none;">salarymena.com</a></p>
+              </div>
+            </div>
+          `
+        });
+      } catch(e) {
+        console.error('Email error:', e);
+      }
     }
 
-    return Response.json({ success: true, data });
+    return Response.json({ success: true });
   } catch (error) {
     console.error(error);
     return Response.json({ success: false, error: error.message }, { status: 500 });

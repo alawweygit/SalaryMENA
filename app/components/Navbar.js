@@ -42,8 +42,9 @@ export default function Navbar() {
           <button onClick={toggleLang} style={{background:'transparent',border:'1px solid #2a2a3e',color:'#a0a0b0',borderRadius:'8px',padding:'8px 14px',fontSize:'13px',cursor:'pointer',fontWeight:'600'}}>{txt.toggle}</button>
         </div>
 
-        {/* Mobile right side - hamburger only */}
-        <div style={{display:'none',gap:'10px',alignItems:'center'}} className="mobile-nav">
+        {/* Mobile right side */}
+        <div style={{display:'none',gap:'8px',alignItems:'center'}} className="mobile-nav">
+          <button onClick={toggleLang} style={{background:'transparent',border:'1px solid #2a2a3e',color:'#a0a0b0',borderRadius:'8px',padding:'6px 12px',fontSize:'12px',cursor:'pointer',fontWeight:'600'}}>{txt.toggle}</button>
           <button onClick={()=>setMenuOpen(!menuOpen)} style={{background:'transparent',border:'1px solid #2a2a3e',color:'#fff',borderRadius:'8px',padding:'6px 12px',fontSize:'18px',cursor:'pointer',lineHeight:1}}>
             {menuOpen ? '✕' : '☰'}
           </button>
@@ -67,9 +68,6 @@ export default function Navbar() {
             style={{display:'block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'10px',padding:'14px',fontSize:'15px',fontWeight:'700',textAlign:'center',marginTop:'12px'}}>
             {txt.submit_nav}
           </a>
-          <button onClick={()=>{toggleLang();setMenuOpen(false);}} style={{background:'transparent',border:'1px solid #2a2a3e',color:'#a0a0b0',borderRadius:'10px',padding:'12px',fontSize:'14px',cursor:'pointer',fontWeight:'600',marginTop:'8px'}}>
-            {txt.toggle}
-          </button>
         </div>
       )}
 
