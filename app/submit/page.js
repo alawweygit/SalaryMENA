@@ -4,8 +4,25 @@ import { useLang } from '../components/LanguageContext';
 import { t } from '../components/translations';
 import Navbar from '../components/Navbar';
 
-const COUNTRIES = ['UAE','Saudi Arabia','Egypt','Oman','Kuwait','Qatar','Bahrain','Jordan','Lebanon','Iraq','Syria','Yemen','Libya','Tunisia','Algeria','Morocco','Sudan','Somalia','Comoros','Djibouti','Mauritania','Palestine'];
-const GCC = ['UAE','Saudi Arabia','Kuwait','Qatar','Bahrain','Oman'];
+const COUNTRIES_EN = ['UAE','Saudi Arabia','Egypt','Oman','Kuwait','Qatar','Bahrain','Jordan','Lebanon','Iraq','Syria','Yemen','Libya','Tunisia','Algeria','Morocco','Sudan','Somalia','Comoros','Djibouti','Mauritania','Palestine'];
+const COUNTRIES_AR = ['الإمارات','السعودية','مصر','عُمان','الكويت','قطر','البحرين','الأردن','لبنان','العراق','سوريا','اليمن','ليبيا','تونس','الجزائر','المغرب','السودان','الصومال','جزر القمر','جيبوتي','موريتانيا','فلسطين'];
+const COUNTRY_MAP_AR_TO_EN = {
+  'الإمارات':'UAE','السعودية':'Saudi Arabia','مصر':'Egypt','عُمان':'Oman',
+  'الكويت':'Kuwait','قطر':'Qatar','البحرين':'Bahrain','الأردن':'Jordan',
+  'لبنان':'Lebanon','العراق':'Iraq','سوريا':'Syria','اليمن':'Yemen',
+  'ليبيا':'Libya','تونس':'Tunisia','الجزائر':'Algeria','المغرب':'Morocco',
+  'السودان':'Sudan','الصومال':'Somalia','جزر القمر':'Comoros','جيبوتي':'Djibouti',
+  'موريتانيا':'Mauritania','فلسطين':'Palestine'
+};
+const GCC_EN = ['UAE','Saudi Arabia','Kuwait','Qatar','Bahrain','Oman'];
+const GCC_AR = ['الإمارات','السعودية','الكويت','قطر','البحرين','عُمان'];
+
+const CURRENCIES_EN = ['AED','SAR','EGP','OMR','KWD','QAR','BHD','JOD','USD'];
+const CURRENCY_AR = {
+  'AED':'درهم إماراتي','SAR':'ريال سعودي','EGP':'جنيه مصري',
+  'OMR':'ريال عماني','KWD':'دينار كويتي','QAR':'ريال قطري',
+  'BHD':'دينار بحريني','JOD':'دينار أردني','USD':'دولار أمريكي'
+};
 
 export default function Submit() {
   const { lang, isAr } = useLang();
@@ -13,7 +30,12 @@ export default function Submit() {
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
   const [countrySearch, setCountrySearch] = useState('');
-  const [form, setForm] = useState({jobTitle:'',seniority:'',companyType:'',companyName:'',country:'',city:'',monthlySalary:'',basicSalary:'',currency:'AED',bonus:'',experience:'',education:'',nationalityType:'',gender:'',email:'',housingProvided:false,carProvided:false});
+  const [form, setForm] = useState({
+    jobTitle:'',seniority:'',companyType:'',companyName:'',
+    country:'',countryEN:'',city:'',monthlySalary:'',basicSalary:'',
+    currency:'AED',bonus:'',experience:'',education:'',
+    nationalityType:'',gender:'',email:'',housingProvided:false,carProvided:false
+  });
   const update = (f,v) => setForm(p=>({...p,[f]:v}));
 
   const STEPS = [
@@ -25,10 +47,25 @@ export default function Submit() {
     {title:txt.step_done_title,subtitle:txt.step_done_sub},
   ];
 
-  const isGCC = GCC.includes(form.country);
+  const COUNTRIES = lang==='ar' ? COUNTRIES_AR : COUNTRIES_EN;
+  const isGCC = GCC_EN.includes(form.countryEN) || GCC_AR.includes(form.country);
+
   const nationalityOptions = isGCC
     ? (lang==='ar'?['مواطن خليجي','وافد عربي','وافد غربي','وافد آسيوي']:['GCC National','Arab Expat','Western Expat','Asian Expat'])
     : (lang==='ar'?['مواطن محلي','عربي (دولة أخرى)','وافد غربي','وافد آسيوي']:['Local National','Arab (Other)','Western Expat','Asian Expat']);
+
+  const selectCountry = (countryLabel) => {
+    if (lang==='ar') {
+      const idx = COUNTRIES_AR.indexOf(countryLabel);
+      const en = idx >= 0 ? COUNTRIES_EN[idx] : countryLabel;
+      update('country', countryLabel);
+      update('countryEN', en);
+    } else {
+      update('country', countryLabel);
+      update('countryEN', countryLabel);
+    }
+    update('nationalityType','');
+  };
 
   const canNext = () => {
     if(step===1) return form.jobTitle && form.seniority;
@@ -42,7 +79,12 @@ export default function Submit() {
 
   const handleSubmit = async () => {
     try {
-      await fetch('/api/submit', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(form)});
+      const payload = {
+        ...form,
+        country: form.countryEN || form.country,
+        companyType: form.companyType==='خاص'?'Private':form.companyType==='حكومة'?'Government':form.companyType,
+      };
+      await fetch('/api/submit', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     } catch(e) {}
     localStorage.setItem('salarymena_access','true');
     setSubmitted(true);
@@ -133,14 +175,9 @@ export default function Submit() {
         {step===3 && <div style={{display:'flex',flexDirection:'column',gap:'20px'}}>
           <div>
             <label style={lbl}>{txt.country_label}</label>
-            <input
-              style={{...inp,marginBottom:'12px',fontSize:'16px'}}
-              placeholder={txt.country_search}
-              value={countrySearch}
-              onChange={e=>setCountrySearch(e.target.value)}
-            />
+            <input style={{...inp,marginBottom:'12px',fontSize:'16px'}} placeholder={txt.country_search} value={countrySearch} onChange={e=>setCountrySearch(e.target.value)}/>
             <div style={{display:'flex',flexWrap:'wrap',gap:'8px',maxHeight:'200px',overflowY:'auto',padding:'4px 0'}}>
-              {filteredCountries.map(c=><button key={c} style={countryChip(form.country===c)} onClick={()=>update('country',c)}>{c}</button>)}
+              {filteredCountries.map(c=><button key={c} style={countryChip(form.country===c)} onClick={()=>selectCountry(c)}>{c}</button>)}
             </div>
             {form.country && <div style={{marginTop:'10px',padding:'10px 14px',background:'rgba(99,102,241,0.1)',border:'1px solid rgba(99,102,241,0.3)',borderRadius:'10px',fontSize:'13px',color:'#a78bfa'}}>✓ {form.country}</div>}
           </div>
@@ -151,7 +188,11 @@ export default function Submit() {
           <div>
             <label style={lbl}>{txt.currency_label}</label>
             <div style={{display:'flex',flexWrap:'wrap',gap:'8px'}}>
-              {['AED','SAR','EGP','OMR','KWD','QAR','BHD','JOD','USD'].map(c=><button key={c} style={chip(form.currency===c)} onClick={()=>update('currency',c)}>{c}</button>)}
+              {CURRENCIES_EN.map(c=>(
+                <button key={c} style={chip(form.currency===c)} onClick={()=>update('currency',c)}>
+                  {lang==='ar' ? CURRENCY_AR[c] : c}
+                </button>
+              ))}
             </div>
           </div>
           <div><label style={lbl}>{txt.monthly_salary_label}</label><p style={hint}>{txt.monthly_salary_hint}</p><input style={inp} type="number" placeholder="25000" value={form.monthlySalary} onChange={e=>update('monthlySalary',e.target.value)}/></div>

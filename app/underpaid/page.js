@@ -90,6 +90,7 @@ export default function Underpaid() {
         ...form,
         country: getAPICountry(),
         companyType: getAPICompany(),
+        lang,
       };
       const res = await fetch('/api/underpaid',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
       const json = await res.json();

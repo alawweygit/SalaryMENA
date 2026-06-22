@@ -110,6 +110,7 @@ export default function Coach() {
         ...form,
         country: getAPICountry(),
         companyType: getAPICompany(),
+        lang,
       };
       const res = await fetch('/api/coach',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
       const data = await res.json();
