@@ -1,6 +1,6 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { useLang } from '../components/LanguageContext';
 import { t } from '../components/translations';
@@ -22,7 +22,6 @@ const FORM_KEY = 'salarymena_form';
 function SubmitInner() {
   const { lang, isAr } = useLang();
   const txt = t[lang];
-  const router = useRouter();
   const searchParams = useSearchParams();
   const step = Number(searchParams.get('step') || 1);
   const [submitted, setSubmitted] = useState(false);
@@ -86,11 +85,11 @@ function SubmitInner() {
   };
 
   const goNext = () => {
-    if(canNext()) router.push(`/submit?step=${step+1}`);
+    if(canNext()) window.location.href = `/submit?step=${step+1}`;
   };
 
   const goBack = () => {
-    router.push(`/submit?step=${step-1}`);
+    window.location.href = `/submit?step=${step-1}`;
   };
 
   const handleSubmit = async () => {
