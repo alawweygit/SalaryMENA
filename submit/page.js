@@ -29,12 +29,6 @@ export default function Submit() {
   });
   const update = (f,v) => setForm(p=>({...p,[f]:v}));
 
-  const scrollTop = () => {
-    setTimeout(() => {
-      document.getElementById('submit-top')?.scrollIntoView({behavior:'instant'});
-    }, 10);
-  };
-
   const STEPS = [
     {title:txt.step_role_title,subtitle:txt.step_role_sub},
     {title:txt.step_company_title,subtitle:txt.step_company_sub},
@@ -72,8 +66,21 @@ export default function Submit() {
     return true;
   };
 
-  const goNext = () => { if(canNext()){ setStep(s=>s+1); scrollTop(); } };
-  const goBack = () => { setStep(s=>s-1); scrollTop(); };
+  const goNext = () => {
+    if(canNext()) {
+      setStep(s=>s+1);
+      window.scrollTo(0,0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }
+  };
+
+  const goBack = () => {
+    setStep(s=>s-1);
+    window.scrollTo(0,0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  };
 
   const handleSubmit = async () => {
     try {
@@ -124,6 +131,7 @@ export default function Submit() {
   return (
     <div style={{fontFamily:'Inter,sans-serif',background:'#0a0a0f',minHeight:'100vh',color:'#fff'}}>
       <style>{`
+        html, body { background: #0a0a0f !important; }
         input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
         @media(max-width:768px){
           .submit-title{font-size:26px!important}
@@ -132,7 +140,6 @@ export default function Submit() {
           .submit-nav{margin-top:32px!important}
         }
       `}</style>
-      <div id="submit-top"/>
       <Navbar/>
       <div style={{height:'3px',background:'#1e1e2e'}}>
         <div style={{height:'100%',width:progress+'%',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',transition:'width 0.4s ease'}}/>
@@ -145,102 +152,104 @@ export default function Submit() {
           <p style={{color:'#606070',fontSize:'15px'}}>{STEPS[step-1].subtitle}</p>
         </div>
 
-        {step===1 && <div style={{display:'flex',flexDirection:'column',gap:'20px'}}>
-          <div><label style={lbl}>{txt.job_title_label}</label><input style={inp} placeholder={txt.job_title_placeholder} value={form.jobTitle} onChange={e=>update('jobTitle',e.target.value)}/></div>
-          <div>
-            <label style={lbl}>{txt.seniority_label}</label>
-            <p style={hint}>{txt.seniority_hint}</p>
-            <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
-              {seniorities.map(([s,desc])=>(
-                <button key={s} onClick={()=>update('seniority',s)} style={rowChip(form.seniority===s)}>
-                  <span>{s}</span><span style={{fontSize:'11px',opacity:0.6,marginLeft:'8px'}}>{desc}</span>
-                </button>
-              ))}
+        <div key={step}>
+          {step===1 && <div style={{display:'flex',flexDirection:'column',gap:'20px'}}>
+            <div><label style={lbl}>{txt.job_title_label}</label><input style={inp} placeholder={txt.job_title_placeholder} value={form.jobTitle} onChange={e=>update('jobTitle',e.target.value)}/></div>
+            <div>
+              <label style={lbl}>{txt.seniority_label}</label>
+              <p style={hint}>{txt.seniority_hint}</p>
+              <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
+                {seniorities.map(([s,desc])=>(
+                  <button key={s} onClick={()=>update('seniority',s)} style={rowChip(form.seniority===s)}>
+                    <span>{s}</span><span style={{fontSize:'11px',opacity:0.6,marginLeft:'8px'}}>{desc}</span>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        </div>}
+          </div>}
 
-        {step===2 && <div style={{display:'flex',flexDirection:'column',gap:'20px'}}>
-          <div>
-            <label style={lbl}>{txt.company_type_label}</label>
-            <div style={{display:'flex',gap:'10px',flexWrap:'wrap'}}>
-              {companyTypes.map(tp=><button key={tp} style={{...chip(form.companyType===tp),padding:'14px 28px',fontSize:'15px'}} onClick={()=>update('companyType',tp)}>{tp}</button>)}
+          {step===2 && <div style={{display:'flex',flexDirection:'column',gap:'20px'}}>
+            <div>
+              <label style={lbl}>{txt.company_type_label}</label>
+              <div style={{display:'flex',gap:'10px',flexWrap:'wrap'}}>
+                {companyTypes.map(tp=><button key={tp} style={{...chip(form.companyType===tp),padding:'14px 28px',fontSize:'15px'}} onClick={()=>update('companyType',tp)}>{tp}</button>)}
+              </div>
             </div>
-          </div>
-          <div><label style={lbl}>{txt.company_name_label} <span style={{color:'#404050',fontWeight:'400',textTransform:'none'}}>{txt.company_name_optional}</span></label><input style={inp} placeholder={txt.company_name_placeholder} value={form.companyName} onChange={e=>update('companyName',e.target.value)}/></div>
-        </div>}
+            <div><label style={lbl}>{txt.company_name_label} <span style={{color:'#404050',fontWeight:'400',textTransform:'none'}}>{txt.company_name_optional}</span></label><input style={inp} placeholder={txt.company_name_placeholder} value={form.companyName} onChange={e=>update('companyName',e.target.value)}/></div>
+          </div>}
 
-        {step===3 && <div style={{display:'flex',flexDirection:'column',gap:'20px'}}>
-          <div>
-            <label style={lbl}>{txt.country_label}</label>
-            <input style={{...inp,marginBottom:'12px',fontSize:'16px'}} placeholder={txt.country_search} value={countrySearch} onChange={e=>setCountrySearch(e.target.value)}/>
-            <div style={{display:'flex',flexWrap:'wrap',gap:'8px',maxHeight:'200px',overflowY:'auto',padding:'4px 0'}}>
-              {filteredCountries.map(c=><button key={c} style={countryChip(form.country===c)} onClick={()=>selectCountry(c)}>{c}</button>)}
+          {step===3 && <div style={{display:'flex',flexDirection:'column',gap:'20px'}}>
+            <div>
+              <label style={lbl}>{txt.country_label}</label>
+              <input style={{...inp,marginBottom:'12px',fontSize:'16px'}} placeholder={txt.country_search} value={countrySearch} onChange={e=>setCountrySearch(e.target.value)}/>
+              <div style={{display:'flex',flexWrap:'wrap',gap:'8px',maxHeight:'200px',overflowY:'auto',padding:'4px 0'}}>
+                {filteredCountries.map(c=><button key={c} style={countryChip(form.country===c)} onClick={()=>selectCountry(c)}>{c}</button>)}
+              </div>
+              {form.country && <div style={{marginTop:'10px',padding:'10px 14px',background:'rgba(99,102,241,0.1)',border:'1px solid rgba(99,102,241,0.3)',borderRadius:'10px',fontSize:'13px',color:'#a78bfa'}}>✓ {form.country}</div>}
             </div>
-            {form.country && <div style={{marginTop:'10px',padding:'10px 14px',background:'rgba(99,102,241,0.1)',border:'1px solid rgba(99,102,241,0.3)',borderRadius:'10px',fontSize:'13px',color:'#a78bfa'}}>✓ {form.country}</div>}
-          </div>
-          <div><label style={lbl}>{txt.city_label} <span style={{color:'#404050',fontWeight:'400',textTransform:'none'}}>{txt.city_optional}</span></label><input style={inp} placeholder={txt.city_placeholder} value={form.city} onChange={e=>update('city',e.target.value)}/></div>
-        </div>}
+            <div><label style={lbl}>{txt.city_label} <span style={{color:'#404050',fontWeight:'400',textTransform:'none'}}>{txt.city_optional}</span></label><input style={inp} placeholder={txt.city_placeholder} value={form.city} onChange={e=>update('city',e.target.value)}/></div>
+          </div>}
 
-        {step===4 && <div style={{display:'flex',flexDirection:'column',gap:'20px'}}>
-          <div>
-            <label style={lbl}>{txt.currency_label}</label>
-            <div style={{display:'flex',flexWrap:'wrap',gap:'8px'}}>
-              {CURRENCIES_EN.map(c=>(
-                <button key={c} style={chip(form.currency===c)} onClick={()=>update('currency',c)}>
-                  {lang==='ar' ? CURRENCY_AR[c] : c}
-                </button>
-              ))}
+          {step===4 && <div style={{display:'flex',flexDirection:'column',gap:'20px'}}>
+            <div>
+              <label style={lbl}>{txt.currency_label}</label>
+              <div style={{display:'flex',flexWrap:'wrap',gap:'8px'}}>
+                {CURRENCIES_EN.map(c=>(
+                  <button key={c} style={chip(form.currency===c)} onClick={()=>update('currency',c)}>
+                    {lang==='ar' ? CURRENCY_AR[c] : c}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-          <div><label style={lbl}>{txt.monthly_salary_label}</label><p style={hint}>{txt.monthly_salary_hint}</p><input style={inp} type="number" placeholder="25000" value={form.monthlySalary} onChange={e=>update('monthlySalary',e.target.value)}/></div>
-          <div><label style={lbl}>{txt.basic_salary_label} <span style={{color:'#404050',fontWeight:'400',textTransform:'none'}}>{txt.basic_salary_optional}</span></label><p style={hint}>{txt.basic_salary_hint}</p><input style={inp} type="number" placeholder="15000" value={form.basicSalary} onChange={e=>update('basicSalary',e.target.value)}/></div>
-          <div><label style={lbl}>{txt.bonus_label} <span style={{color:'#404050',fontWeight:'400',textTransform:'none'}}>{txt.bonus_optional}</span></label><p style={hint}>{txt.bonus_hint}</p><input style={inp} type="number" placeholder="10000" value={form.bonus} onChange={e=>update('bonus',e.target.value)}/></div>
-          <div>
-            <label style={lbl}>{lang==='ar'?'المزايا العينية (اختياري)':'Benefits in Kind (Optional)'}</label>
-            <p style={hint}>{lang==='ar'?'هل تشمل حزمتك الوظيفية أياً من هذه المزايا؟':'Does your package include any of these?'}</p>
-            <div style={{display:'flex',gap:'10px',flexWrap:'wrap'}}>
-              <button style={toggle(form.housingProvided)} onClick={()=>update('housingProvided',!form.housingProvided)}>🏠 {lang==='ar'?'سكن مجاني':'Housing Provided'}</button>
-              <button style={toggle(form.carProvided)} onClick={()=>update('carProvided',!form.carProvided)}>🚗 {lang==='ar'?'سيارة مجانية':'Car Provided'}</button>
+            <div><label style={lbl}>{txt.monthly_salary_label}</label><p style={hint}>{txt.monthly_salary_hint}</p><input style={inp} type="number" placeholder="25000" value={form.monthlySalary} onChange={e=>update('monthlySalary',e.target.value)}/></div>
+            <div><label style={lbl}>{txt.basic_salary_label} <span style={{color:'#404050',fontWeight:'400',textTransform:'none'}}>{txt.basic_salary_optional}</span></label><p style={hint}>{txt.basic_salary_hint}</p><input style={inp} type="number" placeholder="15000" value={form.basicSalary} onChange={e=>update('basicSalary',e.target.value)}/></div>
+            <div><label style={lbl}>{txt.bonus_label} <span style={{color:'#404050',fontWeight:'400',textTransform:'none'}}>{txt.bonus_optional}</span></label><p style={hint}>{txt.bonus_hint}</p><input style={inp} type="number" placeholder="10000" value={form.bonus} onChange={e=>update('bonus',e.target.value)}/></div>
+            <div>
+              <label style={lbl}>{lang==='ar'?'المزايا العينية (اختياري)':'Benefits in Kind (Optional)'}</label>
+              <p style={hint}>{lang==='ar'?'هل تشمل حزمتك الوظيفية أياً من هذه المزايا؟':'Does your package include any of these?'}</p>
+              <div style={{display:'flex',gap:'10px',flexWrap:'wrap'}}>
+                <button style={toggle(form.housingProvided)} onClick={()=>update('housingProvided',!form.housingProvided)}>🏠 {lang==='ar'?'سكن مجاني':'Housing Provided'}</button>
+                <button style={toggle(form.carProvided)} onClick={()=>update('carProvided',!form.carProvided)}>🚗 {lang==='ar'?'سيارة مجانية':'Car Provided'}</button>
+              </div>
             </div>
-          </div>
-        </div>}
+          </div>}
 
-        {step===5 && <div style={{display:'flex',flexDirection:'column',gap:'20px'}}>
-          <div>
-            <label style={lbl}>{txt.experience_label}</label>
-            <div style={{display:'flex',flexWrap:'wrap',gap:'8px'}}>
-              {experiences.map(y=><button key={y} style={chip(form.experience===y)} onClick={()=>update('experience',y)}>{y} {lang==='ar'?'سنوات':'yrs'}</button>)}
+          {step===5 && <div style={{display:'flex',flexDirection:'column',gap:'20px'}}>
+            <div>
+              <label style={lbl}>{txt.experience_label}</label>
+              <div style={{display:'flex',flexWrap:'wrap',gap:'8px'}}>
+                {experiences.map(y=><button key={y} style={chip(form.experience===y)} onClick={()=>update('experience',y)}>{y} {lang==='ar'?'سنوات':'yrs'}</button>)}
+              </div>
             </div>
-          </div>
-          <div>
-            <label style={lbl}>{txt.education_label}</label>
-            <div style={{display:'flex',flexWrap:'wrap',gap:'8px'}}>
-              {educations.map(e=><button key={e} style={chip(form.education===e)} onClick={()=>update('education',e)}>{e}</button>)}
+            <div>
+              <label style={lbl}>{txt.education_label}</label>
+              <div style={{display:'flex',flexWrap:'wrap',gap:'8px'}}>
+                {educations.map(e=><button key={e} style={chip(form.education===e)} onClick={()=>update('education',e)}>{e}</button>)}
+              </div>
             </div>
-          </div>
-          <div>
-            <label style={lbl}>{txt.nationality_label}</label>
-            <p style={hint}>{txt.nationality_hint}</p>
-            <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
-              {nationalityOptions.map(n=><button key={n} style={{...rowChip(form.nationalityType===n),justifyContent:'flex-start'}} onClick={()=>update('nationalityType',n)}>{n}</button>)}
+            <div>
+              <label style={lbl}>{txt.nationality_label}</label>
+              <p style={hint}>{txt.nationality_hint}</p>
+              <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
+                {nationalityOptions.map(n=><button key={n} style={{...rowChip(form.nationalityType===n),justifyContent:'flex-start'}} onClick={()=>update('nationalityType',n)}>{n}</button>)}
+              </div>
             </div>
-          </div>
-          <div>
-            <label style={lbl}>{txt.gender_label} <span style={{color:'#404050',fontWeight:'400',textTransform:'none'}}>{txt.gender_optional}</span></label>
-            <div style={{display:'flex',gap:'8px'}}>
-              {genders.map(g=><button key={g} style={chip(form.gender===g)} onClick={()=>update('gender',g)}>{g}</button>)}
+            <div>
+              <label style={lbl}>{txt.gender_label} <span style={{color:'#404050',fontWeight:'400',textTransform:'none'}}>{txt.gender_optional}</span></label>
+              <div style={{display:'flex',gap:'8px'}}>
+                {genders.map(g=><button key={g} style={chip(form.gender===g)} onClick={()=>update('gender',g)}>{g}</button>)}
+              </div>
             </div>
-          </div>
-        </div>}
+          </div>}
 
-        {step===6 && <div style={{display:'flex',flexDirection:'column',gap:'20px'}}>
-          <div style={{background:'rgba(99,102,241,0.1)',border:'1px solid rgba(99,102,241,0.3)',borderRadius:'12px',padding:'16px'}}>
-            <p style={{margin:0,color:'#a78bfa',fontSize:'14px',lineHeight:1.7}}>{txt.email_note} {form.country||'...'}</p>
-          </div>
-          <div><label style={lbl}>{txt.email_label}</label><input style={inp} type="email" placeholder={txt.email_placeholder} value={form.email} onChange={e=>update('email',e.target.value)}/></div>
-          <p style={{fontSize:'12px',color:'#404050',margin:0}}>{txt.email_hint}</p>
-        </div>}
+          {step===6 && <div style={{display:'flex',flexDirection:'column',gap:'20px'}}>
+            <div style={{background:'rgba(99,102,241,0.1)',border:'1px solid rgba(99,102,241,0.3)',borderRadius:'12px',padding:'16px'}}>
+              <p style={{margin:0,color:'#a78bfa',fontSize:'14px',lineHeight:1.7}}>{txt.email_note} {form.country||'...'}</p>
+            </div>
+            <div><label style={lbl}>{txt.email_label}</label><input style={inp} type="email" placeholder={txt.email_placeholder} value={form.email} onChange={e=>update('email',e.target.value)}/></div>
+            <p style={{fontSize:'12px',color:'#404050',margin:0}}>{txt.email_hint}</p>
+          </div>}
+        </div>
 
         <div className="submit-nav" style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:'40px',gap:'12px'}}>
           {step>1
