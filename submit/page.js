@@ -69,17 +69,15 @@ export default function Submit() {
   const goNext = () => {
     if(canNext()) {
       setStep(s=>s+1);
-      window.scrollTo(0,0);
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
+      const el = document.getElementById('page-scroll');
+      if(el) el.scrollTop = 0;
     }
   };
 
   const goBack = () => {
     setStep(s=>s-1);
-    window.scrollTo(0,0);
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
+    const el = document.getElementById('page-scroll');
+    if(el) el.scrollTop = 0;
   };
 
   const handleSubmit = async () => {
@@ -129,9 +127,8 @@ export default function Submit() {
   );
 
   return (
-    <div style={{fontFamily:'Inter,sans-serif',background:'#0a0a0f',minHeight:'100vh',color:'#fff'}}>
+    <div id="page-scroll" style={{fontFamily:'Inter,sans-serif',background:'#0a0a0f',minHeight:'100vh',color:'#fff',height:'100vh',overflowY:'auto',WebkitOverflowScrolling:'touch'}}>
       <style>{`
-        html, body { background: #0a0a0f !important; }
         input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
         @media(max-width:768px){
           .submit-title{font-size:26px!important}
@@ -251,7 +248,7 @@ export default function Submit() {
           </div>}
         </div>
 
-        <div className="submit-nav" style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:'40px',gap:'12px'}}>
+        <div className="submit-nav" style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:'40px',marginBottom:'40px',gap:'12px'}}>
           {step>1
             ?<button onClick={goBack} style={{background:'transparent',border:'1px solid #2a2a3e',color:'#a0a0b0',borderRadius:'10px',padding:'14px 24px',fontSize:'15px',cursor:'pointer',fontWeight:'500',flexShrink:0}}>{txt.back_btn}</button>
             :<div/>}
