@@ -6,7 +6,6 @@ import { t } from '../components/translations';
 
 const COUNTRIES_EN = ['UAE','Saudi Arabia','Egypt','Oman','Kuwait','Qatar','Bahrain','Jordan','Lebanon','Iraq','Syria','Yemen','Libya','Tunisia','Algeria','Morocco','Sudan','Somalia','Comoros','Djibouti','Mauritania','Palestine'];
 const COUNTRIES_AR = ['الإمارات','السعودية','مصر','عُمان','الكويت','قطر','البحرين','الأردن','لبنان','العراق','سوريا','اليمن','ليبيا','تونس','الجزائر','المغرب','السودان','الصومال','جزر القمر','جيبوتي','موريتانيا','فلسطين'];
-
 const COUNTRY_MAP_AR_TO_EN = {
   'الإمارات':'UAE','السعودية':'Saudi Arabia','مصر':'Egypt','عُمان':'Oman',
   'الكويت':'Kuwait','قطر':'Qatar','البحرين':'Bahrain','الأردن':'Jordan',
@@ -15,63 +14,53 @@ const COUNTRY_MAP_AR_TO_EN = {
   'السودان':'Sudan','الصومال':'Somalia','جزر القمر':'Comoros','جيبوتي':'Djibouti',
   'موريتانيا':'Mauritania','فلسطين':'Palestine'
 };
-
 const LEVELS_EN = [
-  {label:'Junior',years:'0–2 yrs'},
-  {label:'Mid-Level',years:'2–5 yrs'},
-  {label:'Senior',years:'5–8 yrs'},
-  {label:'Lead',years:'8+ yrs'},
-  {label:'Manager',years:'5+ yrs'},
-  {label:'Director',years:'10+ yrs'},
+  {label:'Junior',years:'0–2 yrs'},{label:'Mid-Level',years:'2–5 yrs'},
+  {label:'Senior',years:'5–8 yrs'},{label:'Lead',years:'8+ yrs'},
+  {label:'Manager',years:'5+ yrs'},{label:'Director',years:'10+ yrs'},
   {label:'C-Suite',years:'15+ yrs'},
 ];
 const LEVELS_AR = [
-  {label:'مبتدئ',years:'0–2 سنة'},
-  {label:'متوسط',years:'2–5 سنوات'},
-  {label:'متقدم',years:'5–8 سنوات'},
-  {label:'قائد',years:'8+ سنوات'},
-  {label:'مدير',years:'5+ سنوات'},
-  {label:'مدير أول',years:'10+ سنوات'},
+  {label:'مبتدئ',years:'0–2 سنة'},{label:'متوسط',years:'2–5 سنوات'},
+  {label:'متقدم',years:'5–8 سنوات'},{label:'قائد',years:'8+ سنوات'},
+  {label:'مدير',years:'5+ سنوات'},{label:'مدير أول',years:'10+ سنوات'},
   {label:'الإدارة العليا',years:'15+ سنوات'},
 ];
-
 const LEVEL_MAP_AR_TO_EN = {
   'مبتدئ':'Junior','متوسط':'Mid-Level','متقدم':'Senior',
   'قائد':'Lead','مدير':'Manager','مدير أول':'Director','الإدارة العليا':'C-Suite'
 };
-
 const TYPES_EN = ['Private','Government'];
 const TYPES_AR = ['خاص','حكومة'];
 const TYPE_MAP_AR_TO_EN = {'خاص':'Private','حكومة':'Government'};
-
 const CURRENCY_AR = {
   'AED':'درهم إماراتي','SAR':'ريال سعودي','EGP':'جنيه مصري',
   'OMR':'ريال عماني','KWD':'دينار كويتي','QAR':'ريال قطري',
   'BHD':'دينار بحريني','JOD':'دينار أردني','USD':'دولار أمريكي'
 };
-
-// Smart search — job title synonyms
 const JOB_SYNONYMS = [
   ['pharmacist','صيدلاني','pharmacy'],
-  ['medical representative','medical rep','مندوب طبي','مندوب مبيعات طبية','product specialist','sales representative medical'],
+  ['medical representative','medical rep','مندوب طبي','مندوب مبيعات طبية','product specialist'],
   ['software engineer','software developer','مهندس برمجيات','مطور برمجيات','developer','programmer','مبرمج'],
-  ['teacher','معلم','مدرس','instructor','educator'],
+  ['teacher','معلم','مدرس','instructor'],
   ['nurse','ممرض','ممرضة','nursing'],
   ['doctor','physician','طبيب','دكتور'],
-  ['accountant','محاسب','accounting','finance'],
+  ['accountant','محاسب','accounting'],
   ['marketing manager','مدير تسويق','marketing'],
-  ['civil engineer','مهندس مدني','civil engineering'],
-  ['hr manager','human resources','مدير موارد بشرية','موارد بشرية'],
-  ['financial analyst','محلل مالي','finance analyst'],
+  ['civil engineer','مهندس مدني'],
+  ['hr manager','human resources','مدير موارد بشرية'],
+  ['financial analyst','محلل مالي'],
   ['data scientist','عالم بيانات','data analyst','محلل بيانات'],
-  ['project manager','مدير مشروع','pm'],
-  ['sales executive','مدير مبيعات','sales manager','مبيعات'],
+  ['project manager','مدير مشروع'],
+  ['sales executive','مدير مبيعات','sales manager'],
   ['graphic designer','مصمم جرافيك','designer','مصمم'],
-  ['lawyer','محامي','attorney','legal'],
-  ['chef','طباخ','cook','طهاة'],
-  ['driver','سائق','chauffeur'],
-  ['security guard','حارس أمن','security'],
-  ['receptionist','موظف استقبال','front desk'],
+  ['lawyer','محامي','attorney'],
+  ['chef','طباخ','cook'],
+  ['driver','سائق'],
+  ['security guard','حارس أمن'],
+  ['receptionist','موظف استقبال'],
+  ['pilot','طيار','captain'],
+  ['engineer','مهندس','engineering'],
 ];
 
 function expandSearch(query) {
@@ -107,19 +96,32 @@ export default function Explore() {
   const LEVELS = lang==='ar' ? LEVELS_AR : LEVELS_EN;
   const TYPES = lang==='ar' ? TYPES_AR : TYPES_EN;
 
+  const displayTitle = (d) => {
+    if(lang==='ar') return d.job_title_ar || d.title;
+    return d.job_title_en || d.title;
+  };
+
+  const displayCurrency = (code) => lang==='ar' && CURRENCY_AR[code] ? CURRENCY_AR[code] : code;
+
+  const displayCountry = (country) => {
+    if(lang==='ar') {
+      const idx = COUNTRIES_EN.indexOf(country);
+      return idx >= 0 ? COUNTRIES_AR[idx] : country;
+    }
+    return country;
+  };
+
   const filtered = data.filter(d => {
     const searchTerms = expandSearch(search);
+    const titleToSearch = (d.title||'') + ' ' + (d.job_title_ar||'') + ' ' + (d.job_title_en||'');
     const matchSearch = !search || searchTerms.some(term =>
-      (d.title||'').toLowerCase().includes(term.toLowerCase()) ||
+      titleToSearch.toLowerCase().includes(term.toLowerCase()) ||
       (d.country||'').toLowerCase().includes(term.toLowerCase()) ||
       (d.city||'').toLowerCase().includes(term.toLowerCase())
     );
-
-    // Convert AR filter to EN for matching
     const countryEN = COUNTRY_MAP_AR_TO_EN[countryFilter] || countryFilter;
     const levelEN = LEVEL_MAP_AR_TO_EN[levelFilter] || levelFilter;
     const companyEN = TYPE_MAP_AR_TO_EN[companyFilter] || companyFilter;
-
     const matchCountry = !countryFilter || d.country === countryEN || d.country === countryFilter;
     const matchLevel = !levelFilter || d.seniority === levelEN || d.seniority === levelFilter;
     const matchCompany = !companyFilter || d.company === companyEN || d.company === companyFilter;
@@ -129,7 +131,7 @@ export default function Explore() {
   const hasFilters = countryFilter || levelFilter || companyFilter;
 
   const shareOnWhatsApp = (d) => {
-    const text = `💰 ${d.title} in ${d.country}\nSalary: ${d.currency} ${Number(d.monthlySalary).toLocaleString()}/month${d.seniority?' · '+d.seniority:''}\n\nSee more real salaries at salarymena.com 👇`;
+    const text = `💰 ${displayTitle(d)} in ${d.country}\nSalary: ${displayCurrency(d.currency)} ${Number(d.monthlySalary).toLocaleString()}/month${d.seniority?' · '+d.seniority:''}\n\nSee more real salaries at salarymena.com 👇`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,'_blank');
   };
 
@@ -166,16 +168,6 @@ export default function Explore() {
     </div>
   );
 
-  const displayCurrency = (code) => lang==='ar' && CURRENCY_AR[code] ? CURRENCY_AR[code] : code;
-  const displayTitle = (d) => lang==='ar' && d.job_title_ar ? d.job_title_ar : d.title;
-  const displayCountry = (country) => {
-    if (lang==='ar') {
-      const idx = COUNTRIES_EN.indexOf(country);
-      return idx >= 0 ? COUNTRIES_AR[idx] : country;
-    }
-    return country;
-  };
-
   return (
     <div style={{fontFamily:'Inter,sans-serif',background:'#0a0a0f',minHeight:'100vh',color:'#fff'}} onClick={()=>setOpenDropdown(null)}>
       <style>{`
@@ -187,7 +179,6 @@ export default function Explore() {
         }
       `}</style>
       <Navbar/>
-
       <div style={{maxWidth:'900px',margin:'0 auto',padding:'40px 16px'}}>
         <div style={{marginBottom:'28px'}}>
           <h1 className="explore-title" style={{fontSize:'36px',fontWeight:'900',marginBottom:'8px',background:'linear-gradient(135deg,#fff 0%,#a78bfa 100%)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>{txt.explore_title}</h1>
