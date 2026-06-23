@@ -1,22 +1,15 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import { useLang } from '../components/LanguageContext';
 import { t } from '../components/translations';
 import Navbar from '../components/Navbar';
 
 const COUNTRIES_EN = ['UAE','Saudi Arabia','Egypt','Oman','Kuwait','Qatar','Bahrain','Jordan','Lebanon','Iraq','Syria','Yemen','Libya','Tunisia','Algeria','Morocco','Sudan','Somalia','Comoros','Djibouti','Mauritania','Palestine'];
 const COUNTRIES_AR = ['الإمارات','السعودية','مصر','عُمان','الكويت','قطر','البحرين','الأردن','لبنان','العراق','سوريا','اليمن','ليبيا','تونس','الجزائر','المغرب','السودان','الصومال','جزر القمر','جيبوتي','موريتانيا','فلسطين'];
-const COUNTRY_MAP_AR_TO_EN = {
-  'الإمارات':'UAE','السعودية':'Saudi Arabia','مصر':'Egypt','عُمان':'Oman',
-  'الكويت':'Kuwait','قطر':'Qatar','البحرين':'Bahrain','الأردن':'Jordan',
-  'لبنان':'Lebanon','العراق':'Iraq','سوريا':'Syria','اليمن':'Yemen',
-  'ليبيا':'Libya','تونس':'Tunisia','الجزائر':'Algeria','المغرب':'Morocco',
-  'السودان':'Sudan','الصومال':'Somalia','جزر القمر':'Comoros','جيبوتي':'Djibouti',
-  'موريتانيا':'Mauritania','فلسطين':'Palestine'
-};
 const GCC_EN = ['UAE','Saudi Arabia','Kuwait','Qatar','Bahrain','Oman'];
 const GCC_AR = ['الإمارات','السعودية','الكويت','قطر','البحرين','عُمان'];
-
 const CURRENCIES_EN = ['AED','SAR','EGP','OMR','KWD','QAR','BHD','JOD','USD'];
 const CURRENCY_AR = {
   'AED':'درهم إماراتي','SAR':'ريال سعودي','EGP':'جنيه مصري',
@@ -24,19 +17,35 @@ const CURRENCY_AR = {
   'BHD':'دينار بحريني','JOD':'دينار أردني','USD':'دولار أمريكي'
 };
 
-export default function Submit() {
+const FORM_KEY = 'salarymena_form';
+
+function SubmitInner() {
   const { lang, isAr } = useLang();
   const txt = t[lang];
-  const [step, setStep] = useState(1);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const step = Number(searchParams.get('step') || 1);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [countrySearch, setCountrySearch] = useState('');
-  const [form, setForm] = useState({
-    jobTitle:'',seniority:'',companyType:'',companyName:'',
-    country:'',countryEN:'',city:'',monthlySalary:'',basicSalary:'',
-    currency:'AED',bonus:'',experience:'',education:'',
-    nationalityType:'',gender:'',email:'',housingProvided:false,carProvided:false
+  const [form, setForm] = useState(() => {
+    if(typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem(FORM_KEY);
+      if(saved) return JSON.parse(saved);
+    }
+    return {
+      jobTitle:'',seniority:'',companyType:'',companyName:'',
+      country:'',countryEN:'',city:'',monthlySalary:'',basicSalary:'',
+      currency:'AED',bonus:'',experience:'',education:'',
+      nationalityType:'',gender:'',email:'',housingProvided:false,carProvided:false
+    };
   });
-  const update = (f,v) => setForm(p=>({...p,[f]:v}));
+
+  const update = (f,v) => {
+    const newForm = {...form,[f]:v};
+    setForm(newForm);
+    sessionStorage.setItem(FORM_KEY, JSON.stringify(newForm));
+  };
 
   const STEPS = [
     {title:txt.step_role_title,subtitle:txt.step_role_sub},
@@ -47,24 +56,23 @@ export default function Submit() {
     {title:txt.step_done_title,subtitle:txt.step_done_sub},
   ];
 
-  const COUNTRIES = lang==='ar' ? COUNTRIES_AR : COUNTRIES_EN;
   const isGCC = GCC_EN.includes(form.countryEN) || GCC_AR.includes(form.country);
-
   const nationalityOptions = isGCC
     ? (lang==='ar'?['مواطن خليجي','وافد عربي','وافد أوروبي/أجنبي','وافد آسيوي']:['GCC National','Arab Expat','Western Expat','Asian Expat'])
     : (lang==='ar'?['مواطن محلي','عربي (دولة أخرى)','وافد أوروبي/أجنبي','وافد آسيوي']:['Local National','Arab (Other)','Western Expat','Asian Expat']);
 
   const selectCountry = (countryLabel) => {
-    if (lang==='ar') {
+    if(lang==='ar') {
       const idx = COUNTRIES_AR.indexOf(countryLabel);
       const en = idx >= 0 ? COUNTRIES_EN[idx] : countryLabel;
-      update('country', countryLabel);
-      update('countryEN', en);
+      const newForm = {...form,country:countryLabel,countryEN:en,nationalityType:''};
+      setForm(newForm);
+      sessionStorage.setItem(FORM_KEY, JSON.stringify(newForm));
     } else {
-      update('country', countryLabel);
-      update('countryEN', countryLabel);
+      const newForm = {...form,country:countryLabel,countryEN:countryLabel,nationalityType:''};
+      setForm(newForm);
+      sessionStorage.setItem(FORM_KEY, JSON.stringify(newForm));
     }
-    update('nationalityType','');
   };
 
   const canNext = () => {
@@ -77,17 +85,30 @@ export default function Submit() {
     return true;
   };
 
+  const goNext = () => {
+    if(canNext()) router.push(`/submit?step=${step+1}`);
+  };
+
+  const goBack = () => {
+    router.push(`/submit?step=${step-1}`);
+  };
+
   const handleSubmit = async () => {
+    if(submitting) return;
+    setSubmitting(true);
     try {
       const payload = {
         ...form,
         country: form.countryEN || form.country,
         companyType: form.companyType==='خاص'?'Private':form.companyType==='حكومة'?'Government':form.companyType,
       };
-      await fetch('/api/submit', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    } catch(e) {}
-    localStorage.setItem('salarymena_access','true');
-    setSubmitted(true);
+      await fetch('/api/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      sessionStorage.removeItem(FORM_KEY);
+      localStorage.setItem('salarymena_access','true');
+      setSubmitted(true);
+    } catch(e){
+      setSubmitting(false);
+    }
   };
 
   const inp = {width:'100%',background:'#13131f',border:'1px solid #2a2a3e',borderRadius:'10px',padding:'14px 16px',color:'#fff',fontSize:'16px',outline:'none',boxSizing:'border-box',appearance:'none',textAlign:isAr?'right':'left'};
@@ -98,12 +119,11 @@ export default function Submit() {
   const countryChip = (a) => ({padding:'8px 14px',borderRadius:'50px',fontSize:'13px',fontWeight:'500',cursor:'pointer',border:'none',background:a?'linear-gradient(135deg,#6366f1,#8b5cf6)':'#13131f',color:a?'#fff':'#606070',outline:a?'none':'1px solid #2a2a3e',whiteSpace:'nowrap'});
   const toggle = (a) => ({padding:'10px 16px',borderRadius:'50px',fontSize:'13px',fontWeight:'500',cursor:'pointer',border:'none',background:a?'linear-gradient(135deg,#10b981,#059669)':'#13131f',color:a?'#fff':'#606070',outline:a?'none':'1px solid #2a2a3e',transition:'all 0.2s'});
   const progress = ((step-1)/(STEPS.length-1))*100;
+  const COUNTRIES = lang==='ar' ? COUNTRIES_AR : COUNTRIES_EN;
   const filteredCountries = COUNTRIES.filter(c=>c.toLowerCase().includes(countrySearch.toLowerCase()));
-
   const seniorities = lang==='ar'
     ? [['مبتدئ','0–2 سنة'],['متوسط','2–5 سنوات'],['متقدم','5–8 سنوات'],['قائد','يقود فريقاً'],['مدير','يدير أشخاصاً'],['مدير أول','رئيس قسم'],['الإدارة العليا','رئيس تنفيذي، مالي...']]
     : [['Junior','0–2 yrs'],['Mid-Level','2–5 yrs'],['Senior','5–8 yrs'],['Lead','Leading a team'],['Manager','Managing people'],['Director','Head of dept'],['C-Suite','CEO, CFO, COO...']];
-
   const companyTypes = lang==='ar' ? ['خاص','حكومة'] : ['Private','Government'];
   const experiences = ['0-1','1-3','3-5','5-8','8-12','12+'];
   const educations = lang==='ar'
@@ -127,6 +147,7 @@ export default function Submit() {
   return (
     <div style={{fontFamily:'Inter,sans-serif',background:'#0a0a0f',minHeight:'100vh',color:'#fff'}}>
       <style>{`
+        html,body{background:#0a0a0f!important}
         input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
         @media(max-width:768px){
           .submit-title{font-size:26px!important}
@@ -143,8 +164,8 @@ export default function Submit() {
       <div className="submit-wrap" style={{maxWidth:'580px',margin:'40px auto',padding:'0 20px'}}>
         <div className="submit-header" style={{marginBottom:'36px'}}>
           <div style={{fontSize:'13px',color:'#6366f1',fontWeight:'600',marginBottom:'8px',textTransform:'uppercase',letterSpacing:'1px'}}>{txt.step_of} {step} {txt.of} {STEPS.length}</div>
-          <h1 className="submit-title" style={{fontSize:'32px',fontWeight:'800',marginBottom:'8px'}}>{STEPS[step-1].title}</h1>
-          <p style={{color:'#606070',fontSize:'15px'}}>{STEPS[step-1].subtitle}</p>
+          <h1 className="submit-title" style={{fontSize:'32px',fontWeight:'800',marginBottom:'8px'}}>{STEPS[step-1]?.title}</h1>
+          <p style={{color:'#606070',fontSize:'15px'}}>{STEPS[step-1]?.subtitle}</p>
         </div>
 
         {step===1 && <div style={{display:'flex',flexDirection:'column',gap:'20px'}}>
@@ -244,15 +265,25 @@ export default function Submit() {
           <p style={{fontSize:'12px',color:'#404050',margin:0}}>{txt.email_hint}</p>
         </div>}
 
-        <div className="submit-nav" style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:'40px',gap:'12px'}}>
+        <div className="submit-nav" style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:'40px',marginBottom:'60px',gap:'12px'}}>
           {step>1
-            ?<button onClick={()=>setStep(s=>s-1)} style={{background:'transparent',border:'1px solid #2a2a3e',color:'#a0a0b0',borderRadius:'10px',padding:'14px 24px',fontSize:'15px',cursor:'pointer',fontWeight:'500',flexShrink:0}}>{txt.back_btn}</button>
+            ?<button onClick={goBack} style={{background:'transparent',border:'1px solid #2a2a3e',color:'#a0a0b0',borderRadius:'10px',padding:'14px 24px',fontSize:'15px',cursor:'pointer',fontWeight:'500',flexShrink:0}}>{txt.back_btn}</button>
             :<div/>}
           {step<STEPS.length
-            ?<button onClick={()=>canNext()&&setStep(s=>s+1)} style={{background:canNext()?'linear-gradient(135deg,#6366f1,#8b5cf6)':'#1e1e2e',color:canNext()?'#fff':'#404050',border:'none',borderRadius:'10px',padding:'14px 28px',fontSize:'15px',fontWeight:'700',cursor:canNext()?'pointer':'not-allowed',flex:1,maxWidth:'200px'}}>{txt.continue_btn}</button>
-            :<button onClick={handleSubmit} style={{background:canNext()?'linear-gradient(135deg,#6366f1,#8b5cf6)':'#1e1e2e',color:canNext()?'#fff':'#404050',border:'none',borderRadius:'10px',padding:'14px 28px',fontSize:'15px',fontWeight:'700',cursor:canNext()?'pointer':'not-allowed',flex:1,maxWidth:'220px'}}>{txt.submit_btn_form}</button>}
+            ?<button onClick={goNext} style={{background:canNext()?'linear-gradient(135deg,#6366f1,#8b5cf6)':'#1e1e2e',color:canNext()?'#fff':'#404050',border:'none',borderRadius:'10px',padding:'14px 28px',fontSize:'15px',fontWeight:'700',cursor:canNext()?'pointer':'not-allowed',flex:1,maxWidth:'200px'}}>{txt.continue_btn}</button>
+            :<button onClick={handleSubmit} disabled={submitting} style={{background:canNext()&&!submitting?'linear-gradient(135deg,#6366f1,#8b5cf6)':'#1e1e2e',color:canNext()&&!submitting?'#fff':'#404050',border:'none',borderRadius:'10px',padding:'14px 28px',fontSize:'15px',fontWeight:'700',cursor:canNext()&&!submitting?'pointer':'not-allowed',flex:1,maxWidth:'220px'}}>
+              {submitting?'Submitting...':txt.submit_btn_form}
+            </button>}
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Submit() {
+  return (
+    <Suspense fallback={<div style={{background:'#0a0a0f',minHeight:'100vh'}}/>}>
+      <SubmitInner/>
+    </Suspense>
   );
 }
