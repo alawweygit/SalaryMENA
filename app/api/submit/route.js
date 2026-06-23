@@ -15,13 +15,27 @@ export async function POST(req) {
       education, nationalityType, gender, email, housingProvided, carProvided
     } = body;
 
-    const result = await pool.query(
+    // Translate job title to Arabic quickly
+    let jobTitleAr = null;
+    try {
+      const msg = await client.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 50,
+        messages:[{role:'user',content:'Translate this job title to Arabic. Reply with ONLY the Arabic translation, nothing else: ' + jobTitle}]
+      });
+      jobTitleAr = msg.content[0].text.trim();
+    } catch(e) {
+      console.error('Translation error:', e);
+    }
+
+    // Save to database
+    await pool.query(
       `INSERT INTO salaries (job_title, job_title_ar, seniority, company_type, company_name, country, city,
         monthly_salary, basic_salary, currency, bonus, experience, education,
         nationality_type, gender, email, housing_provided, car_provided)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING id`,
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)`,
       [
-        jobTitle, null, seniority || null, companyType || null, companyName || null,
+        jobTitle, jobTitleAr, seniority || null, companyType || null, companyName || null,
         country || null, city || null,
         monthlySalary ? Number(monthlySalary) : null,
         basicSalary ? Number(basicSalary) : null,
@@ -33,22 +47,7 @@ export async function POST(req) {
       ]
     );
 
-    const savedId = result.rows[0].id;
-    (async () => {
-      try {
-        const msg = await client.messages.create({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 100,
-          messages:[{role:'user',content:'Translate this job title to Arabic. Reply with ONLY the Arabic translation, nothing else: ' + jobTitle}]
-        });
-        const arabic = msg.content[0].text.trim();
-        await pool.query('UPDATE salaries SET job_title_ar = $1 WHERE id = $2', [arabic, savedId]);
-        console.log('Translated:', jobTitle, '->', arabic);
-      } catch(e) {
-        console.error('Translation error:', e);
-      }
-    })();
-
+    // Send email
     if (email) {
       try {
         await resend.emails.send({
