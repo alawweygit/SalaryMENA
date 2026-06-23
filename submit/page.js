@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useLang } from '../components/LanguageContext';
 import { t } from '../components/translations';
 import Navbar from '../components/Navbar';
@@ -21,7 +21,6 @@ export default function Submit() {
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
   const [countrySearch, setCountrySearch] = useState('');
-  const topRef = useRef(null);
   const [form, setForm] = useState({
     jobTitle:'',seniority:'',companyType:'',companyName:'',
     country:'',countryEN:'',city:'',monthlySalary:'',basicSalary:'',
@@ -31,12 +30,9 @@ export default function Submit() {
   const update = (f,v) => setForm(p=>({...p,[f]:v}));
 
   const scrollTop = () => {
-    if(topRef.current) {
-      topRef.current.scrollIntoView({behavior:'smooth',block:'start'});
-    }
-    try { window.scrollTo({top:0,behavior:'smooth'}); } catch(e) {}
-    document.body.scrollTop = 0;
-    document.documentElement.scrollTop = 0;
+    setTimeout(() => {
+      document.getElementById('submit-top')?.scrollIntoView({behavior:'instant'});
+    }, 10);
   };
 
   const STEPS = [
@@ -76,8 +72,8 @@ export default function Submit() {
     return true;
   };
 
-  const goNext = () => { if(canNext()){ setStep(s=>s+1); setTimeout(scrollTop,50); } };
-  const goBack = () => { setStep(s=>s-1); setTimeout(scrollTop,50); };
+  const goNext = () => { if(canNext()){ setStep(s=>s+1); scrollTop(); } };
+  const goBack = () => { setStep(s=>s-1); scrollTop(); };
 
   const handleSubmit = async () => {
     try {
@@ -136,8 +132,9 @@ export default function Submit() {
           .submit-nav{margin-top:32px!important}
         }
       `}</style>
+      <div id="submit-top"/>
       <Navbar/>
-      <div ref={topRef} style={{height:'3px',background:'#1e1e2e'}}>
+      <div style={{height:'3px',background:'#1e1e2e'}}>
         <div style={{height:'100%',width:progress+'%',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',transition:'width 0.4s ease'}}/>
       </div>
 
