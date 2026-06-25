@@ -17,12 +17,12 @@ export async function POST(req) {
 
     // Save immediately with no translation yet
     const result = await pool.query(
-      `INSERT INTO salaries (job_title, job_title_ar, seniority, company_type, company_name, country, city,
+      `INSERT INTO salaries (job_title, job_title_ar, job_title_en, seniority, company_type, company_name, country, city,
         monthly_salary, basic_salary, currency, bonus, experience, education,
         nationality_type, gender, email, housing_provided, car_provided)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING id`,
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19) RETURNING id`,
       [
-        jobTitle, null, seniority || null, companyType || null, companyName || null,
+        jobTitle, null, null, seniority || null, companyType || null, companyName || null,
         country || null, city || null,
         monthlySalary ? Number(monthlySalary) : null,
         basicSalary ? Number(basicSalary) : null,
@@ -80,14 +80,22 @@ export async function POST(req) {
       }
     }
 
-    // Translate in background after returning response
-    client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 50,
-      messages:[{role:'user',content:'Translate this job title to Arabic. Reply with ONLY the Arabic translation, nothing else: ' + jobTitle}]
-    }).then(msg => {
-      const arabic = msg.content[0].text.trim();
-      pool.query('UPDATE salaries SET job_title_ar = $1 WHERE id = $2', [arabic, savedId]);
+    // Translate both directions in background
+    Promise.all([
+      client.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 50,
+        messages: [{ role: 'user', content: 'Translate this job title to Arabic. Reply with ONLY the Arabic translation, nothing else: ' + jobTitle }]
+      }),
+      client.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 50,
+        messages: [{ role: 'user', content: 'Translate this job title to English. Reply with ONLY the English translation, nothing else: ' + jobTitle }]
+      })
+    ]).then(([arMsg, enMsg]) => {
+      const arabic = arMsg.content[0].text.trim();
+      const english = enMsg.content[0].text.trim();
+      pool.query('UPDATE salaries SET job_title_ar = $1, job_title_en = $2 WHERE id = $3', [arabic, english, savedId]);
     }).catch(e => console.error('Translation error:', e));
 
     return Response.json({ success: true });
