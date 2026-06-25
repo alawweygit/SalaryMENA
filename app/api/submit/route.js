@@ -6,6 +6,30 @@ const pool = new Pool({ connectionString: process.env.DATABASE_PUBLIC_URL });
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+const JOB_SYNONYMS = [
+  ['medical rep','medical representative','product specialist','pharma rep','pharmaceutical sales','sales rep','field medical'],
+  ['software engineer','software developer','programmer','developer','full stack','frontend','backend','web developer'],
+  ['accountant','senior accountant','financial accountant','accounting','finance officer'],
+  ['hr','human resources','hr manager','hr officer','recruitment','talent acquisition'],
+  ['marketing manager','marketing officer','brand manager','digital marketing','marketing specialist'],
+  ['project manager','program manager','pmo','project coordinator'],
+  ['sales manager','sales director','business development','bd manager','sales executive'],
+  ['doctor','physician','medical officer','gp','general practitioner'],
+  ['nurse','nursing','staff nurse','registered nurse'],
+  ['teacher','educator','instructor','lecturer','trainer'],
+];
+
+function getSynonyms(title) {
+  if (!title) return [];
+  const lower = title.toLowerCase();
+  for (const group of JOB_SYNONYMS) {
+    if (group.some(s => lower.includes(s) || s.includes(lower))) {
+      return group;
+    }
+  }
+  return [lower];
+}
+
 export async function POST(req) {
   try {
     const body = await req.json();
@@ -36,7 +60,7 @@ export async function POST(req) {
 
     const savedId = result.rows[0].id;
 
-    // Send email immediately
+    // Send confirmation email immediately
     if (email) {
       try {
         await resend.emails.send({
@@ -92,11 +116,59 @@ export async function POST(req) {
         max_tokens: 50,
         messages: [{ role: 'user', content: 'Translate this job title to English. Reply with ONLY the English translation, nothing else: ' + jobTitle }]
       })
-    ]).then(([arMsg, enMsg]) => {
+    ]).then(async ([arMsg, enMsg]) => {
       const arabic = arMsg.content[0].text.trim();
       const english = enMsg.content[0].text.trim();
-      pool.query('UPDATE salaries SET job_title_ar = $1, job_title_en = $2 WHERE id = $3', [arabic, english, savedId]);
-    }).catch(e => console.error('Translation error:', e));
+
+      // Save translations
+      await pool.query('UPDATE salaries SET job_title_ar = $1, job_title_en = $2 WHERE id = $3', [arabic, english, savedId]);
+
+      // Save alert preference if email provided
+      if (email) {
+        await pool.query(
+          `INSERT INTO salary_alerts (email, job_title, job_title_en, job_title_ar, country) VALUES ($1,$2,$3,$4,$5)`,
+          [email, jobTitle, english, arabic, country]
+        );
+      }
+
+      // Find subscribers watching similar roles in same country and notify them
+      const synonyms = getSynonyms(english);
+      const conditions = synonyms.map((_, i) => `LOWER(job_title_en) LIKE $${i + 2}`).join(' OR ');
+      const params = [country, ...synonyms.map(s => `%${s}%`)];
+      const subscribers = await pool.query(
+        `SELECT DISTINCT email FROM salary_alerts WHERE country = $1 AND (${conditions}) AND email != $${params.length + 1}`,
+        [...params, email || '']
+      );
+
+      // Email each subscriber
+      for (const row of subscribers.rows) {
+        try {
+          await resend.emails.send({
+            from: 'SalaryMENA <support@cvdropai.com>',
+            to: row.email,
+            subject: `New ${english} salary added in ${country} — SalaryMENA`,
+            html: `
+              <div style="font-family:Inter,sans-serif;background:#0a0a0f;color:#ffffff;padding:32px;max-width:600px;margin:0 auto;border-radius:16px;">
+                <div style="margin-bottom:24px;display:flex;align-items:center;gap:12px;">
+                  <img src="https://salarymena.com/logo-email.png" width="44" height="44" alt="SalaryMENA logo" style="border-radius:8px;"/>
+                  <div>
+                    <span style="font-size:20px;font-weight:900;color:#ffffff;">Salary</span><span style="font-size:20px;font-weight:900;color:#8b5cf6;">MENA</span>
+                  </div>
+                </div>
+                <h1 style="font-size:22px;font-weight:800;margin-bottom:8px;">New salary added for your role 🔔</h1>
+                <p style="color:#a0a0b0;font-size:15px;line-height:1.7;margin-bottom:24px;">A new <strong style="color:#fff">${english}</strong> salary was just submitted in <strong style="color:#fff">${country}</strong>.</p>
+                <a href="https://salarymena.com/explore" style="display:inline-block;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#ffffff;text-decoration:none;border-radius:10px;padding:12px 24px;font-weight:700;font-size:14px;margin-bottom:24px;">See the new salary →</a>
+                <div style="border-top:1px solid #1e1e2e;padding-top:20px;">
+                  <p style="color:#404050;font-size:12px;margin:0;">© 2026 SalaryMENA · <a href="https://salarymena.com" style="color:#6366f1;text-decoration:none;">salarymena.com</a></p>
+                </div>
+              </div>
+            `
+          });
+        } catch(e) {
+          console.error('Alert email error:', e);
+        }
+      }
+    }).catch(e => console.error('Background error:', e));
 
     return Response.json({ success: true });
   } catch (error) {
