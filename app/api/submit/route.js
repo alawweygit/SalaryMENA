@@ -20,7 +20,7 @@ const JOB_SYNONYMS = [
 ];
 
 function getSynonyms(title) {
-  if (!title) return [];
+  if (!title) return [title.toLowerCase()];
   const lower = title.toLowerCase();
   for (const group of JOB_SYNONYMS) {
     if (group.some(s => lower.includes(s) || s.includes(lower))) {
@@ -39,14 +39,36 @@ export async function POST(req) {
       education, nationalityType, gender, email, housingProvided, carProvided
     } = body;
 
-    // Save immediately with no translation yet
+    // Step 1: Translate both directions first
+    let arabic = null;
+    let english = jobTitle;
+    try {
+      const [arMsg, enMsg] = await Promise.all([
+        client.messages.create({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 50,
+          messages: [{ role: 'user', content: 'Translate this job title to Arabic. Reply with ONLY the Arabic translation, nothing else: ' + jobTitle }]
+        }),
+        client.messages.create({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 50,
+          messages: [{ role: 'user', content: 'Translate this job title to English. Reply with ONLY the English translation, nothing else: ' + jobTitle }]
+        })
+      ]);
+      arabic = arMsg.content[0].text.trim();
+      english = enMsg.content[0].text.trim();
+    } catch(e) {
+      console.error('Translation error:', e);
+    }
+
+    // Step 2: Save to DB with translations
     const result = await pool.query(
       `INSERT INTO salaries (job_title, job_title_ar, job_title_en, seniority, company_type, company_name, country, city,
         monthly_salary, basic_salary, currency, bonus, experience, education,
         nationality_type, gender, email, housing_provided, car_provided)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19) RETURNING id`,
       [
-        jobTitle, null, null, seniority || null, companyType || null, companyName || null,
+        jobTitle, arabic, english, seniority || null, companyType || null, companyName || null,
         country || null, city || null,
         monthlySalary ? Number(monthlySalary) : null,
         basicSalary ? Number(basicSalary) : null,
@@ -60,7 +82,7 @@ export async function POST(req) {
 
     const savedId = result.rows[0].id;
 
-    // Send confirmation email immediately
+    // Step 3: Send confirmation email
     if (email) {
       try {
         await resend.emails.send({
@@ -104,43 +126,29 @@ export async function POST(req) {
       }
     }
 
-    // Translate both directions in background
-    Promise.all([
-      client.messages.create({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 50,
-        messages: [{ role: 'user', content: 'Translate this job title to Arabic. Reply with ONLY the Arabic translation, nothing else: ' + jobTitle }]
-      }),
-      client.messages.create({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 50,
-        messages: [{ role: 'user', content: 'Translate this job title to English. Reply with ONLY the English translation, nothing else: ' + jobTitle }]
-      })
-    ]).then(async ([arMsg, enMsg]) => {
-      const arabic = arMsg.content[0].text.trim();
-      const english = enMsg.content[0].text.trim();
-
-      // Save translations
-      await pool.query('UPDATE salaries SET job_title_ar = $1, job_title_en = $2 WHERE id = $3', [arabic, english, savedId]);
-
-      // Save alert preference if email provided
-      if (email) {
+    // Step 4: Save alert preference
+    if (email) {
+      try {
         await pool.query(
           `INSERT INTO salary_alerts (email, job_title, job_title_en, job_title_ar, country) VALUES ($1,$2,$3,$4,$5)`,
           [email, jobTitle, english, arabic, country]
         );
+      } catch(e) {
+        console.error('Alert save error:', e);
       }
+    }
 
-      // Find subscribers watching similar roles in same country and notify them
+    // Step 5: Notify existing subscribers of matching role
+    try {
       const synonyms = getSynonyms(english);
       const conditions = synonyms.map((_, i) => `LOWER(job_title_en) LIKE $${i + 2}`).join(' OR ');
       const params = [country, ...synonyms.map(s => `%${s}%`)];
+      const excludeEmail = email || '';
       const subscribers = await pool.query(
         `SELECT DISTINCT email FROM salary_alerts WHERE country = $1 AND (${conditions}) AND email != $${params.length + 1}`,
-        [...params, email || '']
+        [...params, excludeEmail]
       );
 
-      // Email each subscriber
       for (const row of subscribers.rows) {
         try {
           await resend.emails.send({
@@ -168,7 +176,9 @@ export async function POST(req) {
           console.error('Alert email error:', e);
         }
       }
-    }).catch(e => console.error('Background error:', e));
+    } catch(e) {
+      console.error('Subscriber notify error:', e);
+    }
 
     return Response.json({ success: true });
   } catch (error) {
