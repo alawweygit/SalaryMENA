@@ -6,30 +6,6 @@ const pool = new Pool({ connectionString: process.env.DATABASE_PUBLIC_URL });
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const JOB_SYNONYMS = [
-  ['medical rep','medical representative','product specialist','pharma rep','pharmaceutical sales','sales rep','field medical'],
-  ['software engineer','software developer','programmer','developer','full stack','frontend','backend','web developer'],
-  ['accountant','senior accountant','financial accountant','accounting','finance officer'],
-  ['hr','human resources','hr manager','hr officer','recruitment','talent acquisition'],
-  ['marketing manager','marketing officer','brand manager','digital marketing','marketing specialist'],
-  ['project manager','program manager','pmo','project coordinator'],
-  ['sales manager','sales director','business development','bd manager','sales executive'],
-  ['doctor','physician','medical officer','gp','general practitioner'],
-  ['nurse','nursing','staff nurse','registered nurse'],
-  ['teacher','educator','instructor','lecturer','trainer'],
-];
-
-function getSynonyms(title) {
-  if (!title) return [title.toLowerCase()];
-  const lower = title.toLowerCase();
-  for (const group of JOB_SYNONYMS) {
-    if (group.some(s => lower.includes(s) || s.includes(lower))) {
-      return group;
-    }
-  }
-  return [lower];
-}
-
 export async function POST(req) {
   try {
     const body = await req.json();
@@ -39,11 +15,12 @@ export async function POST(req) {
       education, nationalityType, gender, email, housingProvided, carProvided
     } = body;
 
-    // Step 1: Translate both directions first
+    // Step 1: Translate + categorize in parallel
     let arabic = null;
     let english = jobTitle;
+    let category = null;
     try {
-      const [arMsg, enMsg] = await Promise.all([
+      const [arMsg, enMsg, catMsg] = await Promise.all([
         client.messages.create({
           model: 'claude-haiku-4-5-20251001',
           max_tokens: 50,
@@ -53,10 +30,16 @@ export async function POST(req) {
           model: 'claude-haiku-4-5-20251001',
           max_tokens: 50,
           messages: [{ role: 'user', content: 'Translate this job title to English. Reply with ONLY the English translation, nothing else: ' + jobTitle }]
+        }),
+        client.messages.create({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 20,
+          messages: [{ role: 'user', content: `Categorize this job title into ONE simple career category (examples: agriculture, technology, healthcare, finance, education, sales, marketing, engineering, legal, logistics, hospitality, construction, government, media). Reply with ONLY the single category word, nothing else: ${jobTitle}` }]
         })
       ]);
       arabic = arMsg.content[0].text.trim();
       english = enMsg.content[0].text.trim();
+      category = catMsg.content[0].text.trim().toLowerCase();
     } catch(e) {
       console.error('Translation error:', e);
     }
@@ -126,27 +109,24 @@ export async function POST(req) {
       }
     }
 
-    // Step 4: Save alert preference
+    // Step 4: Save alert preference with category
     if (email) {
       try {
         await pool.query(
-          `INSERT INTO salary_alerts (email, job_title, job_title_en, job_title_ar, country) VALUES ($1,$2,$3,$4,$5)`,
-          [email, jobTitle, english, arabic, country]
+          `INSERT INTO salary_alerts (email, job_title, job_title_en, job_title_ar, country, category) VALUES ($1,$2,$3,$4,$5,$6)`,
+          [email, jobTitle, english, arabic, country, category]
         );
       } catch(e) {
         console.error('Alert save error:', e);
       }
     }
 
-    // Step 5: Notify existing subscribers of matching role
+    // Step 5: Notify existing subscribers with same category + country
     try {
-      const synonyms = getSynonyms(english);
-      const conditions = synonyms.map((_, i) => `LOWER(job_title_en) LIKE $${i + 2}`).join(' OR ');
-      const params = [country, ...synonyms.map(s => `%${s}%`)];
-      const excludeEmail = email || '';
       const subscribers = await pool.query(
-        `SELECT DISTINCT email FROM salary_alerts WHERE country = $1 AND (${conditions}) AND email != $${params.length + 1}`,
-        [...params, excludeEmail]
+        `SELECT DISTINCT email FROM salary_alerts 
+         WHERE country = $1 AND category = $2 AND email != $3`,
+        [country, category, email || '']
       );
 
       for (const row of subscribers.rows) {
@@ -163,8 +143,8 @@ export async function POST(req) {
                     <span style="font-size:20px;font-weight:900;color:#ffffff;">Salary</span><span style="font-size:20px;font-weight:900;color:#8b5cf6;">MENA</span>
                   </div>
                 </div>
-                <h1 style="font-size:22px;font-weight:800;margin-bottom:8px;">New salary added for your role 🔔</h1>
-                <p style="color:#a0a0b0;font-size:15px;line-height:1.7;margin-bottom:24px;">A new <strong style="color:#fff">${english}</strong> salary was just submitted in <strong style="color:#fff">${country}</strong>.</p>
+                <h1 style="font-size:22px;font-weight:800;margin-bottom:8px;">New salary added for your field 🔔</h1>
+                <p style="color:#a0a0b0;font-size:15px;line-height:1.7;margin-bottom:24px;">A new <strong style="color:#fff">${english}</strong> salary was just submitted in <strong style="color:#fff">${country}</strong> — similar to your role.</p>
                 <a href="https://salarymena.com/explore" style="display:inline-block;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#ffffff;text-decoration:none;border-radius:10px;padding:12px 24px;font-weight:700;font-size:14px;margin-bottom:24px;">See the new salary →</a>
                 <div style="border-top:1px solid #1e1e2e;padding-top:20px;">
                   <p style="color:#404050;font-size:12px;margin:0;">© 2026 SalaryMENA · <a href="https://salarymena.com" style="color:#6366f1;text-decoration:none;">salarymena.com</a></p>
