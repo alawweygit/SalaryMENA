@@ -25,14 +25,15 @@ export const metadata = {
   },
   icons: {
     icon: [
+      { url: '/favicon.ico', sizes: 'any' },
       { url: '/favicon-32.png', sizes: '32x32', type: 'image/png' },
       { url: '/favicon-16.png', sizes: '16x16', type: 'image/png' },
-      { url: '/logo.svg', type: 'image/svg+xml' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
     ],
     apple: [
       { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
     ],
-    shortcut: '/favicon-32.png',
+    shortcut: '/favicon.ico',
   },
 };
 
@@ -41,10 +42,11 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <head>
         <meta name="google-site-verification" content="N7kvCCw4xOv9uGlPHNBC834wXUw7n9G8QjKanPixDY8" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        <link rel="shortcut icon" href="/favicon-32.png" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <LanguageProvider>
