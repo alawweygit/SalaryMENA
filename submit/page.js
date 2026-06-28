@@ -120,9 +120,11 @@ function SubmitInner() {
   const progress = ((step-1)/(STEPS.length-1))*100;
   const COUNTRIES = lang==='ar' ? COUNTRIES_AR : COUNTRIES_EN;
   const filteredCountries = COUNTRIES.filter(c=>c.toLowerCase().includes(countrySearch.toLowerCase()));
+
   const seniorities = lang==='ar'
-    ? [['مبتدئ','0–2 سنة'],['متوسط','2–5 سنوات'],['متقدم','5–8 سنوات'],['قائد','يقود فريقاً'],['مدير','يدير أشخاصاً'],['مدير أول','رئيس قسم'],['الإدارة العليا','رئيس تنفيذي، مالي...']]
-    : [['Junior','0–2 yrs'],['Mid-Level','2–5 yrs'],['Senior','5–8 yrs'],['Lead','Leading a team'],['Manager','Managing people'],['Director','Head of dept'],['C-Suite','CEO, CFO, COO...']];
+    ? [['مبتدئ','0–1 سنة'],['متوسط','1–3 سنوات'],['متقدم','3–5 سنوات'],['متقدم+','8+ سنوات'],['مدير','يدير أشخاصاً'],['مدير أول','رئيس قسم'],['الإدارة العليا','رئيس تنفيذي، مالي...']]
+    : [['Junior','0–1 yrs'],['Mid-Level','1–3 yrs'],['Senior','3–5 yrs'],['Senior+','8+ yrs'],['Manager','Managing people'],['Director','Head of dept'],['C-Suite','CEO, CFO, COO...']];
+
   const companyTypes = lang==='ar' ? ['خاص','حكومة'] : ['Private','Government'];
   const experiences = ['0-1','1-3','3-5','5-8','8-12','12+'];
   const educations = lang==='ar'
