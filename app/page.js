@@ -68,13 +68,17 @@ export default function Home() {
       <div style={{borderBottom:'1px solid #1e1e2e'}}>
         <div className="section-row" style={{maxWidth:'900px',margin:'0 auto',padding:'60px 24px'}}>
           <div className="section-text">
-            <div style={{display:'inline-block',background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.3)',borderRadius:'50px',padding:'4px 14px',fontSize:'12px',color:'#a78bfa',marginBottom:'16px',fontWeight:'600'}}>📊 EXPLORE</div>
+            <div style={{display:'inline-block',background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.3)',borderRadius:'50px',padding:'4px 14px',fontSize:'12px',color:'#a78bfa',marginBottom:'16px',fontWeight:'600'}}>📊 {lang==='ar'?'اكتشف':'EXPLORE'}</div>
             <h2 style={{fontSize:'28px',fontWeight:'900',marginBottom:'14px',lineHeight:1.2}}>{txt.fs_explore_title}</h2>
             <p style={{color:'#606070',fontSize:'15px',lineHeight:1.8,marginBottom:'24px'}}>{txt.fs_explore_desc}</p>
             <a href="/explore" style={{display:'inline-block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'10px',padding:'12px 24px',fontWeight:'700',fontSize:'14px'}}>{txt.fs_explore_btn}</a>
           </div>
           <div className="section-preview" style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'20px',display:'flex',flexDirection:'column',gap:'10px'}}>
-            {[
+            {lang==='ar' ? [
+              {title:'مهندس برمجيات',country:'الإمارات 🇦🇪',salary:'درهم إماراتي 35,000',tag:'متقدم'},
+              {title:'صيدلاني',country:'عُمان 🇴🇲',salary:'ريال عماني 600',tag:'متوسط'},
+              {title:'مدير تسويق',country:'السعودية 🇸🇦',salary:'ريال سعودي 18,000',tag:'خاص'},
+            ] : [
               {title:'Software Engineer',country:'UAE 🇦🇪',salary:'AED 35,000',tag:'Senior'},
               {title:'Pharmacist',country:'Oman 🇴🇲',salary:'OMR 600',tag:'Mid-Level'},
               {title:'Marketing Manager',country:'Saudi Arabia 🇸🇦',salary:'SAR 18,000',tag:'Private'},
@@ -95,13 +99,13 @@ export default function Home() {
       <div style={{borderBottom:'1px solid #1e1e2e',background:'#0d0d18'}}>
         <div className="section-row-rev" style={{maxWidth:'900px',margin:'0 auto',padding:'60px 24px'}}>
           <div className="section-text">
-            <div style={{display:'inline-block',background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.3)',borderRadius:'50px',padding:'4px 14px',fontSize:'12px',color:'#a78bfa',marginBottom:'16px',fontWeight:'600'}}>🔒 ANONYMOUS</div>
+            <div style={{display:'inline-block',background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.3)',borderRadius:'50px',padding:'4px 14px',fontSize:'12px',color:'#a78bfa',marginBottom:'16px',fontWeight:'600'}}>🔒 {lang==='ar'?'مجهول':'ANONYMOUS'}</div>
             <h2 style={{fontSize:'28px',fontWeight:'900',marginBottom:'14px',lineHeight:1.2}}>{txt.fs_submit_title}</h2>
             <p style={{color:'#606070',fontSize:'15px',lineHeight:1.8,marginBottom:'24px'}}>{txt.fs_submit_desc}</p>
             <a href="/submit" style={{display:'inline-block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'10px',padding:'12px 24px',fontWeight:'700',fontSize:'14px'}}>{txt.fs_submit_btn}</a>
           </div>
           <div className="section-preview" style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'20px',display:'flex',flexDirection:'column',gap:'10px'}}>
-            {['🧑‍💼 Job Title','🌍 Country','🏢 Company Type','💰 Monthly Salary','🎓 Education','📧 Email'].map((item,i)=>(
+            {(lang==='ar' ? ['🧑‍💼 المسمى الوظيفي','🌍 الدولة','🏢 نوع الشركة','💰 الراتب الشهري','🎓 المؤهل العلمي','📧 البريد الإلكتروني'] : ['🧑‍💼 Job Title','🌍 Country','🏢 Company Type','💰 Monthly Salary','🎓 Education','📧 Email']).map((item,i)=>(
               <div key={i} style={{display:'flex',alignItems:'center',gap:'12px',padding:'10px 14px',background:'#0a0a0f',borderRadius:'10px',border:'1px solid #1e1e2e'}}>
                 <span style={{fontSize:'13px',color:'#a0a0b0'}}>{item}</span>
                 {i<4 && <div style={{marginLeft:'auto',width:'7px',height:'7px',borderRadius:'50%',background:'#6366f1'}}/>}
@@ -115,17 +119,21 @@ export default function Home() {
       <div style={{borderBottom:'1px solid #1e1e2e'}}>
         <div className="section-row" style={{maxWidth:'900px',margin:'0 auto',padding:'60px 24px'}}>
           <div className="section-text">
-            <div style={{display:'inline-block',background:'rgba(16,185,129,0.15)',border:'1px solid rgba(16,185,129,0.3)',borderRadius:'50px',padding:'4px 14px',fontSize:'12px',color:'#10b981',marginBottom:'16px',fontWeight:'600'}}>⚡ AI-POWERED</div>
+            <div style={{display:'inline-block',background:'rgba(16,185,129,0.15)',border:'1px solid rgba(16,185,129,0.3)',borderRadius:'50px',padding:'4px 14px',fontSize:'12px',color:'#10b981',marginBottom:'16px',fontWeight:'600'}}>⚡ {lang==='ar'?'مدعوم بالذكاء الاصطناعي':'AI-POWERED'}</div>
             <h2 style={{fontSize:'28px',fontWeight:'900',marginBottom:'14px',lineHeight:1.2}}>{txt.fs_underpaid_title}</h2>
             <p style={{color:'#606070',fontSize:'15px',lineHeight:1.8,marginBottom:'24px'}}>{txt.fs_underpaid_desc}</p>
             <a href="/underpaid" style={{display:'inline-block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'10px',padding:'12px 24px',fontWeight:'700',fontSize:'14px'}}>{txt.fs_underpaid_btn}</a>
           </div>
           <div className="section-preview" style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'20px',textAlign:'center'}}>
-            <div style={{fontSize:'12px',color:'#10b981',fontWeight:'700',textTransform:'uppercase',letterSpacing:'2px',marginBottom:'8px'}}>MARKET VERDICT</div>
-            <div style={{fontSize:'28px',fontWeight:'900',marginBottom:'4px'}}>✅ Fair</div>
-            <div style={{color:'#606070',fontSize:'13px',marginBottom:'20px'}}>Pharmacist · Oman · Arab Expat</div>
+            <div style={{fontSize:'12px',color:'#10b981',fontWeight:'700',textTransform:'uppercase',letterSpacing:'2px',marginBottom:'8px'}}>{txt.market_verdict}</div>
+            <div style={{fontSize:'28px',fontWeight:'900',marginBottom:'4px'}}>✅ {txt.fair}</div>
+            <div style={{color:'#606070',fontSize:'13px',marginBottom:'20px'}}>{lang==='ar'?'صيدلاني · عُمان · وافد عربي':'Pharmacist · Oman · Arab Expat'}</div>
             <div style={{display:'flex',justifyContent:'space-between',gap:'8px'}}>
-              {[{l:'Market Low',v:'OMR 450',c:'#ef4444'},{l:'Median',v:'OMR 600',c:'#6366f1'},{l:'Market High',v:'OMR 850',c:'#10b981'}].map((item,i)=>(
+              {[
+                {l:txt.market_low,v:lang==='ar'?'ريال عماني 450':'OMR 450',c:'#ef4444'},
+                {l:txt.median,v:lang==='ar'?'ريال عماني 600':'OMR 600',c:'#6366f1'},
+                {l:txt.market_high,v:lang==='ar'?'ريال عماني 850':'OMR 850',c:'#10b981'}
+              ].map((item,i)=>(
                 <div key={i} style={{flex:1,background:'#0a0a0f',borderRadius:'10px',padding:'10px 6px',border:`1px solid ${item.c}30`}}>
                   <div style={{fontSize:'9px',color:'#404050',fontWeight:'700',marginBottom:'4px'}}>{item.l}</div>
                   <div style={{fontSize:'12px',fontWeight:'800',color:item.c}}>{item.v}</div>
@@ -140,7 +148,7 @@ export default function Home() {
       <div style={{borderBottom:'1px solid #1e1e2e',background:'#0d0d18'}}>
         <div className="section-row-rev" style={{maxWidth:'900px',margin:'0 auto',padding:'60px 24px'}}>
           <div className="section-text">
-            <div style={{display:'inline-block',background:'rgba(139,92,246,0.15)',border:'1px solid rgba(139,92,246,0.3)',borderRadius:'50px',padding:'4px 14px',fontSize:'12px',color:'#a78bfa',marginBottom:'16px',fontWeight:'600'}}>🤖 AI-POWERED</div>
+            <div style={{display:'inline-block',background:'rgba(139,92,246,0.15)',border:'1px solid rgba(139,92,246,0.3)',borderRadius:'50px',padding:'4px 14px',fontSize:'12px',color:'#a78bfa',marginBottom:'16px',fontWeight:'600'}}>🤖 {lang==='ar'?'مدعوم بالذكاء الاصطناعي':'AI-POWERED'}</div>
             <h2 style={{fontSize:'28px',fontWeight:'900',marginBottom:'14px',lineHeight:1.2}}>{txt.fs_coach_title}</h2>
             <p style={{color:'#606070',fontSize:'15px',lineHeight:1.8,marginBottom:'24px'}}>{txt.fs_coach_desc}</p>
             <a href="/coach" style={{display:'inline-block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'10px',padding:'12px 24px',fontWeight:'700',fontSize:'14px'}}>{txt.fs_coach_btn}</a>
@@ -148,19 +156,19 @@ export default function Home() {
           <div className="section-preview" style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'20px'}}>
             <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'14px',paddingBottom:'12px',borderBottom:'1px solid #1e1e2e'}}>
               <div style={{width:'28px',height:'28px',borderRadius:'50%',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'12px'}}>🤖</div>
-              <div style={{fontWeight:'700',fontSize:'12px'}}>AI Negotiation Coach</div>
+              <div style={{fontWeight:'700',fontSize:'12px'}}>{txt.coach_title}</div>
             </div>
             <div style={{marginBottom:'10px'}}>
-              <div style={{fontSize:'9px',fontWeight:'800',color:'#6366f1',letterSpacing:'1.5px',marginBottom:'4px'}}>VERDICT</div>
-              <div style={{background:'#0a0a0f',borderRadius:'8px',padding:'8px 12px',fontSize:'12px',color:'#10b981',fontWeight:'700'}}>✅ Above Market — You can negotiate higher</div>
+              <div style={{fontSize:'9px',fontWeight:'800',color:'#6366f1',letterSpacing:'1.5px',marginBottom:'4px'}}>{txt.market_verdict}</div>
+              <div style={{background:'#0a0a0f',borderRadius:'8px',padding:'8px 12px',fontSize:'12px',color:'#10b981',fontWeight:'700'}}>✅ {txt.above_market} — {lang==='ar'?'يمكنك التفاوض على أكثر':'You can negotiate higher'}</div>
             </div>
             <div style={{marginBottom:'10px'}}>
-              <div style={{fontSize:'9px',fontWeight:'800',color:'#6366f1',letterSpacing:'1.5px',marginBottom:'4px'}}>MARKET ASSESSMENT</div>
-              <div style={{background:'#0a0a0f',borderRadius:'8px',padding:'8px 12px',fontSize:'11px',color:'#a0a0b0',lineHeight:1.6}}>Senior engineers in UAE earn AED 28,000–42,000/month. Your offer is within range.</div>
+              <div style={{fontSize:'9px',fontWeight:'800',color:'#6366f1',letterSpacing:'1.5px',marginBottom:'4px'}}>{txt.ai_analysis}</div>
+              <div style={{background:'#0a0a0f',borderRadius:'8px',padding:'8px 12px',fontSize:'11px',color:'#a0a0b0',lineHeight:1.6}}>{lang==='ar'?'المهندسون المتقدمون في الإمارات يكسبون بين 28,000-42,000 درهم شهرياً.':'Senior engineers in UAE earn AED 28,000–42,000/month.'}</div>
             </div>
             <div>
-              <div style={{fontSize:'9px',fontWeight:'800',color:'#6366f1',letterSpacing:'1.5px',marginBottom:'4px'}}>YOUR SCRIPT</div>
-              <div style={{background:'#0a0a0f',borderRadius:'8px',padding:'8px 12px',fontSize:'11px',color:'#a0a0b0',lineHeight:1.6,fontStyle:'italic'}}>"Based on my research, the market range for this role is AED 35–42K..."</div>
+              <div style={{fontSize:'9px',fontWeight:'800',color:'#6366f1',letterSpacing:'1.5px',marginBottom:'4px'}}>{lang==='ar'?'نصك التفاوضي':'YOUR SCRIPT'}</div>
+              <div style={{background:'#0a0a0f',borderRadius:'8px',padding:'8px 12px',fontSize:'11px',color:'#a0a0b0',lineHeight:1.6,fontStyle:'italic'}}>{lang==='ar'?'"بناءً على بحثي، نطاق السوق لهذا الدور هو 35-42 ألف درهم..."':'"Based on my research, the market range for this role is AED 35–42K..."'}</div>
             </div>
           </div>
         </div>
@@ -170,7 +178,7 @@ export default function Home() {
       <div style={{borderBottom:'1px solid #1e1e2e'}}>
         <div className="section-row" style={{maxWidth:'900px',margin:'0 auto',padding:'60px 24px'}}>
           <div className="section-text">
-            <div style={{display:'inline-block',background:'rgba(251,191,36,0.15)',border:'1px solid rgba(251,191,36,0.3)',borderRadius:'50px',padding:'4px 14px',fontSize:'12px',color:'#fbbf24',marginBottom:'16px',fontWeight:'600'}}>💼 CV TOOL</div>
+            <div style={{display:'inline-block',background:'rgba(251,191,36,0.15)',border:'1px solid rgba(251,191,36,0.3)',borderRadius:'50px',padding:'4px 14px',fontSize:'12px',color:'#fbbf24',marginBottom:'16px',fontWeight:'600'}}>💼 {lang==='ar'?'أداة السيرة الذاتية':'CV TOOL'}</div>
             <h2 style={{fontSize:'28px',fontWeight:'900',marginBottom:'14px',lineHeight:1.2}}>{txt.fs_cvdrop_title}</h2>
             <p style={{color:'#606070',fontSize:'15px',lineHeight:1.8,marginBottom:'24px'}}>{txt.fs_cvdrop_desc}</p>
             <a href="https://cvdropai.com" target="_blank" rel="noreferrer" style={{display:'inline-block',background:'linear-gradient(135deg,#fbbf24,#f59e0b)',color:'#000',textDecoration:'none',borderRadius:'10px',padding:'12px 24px',fontWeight:'700',fontSize:'14px'}}>{txt.fs_cvdrop_btn}</a>
@@ -181,21 +189,27 @@ export default function Home() {
               <div style={{fontWeight:'700',fontSize:'12px'}}>CVDropAI</div>
             </div>
             <div style={{marginBottom:'10px'}}>
-              <div style={{fontSize:'9px',fontWeight:'800',color:'#fbbf24',letterSpacing:'1.5px',marginBottom:'4px'}}>JOB DESCRIPTION</div>
-              <div style={{background:'#0a0a0f',borderRadius:'8px',padding:'8px 12px',fontSize:'11px',color:'#a0a0b0',lineHeight:1.6}}>Senior Software Engineer at Noon — 5+ years React, Node.js...</div>
+              <div style={{fontSize:'9px',fontWeight:'800',color:'#fbbf24',letterSpacing:'1.5px',marginBottom:'4px'}}>{lang==='ar'?'الوصف الوظيفي':'JOB DESCRIPTION'}</div>
+              <div style={{background:'#0a0a0f',borderRadius:'8px',padding:'8px 12px',fontSize:'11px',color:'#a0a0b0',lineHeight:1.6}}>{lang==='ar'?'مهندس برمجيات متقدم في نون — 5+ سنوات React, Node.js...':'Senior Software Engineer at Noon — 5+ years React, Node.js...'}</div>
             </div>
-            <div style={{display:'flex',alignItems:'center',justifyContent:'center',padding:'6px',color:'#fbbf24',fontSize:'16px'}}>↓ AI rewrites your CV</div>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'center',padding:'6px',color:'#fbbf24',fontSize:'16px'}}>{lang==='ar'?'↑ الذكاء الاصطناعي يعيد كتابة سيرتك':'↓ AI rewrites your CV'}</div>
             <div>
-              <div style={{fontSize:'9px',fontWeight:'800',color:'#fbbf24',letterSpacing:'1.5px',marginBottom:'4px'}}>YOUR TAILORED CV</div>
-              <div style={{background:'#0a0a0f',borderRadius:'8px',padding:'8px 12px',fontSize:'11px',color:'#10b981',lineHeight:1.6,fontWeight:'600'}}>✅ CV matched and ready to send</div>
+              <div style={{fontSize:'9px',fontWeight:'800',color:'#fbbf24',letterSpacing:'1.5px',marginBottom:'4px'}}>{lang==='ar'?'سيرتك الذاتية المخصصة':'YOUR TAILORED CV'}</div>
+              <div style={{background:'#0a0a0f',borderRadius:'8px',padding:'8px 12px',fontSize:'11px',color:'#10b981',lineHeight:1.6,fontWeight:'600'}}>✅ {lang==='ar'?'السيرة الذاتية جاهزة للإرسال':'CV matched and ready to send'}</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* FOOTER */}
-      <div style={{borderTop:'1px solid #1e1e2e',padding:'24px',textAlign:'center',color:'#404050',fontSize:'13px'}}>
-        {txt.footer} · <a href="mailto:support@salarymena.com" style={{color:'#606070',textDecoration:'none'}}>support@salarymena.com</a>
+      <div style={{borderTop:'1px solid #1e1e2e',padding:'32px 24px',textAlign:'center'}}>
+        <div style={{color:'#404050',fontSize:'13px',marginBottom:'12px'}}>{txt.footer}</div>
+        <div style={{display:'flex',justifyContent:'center',gap:'24px',flexWrap:'wrap'}}>
+          <a href="mailto:support@salarymena.com" style={{color:'#606070',textDecoration:'none',fontSize:'13px'}}>support@salarymena.com</a>
+          <a href="/privacy" style={{color:'#606070',textDecoration:'none',fontSize:'13px'}}>{lang==='ar'?'سياسة الخصوصية':'Privacy Policy'}</a>
+          <a href="/terms" style={{color:'#606070',textDecoration:'none',fontSize:'13px'}}>{lang==='ar'?'شروط الخدمة':'Terms of Service'}</a>
+          <a href="/contact" style={{color:'#606070',textDecoration:'none',fontSize:'13px'}}>{lang==='ar'?'تواصل معنا':'Contact Us'}</a>
+        </div>
       </div>
     </div>
   );

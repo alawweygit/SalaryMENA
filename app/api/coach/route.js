@@ -47,7 +47,9 @@ async function triggerAlerts(jobTitleEn, country, category) {
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { jobTitle, country, currency, currentSalary, offeredSalary, experience, companyType, nationalityType, housingProvided, carProvided } = body;
+    const { jobTitle, country, currency, currentSalary, offeredSalary, experience, companyType, nationalityType, housingProvided, carProvided, lang } = body;
+
+    const isArabic = lang === 'ar';
 
     // Translate + categorize in parallel
     let jobTitleAr = null;
@@ -97,6 +99,7 @@ export async function POST(req) {
       messages: [{
         role: 'user',
         content: `You are an expert salary negotiation coach for the MENA region.
+${isArabic ? 'IMPORTANT: Respond with ALL text fields in Arabic language. This includes verdict, summary, talkingPoints array items, and script. Everything must be in Arabic.' : ''}
 
 CRITICAL CONTEXT:
 - Expats earn considerably less than GCC nationals/local citizens for identical roles
@@ -111,12 +114,12 @@ Profile:
 - Years of Experience: ${experience}
 - Current Salary: ${currentSalary ? currency + ' ' + currentSalary + '/month' : 'Not disclosed'}
 - Offered Salary: ${currency} ${offeredSalary}/month
-- Additional Benefits: ${benefits || 'None — do NOT suggest or mention housing or car allowances unless they are listed here'}
+- Additional Benefits: ${benefits || 'None'}
 ${benefitsNote}
 
 Respond with ONLY a valid JSON object, no markdown, no extra text:
 {
-  "verdict": "Fair",
+  "verdict": "${isArabic ? 'عادل OR أقل من السوق OR أعلى من السوق' : 'Fair OR Below Market OR Above Market'}",
   "verdictColor": "#10b981",
   "verdictIcon": "✅",
   "marketLow": 8000,
@@ -124,14 +127,10 @@ Respond with ONLY a valid JSON object, no markdown, no extra text:
   "marketHigh": 16000,
   "difference": 500,
   "differencePercent": 4,
-  "summary": "2-3 sentences about this offer vs market for this nationality/company type",
-  "talkingPoints": [
-    "Talking point 1 to use in negotiation",
-    "Talking point 2 to use in negotiation",
-    "Talking point 3 to use in negotiation"
-  ],
+  "summary": "${isArabic ? '2-3 جمل بالعربي عن هذا العرض مقارنة بالسوق' : '2-3 sentences about this offer vs market'}",
+  "talkingPoints": ${isArabic ? '["نقطة تفاوض أولى بالعربي", "نقطة تفاوض ثانية بالعربي", "نقطة تفاوض ثالثة بالعربي"]' : '["Talking point 1", "Talking point 2", "Talking point 3"]'},
   "counterOffer": 13000,
-  "script": "A short 2-3 sentence word-for-word script to say to HR"
+  "script": "${isArabic ? 'نص تفاوضي قصير بالعربي 2-3 جمل تقولها للـ HR' : 'A short 2-3 sentence word-for-word script to say to HR'}"
 }`
       }]
     });
@@ -141,6 +140,18 @@ Respond with ONLY a valid JSON object, no markdown, no extra text:
     const jsonMatch = textContent.text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error('No JSON found');
     const data = JSON.parse(jsonMatch[0]);
+
+    // Fix verdict color for Arabic
+    if (isArabic) {
+      if (data.verdict === 'أقل من السوق') { data.verdictColor = '#ef4444'; data.verdictIcon = '⚠️'; }
+      else if (data.verdict === 'أعلى من السوق') { data.verdictColor = '#10b981'; data.verdictIcon = '🚀'; }
+      else { data.verdictColor = '#6366f1'; data.verdictIcon = '✅'; }
+    } else {
+      if (data.verdict === 'Below Market') { data.verdictColor = '#ef4444'; data.verdictIcon = '⚠️'; }
+      else if (data.verdict === 'Above Market') { data.verdictColor = '#10b981'; data.verdictIcon = '🚀'; }
+      else { data.verdictColor = '#6366f1'; data.verdictIcon = '✅'; }
+    }
+
     return Response.json({ success: true, data });
   } catch (error) {
     console.error(error);

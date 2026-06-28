@@ -30,6 +30,10 @@ const LEVEL_MAP_AR_TO_EN = {
   'مبتدئ':'Junior','متوسط':'Mid-Level','متقدم':'Senior',
   'قائد':'Lead','مدير':'Manager','مدير أول':'Director','الإدارة العليا':'C-Suite'
 };
+const SENIORITY_AR = {
+  'Junior':'مبتدئ','Mid-Level':'متوسط','Senior':'متقدم',
+  'Lead':'قائد','Manager':'مدير','Director':'مدير أول','C-Suite':'الإدارة العليا'
+};
 const TYPES_EN = ['Private','Government'];
 const TYPES_AR = ['خاص','حكومة'];
 const TYPE_MAP_AR_TO_EN = {'خاص':'Private','حكومة':'Government'};
@@ -61,6 +65,7 @@ const JOB_SYNONYMS = [
   ['receptionist','موظف استقبال'],
   ['pilot','طيار','captain'],
   ['engineer','مهندس','engineering'],
+  ['farmer','مزارع','agriculturist','agriculture'],
 ];
 
 function expandSearch(query) {
@@ -97,7 +102,7 @@ export default function Explore() {
   const TYPES = lang==='ar' ? TYPES_AR : TYPES_EN;
 
   const displayTitle = (d) => {
-    if(lang==='ar') return d.job_title_ar || d.title;
+    if(lang==='ar') return d.job_title_ar || d.job_title_en || d.title;
     return d.job_title_en || d.title;
   };
 
@@ -109,6 +114,19 @@ export default function Explore() {
       return idx >= 0 ? COUNTRIES_AR[idx] : country;
     }
     return country;
+  };
+
+  const displaySeniority = (s) => {
+    if(lang==='ar' && SENIORITY_AR[s]) return SENIORITY_AR[s];
+    return s;
+  };
+
+  const displayCompany = (c) => {
+    if(lang==='ar') {
+      if(c==='Private') return 'خاص';
+      if(c==='Government') return 'حكومة';
+    }
+    return c;
   };
 
   const filtered = data.filter(d => {
@@ -131,7 +149,9 @@ export default function Explore() {
   const hasFilters = countryFilter || levelFilter || companyFilter;
 
   const shareOnWhatsApp = (d) => {
-    const text = `💰 ${displayTitle(d)} in ${d.country}\nSalary: ${displayCurrency(d.currency)} ${Number(d.monthlySalary).toLocaleString()}/month${d.seniority?' · '+d.seniority:''}\n\nSee more real salaries at salarymena.com 👇`;
+    const text = lang==='ar'
+      ? `💰 ${displayTitle(d)} في ${displayCountry(d.country)}\nالراتب: ${displayCurrency(d.currency)} ${Number(d.monthlySalary).toLocaleString()} في الشهر${d.seniority?' · '+displaySeniority(d.seniority):''}\n\nشاهد المزيد من الرواتب الحقيقية على salarymena.com 👇`
+      : `💰 ${displayTitle(d)} in ${d.country}\nSalary: ${d.currency} ${Number(d.monthlySalary).toLocaleString()}/month${d.seniority?' · '+d.seniority:''}\n\nSee more real salaries at salarymena.com 👇`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,'_blank');
   };
 
@@ -187,7 +207,7 @@ export default function Explore() {
 
         <div style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'16px',padding:'16px',marginBottom:'20px'}}>
           <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={txt.search_explore}
-            style={{width:'100%',background:'transparent',border:'none',outline:'none',color:'#fff',fontSize:'16px',marginBottom:'12px',boxSizing:'border-box',textAlign:isAr?'right':'left'}}/>
+            style={{width:'100%',background:'transparent',border:'none',outline:'none',color:'#fff',fontSize:'16px',marginBottom:'12px',boxSizing:'border-box',textAlign:isAr?'right':'left',direction:isAr?'rtl':'ltr'}}/>
           <div className="explore-filters" style={{display:'flex',gap:'8px'}} onClick={e=>e.stopPropagation()}>
             {dropdown('country',txt.country_filter,countryFilter,COUNTRIES,setCountryFilter)}
             {dropdown('level',txt.level_filter,levelFilter,LEVELS,setLevelFilter)}
@@ -208,7 +228,7 @@ export default function Explore() {
         {loading ? (
           <div style={{textAlign:'center',padding:'60px',color:'#404050'}}>
             <div style={{fontSize:'32px',marginBottom:'16px'}}>⏳</div>
-            <p>Loading salary data...</p>
+            <p>{lang==='ar'?'جاري تحميل البيانات...':'Loading salary data...'}</p>
           </div>
         ) : filtered.length===0 ? (
           <div style={{textAlign:'center',padding:'60px',color:'#404050'}}>
@@ -223,16 +243,16 @@ export default function Explore() {
                 onMouseLeave={e=>e.currentTarget.style.borderColor='#1e1e2e'}>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'8px',flexWrap:'wrap'}}>
-                    <h3 style={{margin:0,fontSize:'16px',fontWeight:'700'}}>{displayTitle(d)}</h3>
+                    <h3 style={{margin:0,fontSize:'16px',fontWeight:'700',direction:isAr?'rtl':'ltr'}}>{displayTitle(d)}</h3>
                     {d.seniority && (
                       <span style={{background:'rgba(99,102,241,0.2)',color:'#a78bfa',padding:'3px 10px',borderRadius:'50px',fontSize:'11px',fontWeight:'600',whiteSpace:'nowrap'}}>
-                        {d.seniority}
+                        {displaySeniority(d.seniority)}
                       </span>
                     )}
                   </div>
                   <div style={{display:'flex',gap:'12px',flexWrap:'wrap'}}>
                     {(d.city||d.country) && <span style={{color:'#606070',fontSize:'12px'}}>📍 {[d.city,displayCountry(d.country)].filter(Boolean).join(', ')}</span>}
-                    {d.company && <span style={{color:'#606070',fontSize:'12px'}}>🏢 {lang==='ar'&&d.company==='Private'?'خاص':lang==='ar'&&d.company==='Government'?'حكومة':d.company}</span>}
+                    {d.company && <span style={{color:'#606070',fontSize:'12px'}}>🏢 {displayCompany(d.company)}</span>}
                     {d.experience && <span style={{color:'#606070',fontSize:'12px'}}>⏱ {d.experience}</span>}
                   </div>
                 </div>
