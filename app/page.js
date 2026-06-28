@@ -7,6 +7,20 @@ export default function Home() {
   const { lang, isAr } = useLang();
   const txt = t[lang];
 
+  const exploreCards = lang==='ar' ? [
+    {title:'مهندس برمجيات',country:'الإمارات 🇦🇪',salary:'درهم إماراتي 35,000',tag:'متقدم'},
+    {title:'صيدلاني',country:'عُمان 🇴🇲',salary:'ريال عماني 600',tag:'متوسط'},
+    {title:'مدير تسويق',country:'السعودية 🇸🇦',salary:'ريال سعودي 18,000',tag:'خاص'},
+  ] : [
+    {title:'Software Engineer',country:'UAE 🇦🇪',salary:'AED 35,000',tag:'Senior'},
+    {title:'Pharmacist',country:'Oman 🇴🇲',salary:'OMR 600',tag:'Mid-Level'},
+    {title:'Marketing Manager',country:'Saudi Arabia 🇸🇦',salary:'SAR 18,000',tag:'Private'},
+  ];
+
+  const submitLabels = lang==='ar'
+    ? ['🧑‍💼 المسمى الوظيفي','🌍 الدولة','🏢 نوع الشركة','💰 الراتب الشهري','🎓 المؤهل العلمي','📧 البريد الإلكتروني']
+    : ['🧑‍💼 Job Title','🌍 Country','🏢 Company Type','💰 Monthly Salary','🎓 Education','📧 Email'];
+
   return (
     <div style={{fontFamily:'Inter,sans-serif',background:'#0a0a0f',minHeight:'100vh',color:'#fff'}}>
       <style>{`
@@ -29,7 +43,6 @@ export default function Home() {
       `}</style>
       <Navbar/>
 
-      {/* HERO */}
       <div style={{textAlign:'center',padding:'80px 24px 60px',maxWidth:'800px',margin:'0 auto',animation:'fadeIn 0.6s ease'}}>
         <div style={{display:'inline-block',background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.3)',borderRadius:'50px',padding:'6px 16px',fontSize:'13px',color:'#a78bfa',marginBottom:'24px',fontWeight:'500'}}>
           ✨ {txt.hero_badge}
@@ -41,22 +54,13 @@ export default function Home() {
           {txt.hero_sub}
         </p>
         <div className="hero-btns" style={{display:'flex',gap:'12px',justifyContent:'center',flexWrap:'wrap'}}>
-          <a href="/submit" style={{background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'12px',padding:'14px 28px',fontWeight:'700',fontSize:'15px'}}>
-            {txt.submit_btn}
-          </a>
-          <a href="/explore" style={{background:'transparent',color:'#a0a0b0',textDecoration:'none',borderRadius:'12px',padding:'14px 28px',fontWeight:'600',fontSize:'15px',border:'1px solid #2a2a3e'}}>
-            {txt.fs_explore_btn}
-          </a>
+          <a href="/submit" style={{background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'12px',padding:'14px 28px',fontWeight:'700',fontSize:'15px'}}>{txt.submit_btn}</a>
+          <a href="/explore" style={{background:'transparent',color:'#a0a0b0',textDecoration:'none',borderRadius:'12px',padding:'14px 28px',fontWeight:'600',fontSize:'15px',border:'1px solid #2a2a3e'}}>{txt.fs_explore_btn}</a>
         </div>
       </div>
 
-      {/* STATS */}
       <div className="stat-row" style={{borderTop:'1px solid #1e1e2e',borderBottom:'1px solid #1e1e2e'}}>
-        {[
-          {val:txt.stat_1,label:txt.stat_1_label},
-          {val:txt.stat_2,label:txt.stat_2_label},
-          {val:txt.stat_3,label:txt.stat_3_label},
-        ].map((s,i)=>(
+        {[{val:txt.stat_1,label:txt.stat_1_label},{val:txt.stat_2,label:txt.stat_2_label},{val:txt.stat_3,label:txt.stat_3_label}].map((s,i)=>(
           <div key={i} style={{textAlign:'center'}}>
             <div style={{fontSize:'32px',fontWeight:'900',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>{s.val}</div>
             <div style={{color:'#606070',fontSize:'14px',marginTop:'4px'}}>{s.label}</div>
@@ -64,7 +68,6 @@ export default function Home() {
         ))}
       </div>
 
-      {/* 1 — EXPLORE */}
       <div style={{borderBottom:'1px solid #1e1e2e'}}>
         <div className="section-row" style={{maxWidth:'900px',margin:'0 auto',padding:'60px 24px'}}>
           <div className="section-text">
@@ -74,15 +77,7 @@ export default function Home() {
             <a href="/explore" style={{display:'inline-block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'10px',padding:'12px 24px',fontWeight:'700',fontSize:'14px'}}>{txt.fs_explore_btn}</a>
           </div>
           <div className="section-preview" style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'20px',display:'flex',flexDirection:'column',gap:'10px'}}>
-            {(lang==='ar' ? [
-              {title:'مهندس برمجيات',country:'الإمارات 🇦🇪',salary:'درهم إماراتي 35,000',tag:'متقدم'},
-              {title:'صيدلاني',country:'عُمان 🇴🇲',salary:'ريال عماني 600',tag:'متوسط'},
-              {title:'مدير تسويق',country:'السعودية 🇸🇦',salary:'ريال سعودي 18,000',tag:'خاص'},
-            ] : [
-              {title:'Software Engineer',country:'UAE 🇦🇪',salary:'AED 35,000',tag:'Senior'},
-              {title:'Pharmacist',country:'Oman 🇴🇲',salary:'OMR 600',tag:'Mid-Level'},
-              {title:'Marketing Manager',country:'Saudi Arabia 🇸🇦',salary:'SAR 18,000',tag:'Private'},
-            ].map((item,i)=>(
+            {exploreCards.map((item,i)=>(
               <div key={i} style={{background:'#0a0a0f',border:'1px solid #1e1e2e',borderRadius:'12px',padding:'14px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                 <div>
                   <div style={{fontWeight:'700',fontSize:'13px',marginBottom:'4px'}}>{item.title}</div>
@@ -95,7 +90,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 2 — SUBMIT */}
       <div style={{borderBottom:'1px solid #1e1e2e',background:'#0d0d18'}}>
         <div className="section-row-rev" style={{maxWidth:'900px',margin:'0 auto',padding:'60px 24px'}}>
           <div className="section-text">
@@ -105,7 +99,7 @@ export default function Home() {
             <a href="/submit" style={{display:'inline-block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'10px',padding:'12px 24px',fontWeight:'700',fontSize:'14px'}}>{txt.fs_submit_btn}</a>
           </div>
           <div className="section-preview" style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'20px',display:'flex',flexDirection:'column',gap:'10px'}}>
-            {(lang==='ar' ? ['🧑‍💼 المسمى الوظيفي','🌍 الدولة','🏢 نوع الشركة','💰 الراتب الشهري','🎓 المؤهل العلمي','📧 البريد الإلكتروني'] : ['🧑‍💼 Job Title','🌍 Country','🏢 Company Type','💰 Monthly Salary','🎓 Education','📧 Email']).map((item,i)=>(
+            {submitLabels.map((item,i)=>(
               <div key={i} style={{display:'flex',alignItems:'center',gap:'12px',padding:'10px 14px',background:'#0a0a0f',borderRadius:'10px',border:'1px solid #1e1e2e'}}>
                 <span style={{fontSize:'13px',color:'#a0a0b0'}}>{item}</span>
                 {i<4 && <div style={{marginLeft:'auto',width:'7px',height:'7px',borderRadius:'50%',background:'#6366f1'}}/>}
@@ -115,7 +109,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 3 — AM I UNDERPAID */}
       <div style={{borderBottom:'1px solid #1e1e2e'}}>
         <div className="section-row" style={{maxWidth:'900px',margin:'0 auto',padding:'60px 24px'}}>
           <div className="section-text">
@@ -129,11 +122,7 @@ export default function Home() {
             <div style={{fontSize:'28px',fontWeight:'900',marginBottom:'4px'}}>✅ {txt.fair}</div>
             <div style={{color:'#606070',fontSize:'13px',marginBottom:'20px'}}>{lang==='ar'?'صيدلاني · عُمان · وافد عربي':'Pharmacist · Oman · Arab Expat'}</div>
             <div style={{display:'flex',justifyContent:'space-between',gap:'8px'}}>
-              {[
-                {l:txt.market_low,v:lang==='ar'?'ريال عماني 450':'OMR 450',c:'#ef4444'},
-                {l:txt.median,v:lang==='ar'?'ريال عماني 600':'OMR 600',c:'#6366f1'},
-                {l:txt.market_high,v:lang==='ar'?'ريال عماني 850':'OMR 850',c:'#10b981'}
-              ].map((item,i)=>(
+              {[{l:txt.market_low,v:lang==='ar'?'ريال عماني 450':'OMR 450',c:'#ef4444'},{l:txt.median,v:lang==='ar'?'ريال عماني 600':'OMR 600',c:'#6366f1'},{l:txt.market_high,v:lang==='ar'?'ريال عماني 850':'OMR 850',c:'#10b981'}].map((item,i)=>(
                 <div key={i} style={{flex:1,background:'#0a0a0f',borderRadius:'10px',padding:'10px 6px',border:`1px solid ${item.c}30`}}>
                   <div style={{fontSize:'9px',color:'#404050',fontWeight:'700',marginBottom:'4px'}}>{item.l}</div>
                   <div style={{fontSize:'12px',fontWeight:'800',color:item.c}}>{item.v}</div>
@@ -144,7 +133,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 4 — AI NEGOTIATION COACH */}
       <div style={{borderBottom:'1px solid #1e1e2e',background:'#0d0d18'}}>
         <div className="section-row-rev" style={{maxWidth:'900px',margin:'0 auto',padding:'60px 24px'}}>
           <div className="section-text">
@@ -174,7 +162,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 5 — CVDROPAI */}
       <div style={{borderBottom:'1px solid #1e1e2e'}}>
         <div className="section-row" style={{maxWidth:'900px',margin:'0 auto',padding:'60px 24px'}}>
           <div className="section-text">
@@ -201,7 +188,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* FOOTER */}
       <div style={{borderTop:'1px solid #1e1e2e',padding:'32px 24px',textAlign:'center'}}>
         <div style={{color:'#404050',fontSize:'13px',marginBottom:'12px'}}>{txt.footer}</div>
         <div style={{display:'flex',justifyContent:'center',gap:'24px',flexWrap:'wrap'}}>
