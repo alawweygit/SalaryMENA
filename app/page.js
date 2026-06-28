@@ -74,7 +74,7 @@ export default function Home() {
             <a href="/explore" style={{display:'inline-block',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',color:'#fff',textDecoration:'none',borderRadius:'10px',padding:'12px 24px',fontWeight:'700',fontSize:'14px'}}>{txt.fs_explore_btn}</a>
           </div>
           <div className="section-preview" style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'20px',padding:'20px',display:'flex',flexDirection:'column',gap:'10px'}}>
-            {lang==='ar' ? [
+            {(lang==='ar' ? [
               {title:'مهندس برمجيات',country:'الإمارات 🇦🇪',salary:'درهم إماراتي 35,000',tag:'متقدم'},
               {title:'صيدلاني',country:'عُمان 🇴🇲',salary:'ريال عماني 600',tag:'متوسط'},
               {title:'مدير تسويق',country:'السعودية 🇸🇦',salary:'ريال سعودي 18,000',tag:'خاص'},
