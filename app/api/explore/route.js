@@ -10,8 +10,10 @@ export async function GET(req) {
     const company = searchParams.get('company');
     const search = searchParams.get('search');
 
-    let query = `SELECT id, job_title as title, job_title_ar, job_title_en, seniority, company_type as company, company_name,
-                  country, city, monthly_salary as "monthlySalary", currency, bonus, experience, education
+    let query = `SELECT id, job_title as title, job_title_ar, job_title_en, seniority, 
+                  company_type as company, company_name, country, city, 
+                  monthly_salary as "monthlySalary", currency, bonus, experience, 
+                  education, nationality_type, gender, housing_provided, car_provided
                  FROM salaries
                  WHERE monthly_salary IS NOT NULL`;
     const params = [];
