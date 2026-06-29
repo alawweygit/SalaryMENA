@@ -8,6 +8,7 @@ export async function GET(req) {
     const country = searchParams.get('country');
     const level = searchParams.get('level');
     const company = searchParams.get('company');
+    const search = searchParams.get('search');
 
     let query = `SELECT id, job_title as title, job_title_ar, job_title_en, seniority, company_type as company, company_name,
                   country, city, monthly_salary as "monthlySalary", currency, bonus, experience, education
@@ -18,8 +19,10 @@ export async function GET(req) {
     if (country) { params.push(country); query += ` AND country = $${params.length}`; }
     if (level) { params.push(level); query += ` AND seniority = $${params.length}`; }
     if (company) { params.push(company); query += ` AND company_type = $${params.length}`; }
+    if (search) { params.push(`%${search}%`); query += ` AND (job_title ILIKE $${params.length} OR job_title_ar ILIKE $${params.length} OR job_title_en ILIKE $${params.length} OR country ILIKE $${params.length})`; }
 
-    query += ` ORDER BY created_at DESC LIMIT 200`;
+    const hasFilter = search || country || level || company;
+    query += hasFilter ? ` ORDER BY created_at DESC` : ` ORDER BY RANDOM()`;
 
     const result = await pool.query(query, params);
     return Response.json({ success: true, data: result.rows });
