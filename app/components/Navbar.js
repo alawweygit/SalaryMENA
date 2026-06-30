@@ -12,7 +12,7 @@ export default function Navbar() {
     <nav style={{borderBottom:'1px solid #1e1e2e',position:'sticky',top:0,background:'rgba(10,10,15,0.95)',backdropFilter:'blur(10px)',zIndex:100}}>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'16px 20px'}}>
         <a href="/" style={{textDecoration:'none',display:'flex',alignItems:'center',gap:'10px'}}>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="32" height="32">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="42" height="42">
             <defs>
               <linearGradient id="pu" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#6366f1"/>
@@ -25,8 +25,8 @@ export default function Navbar() {
             <circle cx="30" cy="10" r="3.5" fill="#6366f1"/>
           </svg>
           <div style={{display:'flex',flexDirection:'column',lineHeight:1.1}}>
-            <span style={{fontSize:'15px',fontWeight:'900',color:'#ffffff'}}>Salary</span>
-            <span style={{fontSize:'15px',fontWeight:'900',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>MENA</span>
+            <span style={{fontSize:'18px',fontWeight:'900',color:'#ffffff'}}>Salary</span>
+            <span style={{fontSize:'18px',fontWeight:'900',background:'linear-gradient(135deg,#6366f1,#8b5cf6)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>MENA</span>
           </div>
         </a>
 
