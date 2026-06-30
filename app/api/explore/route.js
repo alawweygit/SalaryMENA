@@ -21,7 +21,8 @@ export async function GET(req) {
     const fields = `id, job_title as title, job_title_ar, job_title_en, seniority,
                     company_type as company, company_name, country, city,
                     monthly_salary as "monthlySalary", currency, bonus, experience,
-                    education, nationality_type, gender, housing_provided, car_provided`;
+                    education, CASE WHEN is_seed THEN NULL ELSE nationality_type END as nationality_type,
+                    gender, housing_provided, car_provided`;
 
     const hasFilter = search || country || level || company;
 
@@ -30,13 +31,11 @@ export async function GET(req) {
       const result = await pool.query(`SELECT ${fields} FROM salaries ${baseWhere} ORDER BY created_at DESC`, params);
       rows = result.rows;
     } else {
-      // Real user submissions first, newest first
       const realResult = await pool.query(
         `SELECT ${fields} FROM salaries ${baseWhere} AND is_seed = FALSE ORDER BY created_at DESC`,
         params
       );
 
-      // Then seed data: 90% GCC, 10% non-GCC, randomized
       const gccResult = await pool.query(
         `SELECT ${fields} FROM salaries ${baseWhere} AND is_seed = TRUE AND country IN ('UAE','Saudi Arabia','Kuwait','Qatar','Bahrain','Oman') ORDER BY RANDOM()`,
         params
