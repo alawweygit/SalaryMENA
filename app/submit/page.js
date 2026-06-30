@@ -1,6 +1,6 @@
 'use client';
-import { useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { useLang } from '../components/LanguageContext';
 import { t } from '../components/translations';
@@ -22,6 +22,7 @@ const FORM_KEY = 'salarymena_form';
 function SubmitInner() {
   const { lang, isAr } = useLang();
   const txt = t[lang];
+  const router = useRouter();
   const searchParams = useSearchParams();
   const step = Number(searchParams.get('step') || 1);
   const [submitted, setSubmitted] = useState(false);
@@ -85,11 +86,11 @@ function SubmitInner() {
   };
 
   const goNext = () => {
-    if(canNext()) window.location.href = `/submit?step=${step+1}`;
+    if(canNext()) router.push(`/submit?step=${step+1}`);
   };
 
   const goBack = () => {
-    window.location.href = `/submit?step=${step-1}`;
+    router.push(`/submit?step=${step-1}`);
   };
 
   const handleSubmit = async () => {
@@ -121,13 +122,13 @@ function SubmitInner() {
   const COUNTRIES = lang==='ar' ? COUNTRIES_AR : COUNTRIES_EN;
   const filteredCountries = COUNTRIES.filter(c=>c.toLowerCase().includes(countrySearch.toLowerCase()));
   const seniorities = lang==='ar'
-    ? [['مبتدئ','0–2 سنة'],['متوسط','2–5 سنوات'],['متقدم','5–8 سنوات'],['قائد','يقود فريقاً'],['مدير','يدير أشخاصاً'],['مدير أول','رئيس قسم'],['الإدارة العليا','رئيس تنفيذي، مالي...']]
-    : [['Junior','0–2 yrs'],['Mid-Level','2–5 yrs'],['Senior','5–8 yrs'],['Lead','Leading a team'],['Manager','Managing people'],['Director','Head of dept'],['C-Suite','CEO, CFO, COO...']];
+    ? [['مبتدئ','0–1 سنة'],['متوسط','1–3 سنوات'],['متقدم','3–5 سنوات'],['متقدم+','8+ سنوات'],['مدير','يدير أشخاصاً'],['مدير أول','رئيس قسم'],['الإدارة العليا','رئيس تنفيذي، مالي...']]
+    : [['Junior','0–1 yrs'],['Mid-Level','1–3 yrs'],['Senior','3–5 yrs'],['Senior+','8+ yrs'],['Manager','Managing people'],['Director','Head of dept'],['C-Suite','CEO, CFO, COO...']];
   const companyTypes = lang==='ar' ? ['خاص','حكومة'] : ['Private','Government'];
   const experiences = ['0-1','1-3','3-5','5-8','8-12','12+'];
   const educations = lang==='ar'
-    ? ['ثانوية عامة','بكالوريوس','ماجستير','دكتوراه','شهادة مهنية']
-    : ["High School","Bachelor's","Master's","PhD","Professional Cert"];
+    ? ['ثانوية عامة','بكالوريوس','ماجستير','دكتوراه']
+    : ["High School","Bachelor's","Master's","PhD"];
   const genders = lang==='ar' ? ['ذكر','أنثى'] : ['Male','Female'];
 
   if(submitted) return (
@@ -236,7 +237,7 @@ function SubmitInner() {
             </div>
           </div>
           <div>
-            <label style={lbl}>{txt.education_label}</label>
+            <label style={lbl}>{txt.education_label} <span style={{color:'#404050',fontWeight:'400',textTransform:'none'}}>{lang==='ar'?'(اختياري)':'(optional)'}</span></label>
             <div style={{display:'flex',flexWrap:'wrap',gap:'8px'}}>
               {educations.map(e=><button key={e} style={chip(form.education===e)} onClick={()=>update('education',e)}>{e}</button>)}
             </div>
