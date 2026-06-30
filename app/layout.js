@@ -30,6 +30,8 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <head>
         <meta name="google-site-verification" content="N7kvCCw4xOv9uGlPHNBC834wXUw7n9G8QjKanPixDY8" />
+        <link rel="icon" href="/favicon-v2.ico?v=2" />
+        <link rel="shortcut icon" href="/favicon-v2.ico?v=2" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <LanguageProvider>
