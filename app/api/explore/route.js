@@ -30,12 +30,19 @@ export async function GET(req) {
       const result = await pool.query(`SELECT ${fields} FROM salaries ${baseWhere} ORDER BY created_at DESC`, params);
       rows = result.rows;
     } else {
+      // Real user submissions first, newest first
+      const realResult = await pool.query(
+        `SELECT ${fields} FROM salaries ${baseWhere} AND is_seed = FALSE ORDER BY created_at DESC`,
+        params
+      );
+
+      // Then seed data: 90% GCC, 10% non-GCC, randomized
       const gccResult = await pool.query(
-        `SELECT ${fields} FROM salaries ${baseWhere} AND country IN ('UAE','Saudi Arabia','Kuwait','Qatar','Bahrain','Oman') ORDER BY RANDOM()`,
+        `SELECT ${fields} FROM salaries ${baseWhere} AND is_seed = TRUE AND country IN ('UAE','Saudi Arabia','Kuwait','Qatar','Bahrain','Oman') ORDER BY RANDOM()`,
         params
       );
       const nonGccResult = await pool.query(
-        `SELECT ${fields} FROM salaries ${baseWhere} AND country NOT IN ('UAE','Saudi Arabia','Kuwait','Qatar','Bahrain','Oman') ORDER BY RANDOM()`,
+        `SELECT ${fields} FROM salaries ${baseWhere} AND is_seed = TRUE AND country NOT IN ('UAE','Saudi Arabia','Kuwait','Qatar','Bahrain','Oman') ORDER BY RANDOM()`,
         params
       );
       const gcc = gccResult.rows;
@@ -43,7 +50,9 @@ export async function GET(req) {
       const total = gcc.length + nonGcc.length;
       const nonGccCount = Math.floor(total * 0.10);
       const gccCount = total - nonGccCount;
-      rows = [...gcc.slice(0, gccCount), ...nonGcc.slice(0, nonGccCount)];
+      const seedRows = [...gcc.slice(0, gccCount), ...nonGcc.slice(0, nonGccCount)];
+
+      rows = [...realResult.rows, ...seedRows];
     }
 
     return Response.json({ success: true, data: rows });
