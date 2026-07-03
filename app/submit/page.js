@@ -65,11 +65,11 @@ function SubmitInner() {
     if(lang==='ar') {
       const idx = COUNTRIES_AR.indexOf(countryLabel);
       const en = idx >= 0 ? COUNTRIES_EN[idx] : countryLabel;
-      const newForm = {...form,country:countryLabel,countryEN:en,nationalityType:''};
+      const newForm = {...form,country:countryLabel,countryEN:en,nationalityType:'',currency:CURRENCY_BY_COUNTRY[en]||'USD'};
       setForm(newForm);
       sessionStorage.setItem(FORM_KEY, JSON.stringify(newForm));
     } else {
-      const newForm = {...form,country:countryLabel,countryEN:countryLabel,nationalityType:''};
+      const newForm = {...form,country:countryLabel,countryEN:countryLabel,nationalityType:'',currency:CURRENCY_BY_COUNTRY[countryLabel]||'USD'};
       setForm(newForm);
       sessionStorage.setItem(FORM_KEY, JSON.stringify(newForm));
     }
@@ -279,6 +279,8 @@ function SubmitInner() {
     </div>
   );
 }
+
+const CURRENCY_BY_COUNTRY = {'UAE':'AED','Saudi Arabia':'SAR','Kuwait':'KWD','Qatar':'QAR','Bahrain':'BHD','Oman':'OMR','Jordan':'JOD','Egypt':'EGP'};
 
 export default function Submit() {
   return (

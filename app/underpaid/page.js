@@ -18,6 +18,8 @@ const CURRENCY_AR = {
 
 const CURRENCIES_EN = ['AED','SAR','EGP','OMR','KWD','QAR','BHD','JOD','USD'];
 
+const CURRENCY_BY_COUNTRY = {'UAE':'AED','Saudi Arabia':'SAR','Kuwait':'KWD','Qatar':'QAR','Bahrain':'BHD','Oman':'OMR','Jordan':'JOD','Egypt':'EGP'};
+
 export default function Underpaid() {
   const { lang, isAr } = useLang();
   const txt = t[lang];
@@ -42,16 +44,15 @@ export default function Underpaid() {
   const companyTypes = lang==='ar' ? ['خاص','حكومة'] : ['Private','Government'];
 
   const selectCountry = (countryLabel) => {
+    let en = countryLabel;
     if (lang==='ar') {
       const idx = COUNTRIES_AR.indexOf(countryLabel);
-      const en = idx >= 0 ? COUNTRIES_EN[idx] : countryLabel;
-      update('country', countryLabel);
-      update('countryEN', en);
-    } else {
-      update('country', countryLabel);
-      update('countryEN', countryLabel);
+      en = idx >= 0 ? COUNTRIES_EN[idx] : countryLabel;
     }
+    update('country', countryLabel);
+    update('countryEN', en);
     update('nationalityType','');
+    update('currency', CURRENCY_BY_COUNTRY[en] || 'USD');
   };
 
   useEffect(() => {
