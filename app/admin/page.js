@@ -38,6 +38,10 @@ const Tab = ({ label, active, onClick, badge }) => (
   </button>
 );
 
+const Badge = ({ label, color = C.accent }) => (
+  <span style={{ background: `${color}22`, color, border: `1px solid ${color}55`, borderRadius: 999, padding: '2px 8px', fontSize: 11, fontWeight: 600 }}>{label}</span>
+);
+
 const BarChart = ({ data, colorFn }) => {
   const max = Math.max(...data.map(d => d.value), 1);
   return (
@@ -84,14 +88,13 @@ const DonutChart = ({ data }) => {
 
 const LineChart = ({ data }) => {
   if (!data?.length) return null;
-  const vals = data.map(d => d.value);
-  const max = Math.max(...vals, 1);
+  const max = Math.max(...data.map(d => d.value), 1);
   const W = 400, H = 80;
   const pts = data.map((d, i) => [(i / (data.length - 1)) * W, H - (d.value / max) * (H - 10) - 5]);
   const path = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0]},${p[1]}`).join(' ');
   const area = `${path} L${W},${H} L0,${H} Z`;
   return (
-    <div style={{ overflowX: 'auto' }}>
+    <div>
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 80 }} preserveAspectRatio="none">
         <defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={C.accent} stopOpacity="0.3" /><stop offset="100%" stopColor={C.accent} stopOpacity="0" /></linearGradient></defs>
         <path d={area} fill="url(#lg)" />
@@ -110,32 +113,19 @@ const LineChart = ({ data }) => {
   );
 };
 
-const Badge = ({ label, color = C.accent }) => (
-  <span style={{ background: `${color}22`, color, border: `1px solid ${color}55`, borderRadius: 999, padding: '2px 8px', fontSize: 11, fontWeight: 600 }}>{label}</span>
-);
-
-const Table = ({ cols, rows, onDelete, emptyMsg = 'No records found.' }) => (
-  <div style={{ overflowX: 'auto' }}>
-    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-      <thead>
-        <tr>
-          {cols.map(c => <th key={c.key} style={{ textAlign: 'left', padding: '10px 12px', color: C.muted, fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: `1px solid ${C.border}`, whiteSpace: 'nowrap' }}>{c.label}</th>)}
-          {onDelete && <th style={{ borderBottom: `1px solid ${C.border}` }} />}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.length === 0
-          ? <tr><td colSpan={cols.length + (onDelete ? 1 : 0)} style={{ textAlign: 'center', padding: 32, color: C.muted }}>{emptyMsg}</td></tr>
-          : rows.map((row, i) => (
-            <tr key={row.id ?? i} style={{ borderBottom: `1px solid ${C.border}` }}>
-              {cols.map(c => <td key={c.key} style={{ padding: '10px 12px', color: C.text, whiteSpace: c.wrap ? 'normal' : 'nowrap', maxWidth: c.maxW ?? 'none', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.render ? c.render(row[c.key], row) : (row[c.key] ?? '—')}</td>)}
-              {onDelete && <td style={{ padding: '10px 12px', textAlign: 'right' }}><button onClick={() => onDelete(row.id)} style={{ background: 'transparent', border: `1px solid ${C.danger}`, color: C.danger, borderRadius: 6, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>Delete</button></td>}
-            </tr>
-          ))}
-      </tbody>
-    </table>
+const DetailRow = ({ label, value }) => (
+  <div style={{ display: 'flex', gap: 12, padding: '10px 0', borderBottom: `1px solid ${C.border}` }}>
+    <div style={{ width: 160, fontSize: 12, color: C.muted, flexShrink: 0, fontWeight: 600 }}>{label}</div>
+    <div style={{ fontSize: 13, color: C.text }}>{value ?? '—'}</div>
   </div>
 );
+
+const sourceLabel = (s) => {
+  if (!s || s === 'submit') return { label: 'Submit Salary', color: C.success };
+  if (s === 'underpaid') return { label: 'Am I Underpaid?', color: C.warn };
+  if (s === 'coach') return { label: 'AI Negotiation Coach', color: C.accentLight };
+  return { label: s, color: C.muted };
+};
 
 export default function AdminDashboard() {
   const [authed, setAuthed] = useState(false);
@@ -151,6 +141,7 @@ export default function AdminDashboard() {
   const [filterCountry, setFilterCountry] = useState('');
   const [filterSeniority, setFilterSeniority] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [viewRecord, setViewRecord] = useState(null);
   const [toast, setToast] = useState(null);
 
   const showToast = (msg, type = 'success') => { setToast({ msg, type }); setTimeout(() => setToast(null), 3000); };
@@ -159,7 +150,7 @@ export default function AdminDashboard() {
 
   const fetchStats = useCallback(async () => {
     setLoad('stats', true);
-    try { const r = await fetch(`/api/admin/stats?pw=${ADMIN_PASSWORD}`); setStats(await r.json()); } catch { showToast('Failed to load stats', 'error'); }
+    try { const r = await fetch(`/api/admin/stats?pw=${ADMIN_PASSWORD}`); setStats(await r.json()); } catch { showToast('Failed', 'error'); }
     setLoad('stats', false);
   }, []);
 
@@ -212,12 +203,16 @@ export default function AdminDashboard() {
 
   const filteredSubs = submissions.filter(r => {
     const q = search.toLowerCase();
-    return (!q || r.job_title?.toLowerCase().includes(q) || r.company_name?.toLowerCase().includes(q) || r.country?.toLowerCase().includes(q)) && (!filterCountry || r.country === filterCountry) && (!filterSeniority || r.seniority === filterSeniority);
+    return (!q || r.job_title?.toLowerCase().includes(q) || r.company_name?.toLowerCase().includes(q) || r.country?.toLowerCase().includes(q))
+      && (!filterCountry || r.country === filterCountry)
+      && (!filterSeniority || r.seniority === filterSeniority);
   });
 
   const filteredSeed = seedData.filter(r => {
     const q = search.toLowerCase();
-    return (!q || r.job_title?.toLowerCase().includes(q) || r.country?.toLowerCase().includes(q)) && (!filterCountry || r.country === filterCountry) && (!filterSeniority || r.seniority === filterSeniority);
+    return (!q || r.job_title?.toLowerCase().includes(q) || r.country?.toLowerCase().includes(q))
+      && (!filterCountry || r.country === filterCountry)
+      && (!filterSeniority || r.seniority === filterSeniority);
   });
 
   const allCountries = [...new Set([...submissions, ...seedData].map(r => r.country).filter(Boolean))].sort();
@@ -260,6 +255,48 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      {viewRecord && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999, padding: 20 }}>
+          <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 16, width: '100%', maxWidth: 600, maxHeight: '90vh', overflowY: 'auto', padding: 28 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 18, color: C.text }}>{viewRecord.job_title}</div>
+                <div style={{ color: C.muted, fontSize: 13, marginTop: 4 }}>#{viewRecord.id} · {ago(viewRecord.created_at)}</div>
+              </div>
+              <button onClick={() => setViewRecord(null)} style={{ background: 'transparent', border: `1px solid ${C.border}`, color: C.muted, borderRadius: 8, padding: '6px 12px', fontSize: 13, cursor: 'pointer' }}>✕ Close</button>
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              {(() => { const s = sourceLabel(viewRecord.source); return <Badge label={s.label} color={s.color} />; })()}
+            </div>
+            <DetailRow label="Job Title (EN)" value={viewRecord.job_title_en} />
+            <DetailRow label="Job Title (AR)" value={viewRecord.job_title_ar} />
+            <DetailRow label="Seniority" value={viewRecord.seniority} />
+            <DetailRow label="Company Name" value={viewRecord.company_name} />
+            <DetailRow label="Company Type" value={viewRecord.company_type} />
+            <DetailRow label="Country" value={viewRecord.country} />
+            <DetailRow label="City" value={viewRecord.city} />
+            <DetailRow label="Monthly Salary" value={viewRecord.monthly_salary ? `${viewRecord.currency ?? ''} ${fmt(viewRecord.monthly_salary)}` : null} />
+            <DetailRow label="Basic Salary" value={viewRecord.basic_salary ? `${viewRecord.currency ?? ''} ${fmt(viewRecord.basic_salary)}` : null} />
+            <DetailRow label="Bonus / yr" value={viewRecord.bonus ? `${viewRecord.currency ?? ''} ${fmt(viewRecord.bonus)}` : null} />
+            <DetailRow label="Experience" value={viewRecord.experience ? `${viewRecord.experience} years` : null} />
+            <DetailRow label="Education" value={viewRecord.education} />
+            <DetailRow label="Nationality Type" value={viewRecord.nationality_type} />
+            <DetailRow label="Gender" value={viewRecord.gender} />
+            <DetailRow label="Email" value={viewRecord.email} />
+            <DetailRow label="Housing Provided" value={viewRecord.housing_provided ? 'Yes' : 'No'} />
+            <DetailRow label="Car Provided" value={viewRecord.car_provided ? 'Yes' : 'No'} />
+            <DetailRow label="Submitted Via" value={sourceLabel(viewRecord.source).label} />
+            <DetailRow label="Submitted At" value={viewRecord.created_at ? new Date(viewRecord.created_at).toLocaleString() : null} />
+            <div style={{ marginTop: 20 }}>
+              <button onClick={() => { setConfirmDelete({ id: viewRecord.id, table: 'submissions', label: viewRecord.job_title }); setViewRecord(null); }}
+                style={{ background: `${C.danger}11`, border: `1px solid ${C.danger}44`, color: C.danger, borderRadius: 8, padding: '9px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                Delete Record
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div style={{ background: C.surface, borderBottom: `1px solid ${C.border}`, padding: '0 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 56 }}>
         <div style={{ fontWeight: 800, fontSize: 18 }}>Salary<span style={{ color: C.accent }}>MENA</span><span style={{ color: C.muted, fontWeight: 400, fontSize: 13, marginLeft: 12 }}>Admin</span></div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -273,7 +310,7 @@ export default function AdminDashboard() {
           .map(t => <Tab key={t.id} label={t.label} active={tab === t.id} onClick={() => setTab(t.id)} badge={t.badge} />)}
       </div>
 
-      <div style={{ padding: '24px 28px', maxWidth: 1200, margin: '0 auto' }}>
+      <div style={{ padding: '24px 28px', maxWidth: 1400, margin: '0 auto' }}>
 
         {tab === 'overview' && (
           <div>
@@ -304,7 +341,12 @@ export default function AdminDashboard() {
               {stats?.recent?.length > 0 && (
                 <Card>
                   <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>Recent Submissions</div>
-                  <Table cols={[{ key: 'job_title', label: 'Job Title' }, { key: 'country', label: 'Country' }, { key: 'monthly_salary', label: 'Salary', render: (v, r) => `${r.currency ?? ''} ${fmt(v)}` }, { key: 'seniority', label: 'Seniority', render: v => <Badge label={v} /> }, { key: 'created_at', label: 'When', render: v => ago(v) }]} rows={stats.recent} />
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                      <thead><tr>{['Job Title','Country','Salary','Seniority','When'].map(h => <th key={h} style={{ textAlign: 'left', padding: '10px 12px', color: C.muted, fontWeight: 600, fontSize: 11, textTransform: 'uppercase', borderBottom: `1px solid ${C.border}` }}>{h}</th>)}</tr></thead>
+                      <tbody>{stats.recent.map((r,i) => <tr key={i} style={{ borderBottom: `1px solid ${C.border}` }}><td style={{ padding: '10px 12px', color: C.text }}>{r.job_title}</td><td style={{ padding: '10px 12px', color: C.text }}>{r.country}</td><td style={{ padding: '10px 12px', color: C.text }}>{r.currency} {fmt(r.monthly_salary)}</td><td style={{ padding: '10px 12px' }}><Badge label={r.seniority ?? '—'} /></td><td style={{ padding: '10px 12px', color: C.muted }}>{ago(r.created_at)}</td></tr>)}</tbody>
+                    </table>
+                  </div>
                 </Card>
               )}
             </>)}
@@ -313,10 +355,11 @@ export default function AdminDashboard() {
 
         {tab === 'submissions' && (
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 12 }}>
               <div style={{ fontSize: 20, fontWeight: 700 }}>Real Submissions <span style={{ color: C.muted, fontSize: 14, fontWeight: 400 }}>({filteredSubs.length} shown)</span></div>
               <button onClick={fetchSubmissions} style={{ background: 'transparent', border: `1px solid ${C.border}`, color: C.muted, borderRadius: 6, padding: '6px 14px', fontSize: 12, cursor: 'pointer' }}>↻ Refresh</button>
             </div>
+            <div style={{ color: C.muted, fontSize: 12, marginBottom: 12 }}>Click any row to see full details</div>
             <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
               <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search job, company, country…" style={{ flex: 1, minWidth: 200, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 12px', color: C.text, fontSize: 13, outline: 'none' }} />
               <select value={filterCountry} onChange={e => setFilterCountry(e.target.value)} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, padding: '8px 12px', color: C.text, fontSize: 13, outline: 'none' }}>
@@ -331,12 +374,42 @@ export default function AdminDashboard() {
             </div>
             {loading.submissions ? <div style={{ color: C.muted }}>Loading…</div> : (
               <Card style={{ padding: 0, overflow: 'hidden' }}>
-                <Table
-                  cols={[{ key: 'id', label: 'ID', render: v => <span style={{ color: C.muted, fontSize: 11 }}>#{v}</span> }, { key: 'job_title', label: 'Job Title', maxW: 180 }, { key: 'company_name', label: 'Company', maxW: 140 }, { key: 'country', label: 'Country' }, { key: 'seniority', label: 'Level', render: v => <Badge label={v} /> }, { key: 'monthly_salary', label: 'Salary', render: (v, r) => `${r.currency ?? ''} ${fmt(v)}` }, { key: 'experience', label: 'Exp', render: v => v ? `${v}yr` : '—' }, { key: 'email', label: 'Email', maxW: 160 }, { key: 'created_at', label: 'When', render: v => ago(v) }]}
-                  rows={filteredSubs}
-                  onDelete={(id) => { const r = submissions.find(x => x.id === id); setConfirmDelete({ id, table: 'submissions', label: `${r?.job_title ?? 'Record'} from ${r?.country ?? ''}` }); }}
-                  emptyMsg="No real submissions yet."
-                />
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                    <thead>
+                      <tr>
+                        {['ID','Job Title','Company','Country','Level','Salary','Exp','Education','Gender','Nationality','Housing','Car','Source','When',''].map(h => (
+                          <th key={h} style={{ textAlign: 'left', padding: '10px 12px', color: C.muted, fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: `1px solid ${C.border}`, whiteSpace: 'nowrap' }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredSubs.length === 0
+                        ? <tr><td colSpan={15} style={{ textAlign: 'center', padding: 32, color: C.muted }}>No real submissions yet.</td></tr>
+                        : filteredSubs.map((row) => (
+                          <tr key={row.id} style={{ borderBottom: `1px solid ${C.border}`, cursor: 'pointer' }} onClick={() => setViewRecord(row)}>
+                            <td style={{ padding: '10px 12px', color: C.muted, fontSize: 11, whiteSpace: 'nowrap' }}>#{row.id}</td>
+                            <td style={{ padding: '10px 12px', color: C.text, whiteSpace: 'nowrap', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis' }}>{row.job_title ?? '—'}</td>
+                            <td style={{ padding: '10px 12px', color: C.text, whiteSpace: 'nowrap', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis' }}>{row.company_name ?? '—'}</td>
+                            <td style={{ padding: '10px 12px', color: C.text, whiteSpace: 'nowrap' }}>{row.country ?? '—'}</td>
+                            <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>{row.seniority ? <Badge label={row.seniority} /> : '—'}</td>
+                            <td style={{ padding: '10px 12px', color: C.text, whiteSpace: 'nowrap' }}>{row.currency} {fmt(row.monthly_salary)}</td>
+                            <td style={{ padding: '10px 12px', color: C.text, whiteSpace: 'nowrap' }}>{row.experience ? `${row.experience}yr` : '—'}</td>
+                            <td style={{ padding: '10px 12px', color: C.text, whiteSpace: 'nowrap' }}>{row.education ?? '—'}</td>
+                            <td style={{ padding: '10px 12px', color: C.text, whiteSpace: 'nowrap' }}>{row.gender ?? '—'}</td>
+                            <td style={{ padding: '10px 12px', color: C.text, whiteSpace: 'nowrap' }}>{row.nationality_type ?? '—'}</td>
+                            <td style={{ padding: '10px 12px', color: C.text, whiteSpace: 'nowrap' }}>{row.housing_provided ? '✓' : '✗'}</td>
+                            <td style={{ padding: '10px 12px', color: C.text, whiteSpace: 'nowrap' }}>{row.car_provided ? '✓' : '✗'}</td>
+                            <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>{(() => { const s = sourceLabel(row.source); return <Badge label={s.label} color={s.color} />; })()}</td>
+                            <td style={{ padding: '10px 12px', color: C.muted, whiteSpace: 'nowrap' }}>{ago(row.created_at)}</td>
+                            <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }} onClick={e => e.stopPropagation()}>
+                              <button onClick={() => { setConfirmDelete({ id: row.id, table: 'submissions', label: row.job_title }); }} style={{ background: 'transparent', border: `1px solid ${C.danger}`, color: C.danger, borderRadius: 6, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>Delete</button>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
               </Card>
             )}
           </div>
@@ -370,11 +443,26 @@ export default function AdminDashboard() {
             </div>
             {loading.seed ? <div style={{ color: C.muted }}>Loading…</div> : (
               <Card style={{ padding: 0, overflow: 'hidden' }}>
-                <Table
-                  cols={[{ key: 'id', label: 'ID', render: v => <span style={{ color: C.muted, fontSize: 11 }}>#{v}</span> }, { key: 'job_title', label: 'Job Title', maxW: 180 }, { key: 'country', label: 'Country' }, { key: 'seniority', label: 'Level', render: v => <Badge label={v} /> }, { key: 'company_type', label: 'Type' }, { key: 'monthly_salary', label: 'Salary', render: (v, r) => `${r.currency ?? ''} ${fmt(v)}` }]}
-                  rows={filteredSeed}
-                  onDelete={(id) => { const r = seedData.find(x => x.id === id); setConfirmDelete({ id, table: 'seed', label: `Seed: ${r?.job_title ?? 'Record'} in ${r?.country ?? ''}` }); }}
-                />
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                    <thead><tr>{['ID','Job Title','Country','Level','Type','Salary',''].map(h => <th key={h} style={{ textAlign: 'left', padding: '10px 12px', color: C.muted, fontWeight: 600, fontSize: 11, textTransform: 'uppercase', borderBottom: `1px solid ${C.border}`, whiteSpace: 'nowrap' }}>{h}</th>)}</tr></thead>
+                    <tbody>
+                      {filteredSeed.length === 0
+                        ? <tr><td colSpan={7} style={{ textAlign: 'center', padding: 32, color: C.muted }}>No seed records.</td></tr>
+                        : filteredSeed.map(row => (
+                          <tr key={row.id} style={{ borderBottom: `1px solid ${C.border}` }}>
+                            <td style={{ padding: '10px 12px', color: C.muted, fontSize: 11 }}>#{row.id}</td>
+                            <td style={{ padding: '10px 12px', color: C.text, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.job_title}</td>
+                            <td style={{ padding: '10px 12px', color: C.text, whiteSpace: 'nowrap' }}>{row.country}</td>
+                            <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}><Badge label={row.seniority} /></td>
+                            <td style={{ padding: '10px 12px', color: C.text, whiteSpace: 'nowrap' }}>{row.company_type}</td>
+                            <td style={{ padding: '10px 12px', color: C.text, whiteSpace: 'nowrap' }}>{row.currency} {fmt(row.monthly_salary)}</td>
+                            <td style={{ padding: '10px 12px' }}><button onClick={() => { setConfirmDelete({ id: row.id, table: 'seed', label: `${row.job_title} in ${row.country}` }); }} style={{ background: 'transparent', border: `1px solid ${C.danger}`, color: C.danger, borderRadius: 6, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>Delete</button></td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
               </Card>
             )}
           </div>
@@ -388,12 +476,26 @@ export default function AdminDashboard() {
             </div>
             {loading.alerts ? <div style={{ color: C.muted }}>Loading…</div> : (
               <Card style={{ padding: 0, overflow: 'hidden' }}>
-                <Table
-                  cols={[{ key: 'id', label: 'ID', render: v => <span style={{ color: C.muted, fontSize: 11 }}>#{v}</span> }, { key: 'email', label: 'Email', maxW: 200 }, { key: 'job_title', label: 'Job Title' }, { key: 'country', label: 'Country' }, { key: 'category', label: 'Category' }, { key: 'created_at', label: 'Subscribed', render: v => ago(v) }]}
-                  rows={alerts}
-                  onDelete={(id) => { const r = alerts.find(x => x.id === id); setConfirmDelete({ id, table: 'alerts', label: `Alert for ${r?.email ?? ''}` }); }}
-                  emptyMsg="No alert subscribers yet."
-                />
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                    <thead><tr>{['ID','Email','Job Title','Country','Category','Subscribed',''].map(h => <th key={h} style={{ textAlign: 'left', padding: '10px 12px', color: C.muted, fontWeight: 600, fontSize: 11, textTransform: 'uppercase', borderBottom: `1px solid ${C.border}`, whiteSpace: 'nowrap' }}>{h}</th>)}</tr></thead>
+                    <tbody>
+                      {alerts.length === 0
+                        ? <tr><td colSpan={7} style={{ textAlign: 'center', padding: 32, color: C.muted }}>No alert subscribers yet.</td></tr>
+                        : alerts.map(row => (
+                          <tr key={row.id} style={{ borderBottom: `1px solid ${C.border}` }}>
+                            <td style={{ padding: '10px 12px', color: C.muted, fontSize: 11 }}>#{row.id}</td>
+                            <td style={{ padding: '10px 12px', color: C.text, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.email}</td>
+                            <td style={{ padding: '10px 12px', color: C.text, whiteSpace: 'nowrap' }}>{row.job_title}</td>
+                            <td style={{ padding: '10px 12px', color: C.text, whiteSpace: 'nowrap' }}>{row.country}</td>
+                            <td style={{ padding: '10px 12px', color: C.text, whiteSpace: 'nowrap' }}>{row.category}</td>
+                            <td style={{ padding: '10px 12px', color: C.muted, whiteSpace: 'nowrap' }}>{ago(row.created_at)}</td>
+                            <td style={{ padding: '10px 12px' }}><button onClick={() => { setConfirmDelete({ id: row.id, table: 'alerts', label: row.email }); }} style={{ background: 'transparent', border: `1px solid ${C.danger}`, color: C.danger, borderRadius: 6, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>Delete</button></td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
               </Card>
             )}
           </div>
