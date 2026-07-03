@@ -14,9 +14,9 @@ export async function GET(request) {
   const client = await pool.connect();
   try {
     const result = await client.query(
-      `SELECT id, job_title, job_title_en, company_name, company_type, country, city,
+      `SELECT id, job_title, job_title_en, job_title_ar, company_name, company_type, country, city,
        monthly_salary, basic_salary, currency, bonus, seniority, experience, education,
-       nationality_type, gender, email, housing_provided, car_provided, created_at
+       nationality_type, gender, email, housing_provided, car_provided, source, created_at
        FROM salaries WHERE is_seed = FALSE ORDER BY created_at DESC`
     );
     return Response.json({ records: result.rows });
