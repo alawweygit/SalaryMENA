@@ -65,15 +65,15 @@ ${isArabic ? 'IMPORTANT: Respond with all text fields in Arabic language.' : ''}
 CRITICAL CONTEXT:
 - Expats earn considerably less than GCC nationals/local citizens for identical roles
 - Government sector pays differently from private sector
-- Factor in any benefits when assessing total package
+${benefits ? '- Factor in the listed benefits when assessing total package' : '- NEVER mention housing, car, transportation, or benefits of any kind in your summary or advice. The user gave no benefit information, so do not reference benefits at all, not even to say they are missing.'}
 Profile:
 - Job Title: ${jobTitle}
 - Country: ${country}
 - Nationality Type: ${nationalityType}
 - Company Type: ${companyType || 'Not specified'}
 - Years of Experience: ${experience}
-- Current Monthly Salary: ${currency} ${monthlySalary}
-- Benefits: ${benefits || 'None'}
+- Current Monthly Salary: ${currency} ${monthlySalary}${benefits ? `
+- Benefits: ${benefits}` : ''}
 Respond with ONLY a valid JSON object, no markdown:
 {
   "verdict": "${isArabic ? 'عادل OR أقل من السوق OR أعلى من السوق' : 'Fair OR Below Market OR Above Market'}",
