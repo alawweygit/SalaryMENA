@@ -29,9 +29,9 @@ const BASE = {
   'Mauritania':   {'Software Engineer':350,'Doctor':590,'Nurse':195,'Pharmacist':285,'Civil Engineer':335,'Accountant':270,'Teacher':190,'Marketing Manager':320,'Sales Representative':215,'Project Manager':400,'HR Manager':267,'Financial Analyst':308,'Lawyer':391,'Data Analyst':361,'Electrical Engineer':328,'Mechanical Engineer':328,'Architect':330,'Pilot':626,'Chef':171,'Operations Manager':360},
 };
 
-const seniorities = ['Junior','Mid-Level','Senior','Senior+'];
-const senMult = {'Junior':0.5,'Mid-Level':1.0,'Senior':1.6,'Senior+':2.1};
-const experiences = {'Junior':'0-1','Mid-Level':'1-3','Senior':'3-5','Senior+':'8-12'};
+const seniorities = ['Junior','Mid-Level','Mid-Senior','Senior','Senior+'];
+const senMult = {'Junior':0.5,'Mid-Level':1.0,'Mid-Senior':1.6,'Senior':1.8,'Senior+':2.1};
+const experiences = {'Junior':'0-1','Mid-Level':'1-3','Mid-Senior':'3-5','Senior':'5-8','Senior+':'8-12'};
 const educations = ["Bachelor's","Master's","Bachelor's","PhD","Professional Cert"];
 const genders = ['Male','Female'];
 const nats = ['Local National','Arab (Other)','Western Expat','Asian Expat'];
