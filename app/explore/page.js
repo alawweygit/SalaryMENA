@@ -4,6 +4,8 @@ import Navbar from '../components/Navbar';
 import { useLang } from '../components/LanguageContext';
 import { t } from '../components/translations';
 
+const PAGE_SIZE = 30;
+
 const COUNTRIES_EN = ['UAE','Saudi Arabia','Egypt','Oman','Kuwait','Qatar','Bahrain','Jordan','Lebanon','Iraq','Syria','Yemen','Libya','Tunisia','Algeria','Morocco','Sudan','Somalia','Comoros','Djibouti','Mauritania','Palestine'];
 const COUNTRIES_AR = ['الإمارات','السعودية','مصر','عُمان','الكويت','قطر','البحرين','الأردن','لبنان','العراق','سوريا','اليمن','ليبيا','تونس','الجزائر','المغرب','السودان','الصومال','جزر القمر','جيبوتي','موريتانيا','فلسطين'];
 const COUNTRY_MAP_AR_TO_EN = {'الإمارات':'UAE','السعودية':'Saudi Arabia','مصر':'Egypt','عُمان':'Oman','الكويت':'Kuwait','قطر':'Qatar','البحرين':'Bahrain','الأردن':'Jordan','لبنان':'Lebanon','العراق':'Iraq','سوريا':'Syria','اليمن':'Yemen','ليبيا':'Libya','تونس':'Tunisia','الجزائر':'Algeria','المغرب':'Morocco','السودان':'Sudan','الصومال':'Somalia','جزر القمر':'Comoros','جيبوتي':'Djibouti','موريتانيا':'Mauritania','فلسطين':'Palestine'};
@@ -63,6 +65,7 @@ export default function Explore() {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   useEffect(() => {
     fetch('/api/explore')
@@ -70,6 +73,10 @@ export default function Explore() {
       .then(res => { setData(res.data || []); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [search, countryFilter, levelFilter, companyFilter]);
 
   const COUNTRIES = lang==='ar' ? COUNTRIES_AR : COUNTRIES_EN;
   const LEVELS = lang==='ar' ? LEVELS_AR : LEVELS_EN;
@@ -95,6 +102,9 @@ export default function Explore() {
     const matchCompany = !companyFilter || d.company===companyEN || d.company===companyFilter;
     return matchSearch && matchCountry && matchLevel && matchCompany;
   });
+
+  const visible = filtered.slice(0, visibleCount);
+  const remaining = filtered.length - visibleCount;
 
   const hasFilters = countryFilter || levelFilter || companyFilter;
 
@@ -167,7 +177,7 @@ export default function Explore() {
         </div>
 
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'16px'}}>
-          <span style={{color:'#606070',fontSize:'14px'}}>{loading?'...':`${filtered.length} ${txt.results_found}`}</span>
+          <span style={{color:'#606070',fontSize:'14px'}}>{loading?'...':`${filtered.length.toLocaleString()} ${txt.results_found}`}</span>
           {hasFilters && (
             <button onClick={()=>{setCountryFilter('');setLevelFilter('');setCompanyFilter('');}}
               style={{background:'transparent',border:'1px solid #2a2a3e',color:'#a0a0b0',borderRadius:'8px',padding:'6px 14px',fontSize:'13px',cursor:'pointer'}}>
@@ -188,7 +198,7 @@ export default function Explore() {
           </div>
         ) : (
           <div style={{display:'flex',flexDirection:'column',gap:'12px'}}>
-            {filtered.map(d=>(
+            {visible.map(d=>(
               <div key={d.id} className="explore-card" style={{background:'#13131f',border:'1px solid #1e1e2e',borderRadius:'16px',padding:'20px',transition:'border-color 0.2s'}}
                 onMouseEnter={e=>e.currentTarget.style.borderColor='#6366f1'}
                 onMouseLeave={e=>e.currentTarget.style.borderColor='#1e1e2e'}>
@@ -228,6 +238,13 @@ export default function Explore() {
                 </button>
               </div>
             ))}
+
+            {remaining > 0 && (
+              <button onClick={()=>setVisibleCount(v=>v+PAGE_SIZE)}
+                style={{background:'linear-gradient(135deg,rgba(99,102,241,0.15),rgba(139,92,246,0.1))',border:'1px solid rgba(99,102,241,0.4)',color:'#a78bfa',borderRadius:'12px',padding:'14px',fontSize:'14px',fontWeight:'700',cursor:'pointer',marginTop:'8px'}}>
+                {lang==='ar' ? `عرض المزيد (${remaining.toLocaleString()} متبقي)` : `Load More (${remaining.toLocaleString()} remaining)`}
+              </button>
+            )}
           </div>
         )}
 
