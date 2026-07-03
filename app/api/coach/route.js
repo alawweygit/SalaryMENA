@@ -25,8 +25,28 @@ async function triggerAlerts(jobTitleEn, country, category) {
   } catch(e) { console.error('Trigger alerts error:', e); }
 }
 
+const rateMap = new Map();
+const RATE_LIMIT = 10;
+const RATE_WINDOW = 60 * 60 * 1000;
+
+function isRateLimited(ip) {
+  const now = Date.now();
+  const entry = rateMap.get(ip);
+  if (!entry || now - entry.start > RATE_WINDOW) {
+    if (rateMap.size > 5000) rateMap.clear();
+    rateMap.set(ip, { start: now, count: 1 });
+    return false;
+  }
+  entry.count++;
+  return entry.count > RATE_LIMIT;
+}
+
 export async function POST(req) {
   try {
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    if (isRateLimited(ip)) {
+      return Response.json({ success: false, error: 'Too many requests. Please try again in an hour.' }, { status: 429 });
+    }
     const body = await req.json();
     const { jobTitle, country, currency, offeredSalary, currentSalary, experience, companyType, nationalityType, lang } = body;
 
