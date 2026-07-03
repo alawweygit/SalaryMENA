@@ -1,7 +1,7 @@
 import { Pool } from 'pg';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_PUBLIC_URL });
-const ADMIN_PASSWORD = '3146';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
