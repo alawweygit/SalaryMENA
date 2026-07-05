@@ -1,9 +1,15 @@
 'use client';
+import { useEffect } from 'react';
 import { useLang } from './components/LanguageContext';
 import { t } from './components/translations';
 import Navbar from './components/Navbar';
 
 export default function Home() {
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const utm = params.get('utm_source');
+    if (utm) localStorage.setItem('utm_source', utm);
+  }, []);
   const { lang, isAr } = useLang();
   const txt = t[lang];
 

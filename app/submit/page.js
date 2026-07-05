@@ -101,6 +101,8 @@ function SubmitInner() {
         ...form,
         country: form.countryEN || form.country,
         companyType: form.companyType==='خاص'?'Private':form.companyType==='حكومة'?'Government':form.companyType,
+        source: 'submit',
+        utm_source: localStorage.getItem('utm_source') || null,
       };
       await fetch('/api/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
       sessionStorage.removeItem(FORM_KEY);

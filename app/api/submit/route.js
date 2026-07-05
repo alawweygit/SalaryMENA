@@ -12,7 +12,7 @@ export async function POST(req) {
     const {
       jobTitle, seniority, companyType, companyName, country, city,
       monthlySalary, basicSalary, currency, bonus, experience,
-      education, nationalityType, gender, email, housingProvided, carProvided
+      education, nationalityType, gender, email, housingProvided, carProvided, utm_source
     } = body;
 
     // Step 1: Translate + categorize in parallel
@@ -48,8 +48,8 @@ export async function POST(req) {
     const result = await pool.query(
       `INSERT INTO salaries (job_title, job_title_ar, job_title_en, seniority, company_type, company_name, country, city,
         monthly_salary, basic_salary, currency, bonus, experience, education,
-        nationality_type, gender, email, housing_provided, car_provided)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19) RETURNING id`,
+        nationality_type, gender, email, housing_provided, car_provided, source, utm_source)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21) RETURNING id`,
       [
         jobTitle, arabic, english, seniority || null, companyType || null, companyName || null,
         country || null, city || null,
@@ -59,7 +59,8 @@ export async function POST(req) {
         bonus ? Number(bonus) : null,
         experience || null, education || null, nationalityType || null,
         gender || null, email || null,
-        housingProvided || false, carProvided || false
+        housingProvided || false, carProvided || false,
+        'submit', utm_source || null
       ]
     );
 

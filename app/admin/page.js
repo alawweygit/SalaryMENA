@@ -531,6 +531,19 @@ export default function AdminDashboard() {
                   <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>Private vs Government</div>
                   <DonutChart data={(stats?.company_type_breakdown ?? []).map(r => ({ label: r.company_type, value: parseInt(r.count) }))} />
                 </Card>
+                <Card>
+                  <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>🔗 Traffic Sources</div>
+                  <div style={{ color: C.muted, fontSize: 12, marginBottom: 12 }}>Where submitters came from</div>
+                  <BarChart data={(stats?.utm_breakdown ?? []).map(r => ({ label: r.source, value: parseInt(r.count) }))} colorFn={(i) => ['#a78bfa','#22c55e','#f59e0b','#06b6d4','#ec4899','#ef4444','#8b5cf6'][i % 7]} />
+                  <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {(stats?.utm_breakdown ?? []).map((r, i) => (
+                      <div key={i} style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: '6px 12px', fontSize: 12 }}>
+                        <span style={{ color: C.muted }}>{r.source}: </span>
+                        <span style={{ color: C.text, fontWeight: 700 }}>{r.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
               </div>
             )}
           </div>

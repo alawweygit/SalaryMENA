@@ -11,7 +11,7 @@ export async function GET(request) {
 
   const client = await pool.connect();
   try {
-    const [totals, alertCount, countryCount, today, thisWeek, thisMonth, recent, dailySubmissions, countryBreakdown, seniorityBreakdown, topJobs, companyTypeBreakdown] = await Promise.all([
+    const [totals, alertCount, countryCount, today, thisWeek, thisMonth, recent, dailySubmissions, countryBreakdown, seniorityBreakdown, topJobs, companyTypeBreakdown, utmBreakdown] = await Promise.all([
       client.query(`SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE is_seed = FALSE) AS real, COUNT(*) FILTER (WHERE is_seed = TRUE) AS seed FROM salaries`),
       client.query(`SELECT COUNT(*) AS count FROM salary_alerts`),
       client.query(`SELECT COUNT(DISTINCT country) AS count FROM salaries`),
@@ -24,6 +24,7 @@ export async function GET(request) {
       client.query(`SELECT seniority, COUNT(*) AS count FROM salaries GROUP BY seniority ORDER BY count DESC`),
       client.query(`SELECT job_title_en AS job_title, COUNT(*) AS count FROM salaries GROUP BY job_title_en ORDER BY count DESC LIMIT 15`),
       client.query(`SELECT company_type, COUNT(*) AS count FROM salaries GROUP BY company_type ORDER BY count DESC`),
+      client.query(`SELECT COALESCE(utm_source, 'direct') AS source, COUNT(*) AS count FROM salaries WHERE is_seed = FALSE GROUP BY utm_source ORDER BY count DESC`),
     ]);
 
     return Response.json({
@@ -41,6 +42,7 @@ export async function GET(request) {
       seniority_breakdown: seniorityBreakdown.rows,
       top_jobs: topJobs.rows,
       company_type_breakdown: companyTypeBreakdown.rows,
+      utm_breakdown: utmBreakdown.rows,
     });
   } finally {
     client.release();
