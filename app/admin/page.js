@@ -291,6 +291,7 @@ export default function AdminDashboard() {
             <DetailRow label="Housing Provided" value={viewRecord.housing_provided ? 'Yes' : 'No'} />
             <DetailRow label="Car Provided" value={viewRecord.car_provided ? 'Yes' : 'No'} />
             <DetailRow label="Submitted Via" value={sourceLabel(viewRecord.source).label} />
+            <DetailRow label="Traffic Source" value={viewRecord.utm_source ?? 'Direct / Unknown'} />
             <DetailRow label="Submitted At" value={viewRecord.created_at ? new Date(viewRecord.created_at).toLocaleString() : null} />
             <div style={{ marginTop: 20 }}>
               <button onClick={() => { setConfirmDelete({ id: viewRecord.id, table: 'submissions', label: viewRecord.job_title }); setViewRecord(null); }}
@@ -383,7 +384,7 @@ export default function AdminDashboard() {
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                     <thead>
                       <tr>
-                        {['ID','Job Title','Company','Country','Level','Salary','Exp','Education','Gender','Nationality','Housing','Car','Source','When',''].map(h => (
+                        {['ID','Job Title','Company','Country','Level','Salary','Exp','Education','Gender','Nationality','Housing','Car','Source','Traffic','When',''].map(h => (
                           <th key={h} style={{ textAlign: 'left', padding: '10px 12px', color: C.muted, fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: `1px solid ${C.border}`, whiteSpace: 'nowrap' }}>{h}</th>
                         ))}
                       </tr>
@@ -406,6 +407,7 @@ export default function AdminDashboard() {
                             <td style={{ padding: '10px 12px', color: C.text, whiteSpace: 'nowrap' }}>{row.housing_provided ? '✓' : '✗'}</td>
                             <td style={{ padding: '10px 12px', color: C.text, whiteSpace: 'nowrap' }}>{row.car_provided ? '✓' : '✗'}</td>
                             <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>{(() => { const s = sourceLabel(row.source); return <Badge label={s.label} color={s.color} />; })()}</td>
+                            <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>{row.utm_source ? <Badge label={row.utm_source} color={'#06b6d4'} /> : <span style={{color:'#6b6b8a',fontSize:11}}>direct</span>}</td>
                             <td style={{ padding: '10px 12px', color: C.muted, whiteSpace: 'nowrap' }}>{ago(row.created_at)}</td>
                             <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }} onClick={e => e.stopPropagation()}>
                               <button onClick={() => { setConfirmDelete({ id: row.id, table: 'submissions', label: row.job_title }); }} style={{ background: 'transparent', border: `1px solid ${C.danger}`, color: C.danger, borderRadius: 6, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>Delete</button>
