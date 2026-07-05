@@ -24,7 +24,7 @@ export async function GET(request) {
       client.query(`SELECT seniority, COUNT(*) AS count FROM salaries GROUP BY seniority ORDER BY count DESC`),
       client.query(`SELECT job_title_en AS job_title, COUNT(*) AS count FROM salaries GROUP BY job_title_en ORDER BY count DESC LIMIT 15`),
       client.query(`SELECT company_type, COUNT(*) AS count FROM salaries GROUP BY company_type ORDER BY count DESC`),
-      client.query(`SELECT COALESCE(utm_source, 'direct') AS source, COUNT(*) AS count FROM salaries WHERE is_seed = FALSE GROUP BY utm_source ORDER BY count DESC`),
+      client.query(`SELECT utm_source AS source, COUNT(*) AS count FROM salaries WHERE is_seed = FALSE AND utm_source IS NOT NULL GROUP BY utm_source ORDER BY count DESC`),
     ]);
 
     return Response.json({
