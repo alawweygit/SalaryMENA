@@ -9,6 +9,12 @@ export default function Home() {
     const params = new URLSearchParams(window.location.search);
     const utm = params.get('utm_source');
     if (utm) localStorage.setItem('utm_source', utm);
+
+    const trackKey = 'sm_tracked_' + new Date().toISOString().split('T')[0];
+    if (!localStorage.getItem(trackKey)) {
+      fetch('/api/track', { method: 'POST' }).catch(() => {});
+      localStorage.setItem(trackKey, '1');
+    }
   }, []);
   const { lang, isAr } = useLang();
   const txt = t[lang];

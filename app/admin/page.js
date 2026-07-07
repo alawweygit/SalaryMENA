@@ -132,6 +132,7 @@ export default function AdminDashboard() {
   const [pwError, setPwError] = useState('');
   const [tab, setTab] = useState('overview');
   const [stats, setStats] = useState(null);
+  const [visits, setVisits] = useState(null);
   const [submissions, setSubmissions] = useState([]);
   const [seedData, setSeedData] = useState([]);
   const [alerts, setAlerts] = useState([]);
@@ -171,6 +172,10 @@ export default function AdminDashboard() {
     setLoad('seed', false);
   }, [pw]);
 
+  const fetchVisits = useCallback(async () => {
+    try { const r = await fetch('/api/track'); setVisits(await r.json()); } catch {}
+  }, []);
+
   const fetchAlerts = useCallback(async () => {
     setLoad('alerts', true);
     try { const r = await fetch(`/api/admin/alerts?pw=${encodeURIComponent(pw)}`); const d = await r.json(); setAlerts(d.records ?? []); } catch { showToast('Failed', 'error'); }
@@ -179,8 +184,8 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!authed) return;
-    fetchStats(); fetchSubmissions(); fetchSeed(); fetchAlerts();
-  }, [authed, fetchStats, fetchSubmissions, fetchSeed, fetchAlerts]);
+    fetchStats(); fetchSubmissions(); fetchSeed(); fetchAlerts(); fetchVisits();
+  }, [authed, fetchStats, fetchSubmissions, fetchSeed, fetchAlerts, fetchVisits]);
 
   const doDelete = async () => {
     if (!confirmDelete) return;
@@ -323,6 +328,8 @@ export default function AdminDashboard() {
             <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 20 }}>Overview</div>
             {loading.stats ? <div style={{ color: C.muted }}>Loading…</div> : (<>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 24 }}>
+<Stat label="Total Visits" value={fmt(visits?.total)} sub="All time unique visits" color={'#06b6d4'} />
+                <Stat label="Today's Visits" value={fmt(visits?.today)} sub="Unique visitors today" color={'#06b6d4'} />
                 <Stat label="Total Records" value={fmt(stats?.total)} sub="All salaries in DB" />
                 <Stat label="Real Submissions" value={fmt(stats?.real)} sub="From actual users" color={C.success} />
                 <Stat label="Seed Records" value={fmt(stats?.seed)} sub="Synthetic data" color={C.muted} />
