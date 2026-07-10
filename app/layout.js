@@ -13,7 +13,7 @@ export const metadata = {
   openGraph: {
     title: "SalaryMENA — Know Your Worth",
     description: "The first anonymous salary platform built for the MENA region. Real salaries, 100% anonymous.",
-    url: "https://salarymena.com",
+    url: "https://www.salarymena.com",
     siteName: "SalaryMENA",
     locale: "en_US",
     type: "website",
