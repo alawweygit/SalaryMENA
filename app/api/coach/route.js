@@ -70,7 +70,6 @@ export async function POST(req) {
       [jobTitle, jobTitleAr, jobTitleEn, companyType || null, country, offeredSalary || currentSalary || null, currency, experience, nationalityType || null, 'coach']
     ).catch(err => console.error('Coach DB save error:', err));
 
-    if (category) await triggerAlerts(jobTitleEn, country, category);
 
     const isArabic = lang === 'ar';
 

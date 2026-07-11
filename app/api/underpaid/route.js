@@ -70,7 +70,6 @@ export async function POST(req) {
       [jobTitle, jobTitleAr, jobTitleEn, companyType || null, country, monthlySalary || null, currency, experience, nationalityType || null, 'underpaid']
     ).catch(err => console.error('Underpaid DB save error:', err));
 
-    if (category) await triggerAlerts(jobTitleEn, country, category);
 
     const benefits = [housingProvided && 'free housing', carProvided && 'a company car'].filter(Boolean).join(' and ');
     const isArabic = lang === 'ar';

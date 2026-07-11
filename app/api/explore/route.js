@@ -16,7 +16,14 @@ export async function GET(req) {
     if (country) { params.push(country); baseWhere += ` AND country = $${params.length}`; }
     if (level) { params.push(level); baseWhere += ` AND seniority = $${params.length}`; }
     if (company) { params.push(company); baseWhere += ` AND company_type = $${params.length}`; }
-    if (search) { params.push(`%${search}%`); baseWhere += ` AND (job_title ILIKE $${params.length} OR job_title_ar ILIKE $${params.length} OR job_title_en ILIKE $${params.length} OR country ILIKE $${params.length})`; }
+    if (search) {
+      params.push(`%${search}%`);
+      params.push(`%${search}%`);
+      params.push(`%${search}%`);
+      params.push(`%${search}%`);
+      const n = params.length;
+      baseWhere += ` AND (job_title ILIKE $${n-3} OR job_title_ar ILIKE $${n-2} OR job_title_en ILIKE $${n-1} OR country ILIKE $${n})`;
+    }
 
     const fields = `id, job_title as title, job_title_ar, job_title_en, seniority,
                     company_type as company, company_name, country, city,
