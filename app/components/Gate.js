@@ -18,7 +18,7 @@ export default function Gate({ children }) {
 
   const publicPages = ['/', '/submit'];
   if (publicPages.includes(pathname)) return children;
-  if (hasAccess === null) return null;
+  if (hasAccess === null) return children;
   if (hasAccess) return children;
 
   const pageMessages = {
