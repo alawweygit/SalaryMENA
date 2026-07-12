@@ -12,8 +12,9 @@ export const metadata = {
   keywords: "salary, MENA, UAE, Saudi Arabia, Egypt, Oman, Kuwait, Qatar, salary transparency, how much do people earn, am I underpaid",
   openGraph: {
     title: "SalaryMENA — Know Your Worth",
-    description: "The first anonymous salary platform built for the MENA region. Real salaries, 100% anonymous.",
+    description: "The first anonymous salary transparency platform built for the MENA region. Discover real salaries from UAE, Saudi Arabia, Oman, Egypt and 22 Arab countries. 100% anonymous.",
     url: "https://www.salarymena.com",
+    images: [{ url: "https://www.salarymena.com/og-image.png", width: 1200, height: 630, alt: "SalaryMENA — Know Your Worth" }],
     siteName: "SalaryMENA",
     locale: "en_US",
     type: "website",
@@ -21,7 +22,8 @@ export const metadata = {
   twitter: {
     card: "summary_large_image",
     title: "SalaryMENA — Know Your Worth",
-    description: "The first anonymous salary platform built for the MENA region.",
+    description: "Real salaries from the Arab world. 100% anonymous. Know your worth.",
+    images: ["https://www.salarymena.com/og-image.png"],
   },
 };
 
