@@ -7,7 +7,7 @@ export default function Gate({ children }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    const access = localStorage.getItem('salarymena_access');
+    let access = null; try { access = localStorage.getItem("salarymena_access"); } catch(e) { access = "true"; }
     setHasAccess(!!access);
   }, []);
 
