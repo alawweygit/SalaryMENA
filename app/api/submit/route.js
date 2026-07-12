@@ -2,7 +2,7 @@ import { Pool } from 'pg';
 import Anthropic from '@anthropic-ai/sdk';
 import { Resend } from 'resend';
 
-const pool = new Pool({ connectionString: process.env.DATABASE_PUBLIC_URL });
+const pool = new Pool({ connectionString: process.env.DATABASE_PUBLIC_URL, max: 3, idleTimeoutMillis: 10000, connectionTimeoutMillis: 5000 });
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const resend = new Resend(process.env.RESEND_API_KEY);
 

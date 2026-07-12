@@ -1,6 +1,6 @@
 import { Pool } from 'pg';
 
-const pool = new Pool({ connectionString: process.env.DATABASE_PUBLIC_URL });
+const pool = new Pool({ connectionString: process.env.DATABASE_PUBLIC_URL, max: 3, idleTimeoutMillis: 10000, connectionTimeoutMillis: 5000 });
 
 export async function GET(req) {
   try {
