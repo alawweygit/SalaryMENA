@@ -1,8 +1,7 @@
-import { Pool } from 'pg';
-
-const pool = new Pool({ connectionString: process.env.DATABASE_PUBLIC_URL, max: 3, idleTimeoutMillis: 10000, connectionTimeoutMillis: 5000 });
+import { getPool } from '../../lib/db';
 
 export async function GET(req) {
+  const pool = getPool();
   try {
     const { searchParams } = new URL(req.url);
     const country = searchParams.get('country');
@@ -42,7 +41,6 @@ export async function GET(req) {
         `SELECT ${fields} FROM salaries ${baseWhere} AND is_seed = FALSE ORDER BY created_at DESC`,
         params
       );
-
       const gccResult = await pool.query(
         `SELECT ${fields} FROM salaries ${baseWhere} AND is_seed = TRUE AND country IN ('UAE','Saudi Arabia','Kuwait','Qatar','Bahrain','Oman') ORDER BY RANDOM()`,
         params
@@ -57,7 +55,6 @@ export async function GET(req) {
       const nonGccCount = Math.floor(total * 0.10);
       const gccCount = total - nonGccCount;
       const seedRows = [...gcc.slice(0, gccCount), ...nonGcc.slice(0, nonGccCount)];
-
       rows = [...realResult.rows, ...seedRows];
     }
 

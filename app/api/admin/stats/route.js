@@ -1,6 +1,6 @@
-import { Pool } from 'pg';
+import { getPool } from '../../../lib/db';
 
-const pool = new Pool({ connectionString: process.env.DATABASE_PUBLIC_URL });
+const pool = getPool();
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
 export async function GET(request) {
@@ -26,23 +26,13 @@ export async function GET(request) {
       client.query(`SELECT company_type, COUNT(*) AS count FROM salaries GROUP BY company_type ORDER BY count DESC`),
       client.query(`SELECT utm_source AS source, COUNT(*) AS count FROM salaries WHERE is_seed = FALSE AND utm_source IS NOT NULL GROUP BY utm_source ORDER BY count DESC`),
     ]);
-
     return Response.json({
-      total: parseInt(totals.rows[0].total),
-      real: parseInt(totals.rows[0].real),
-      seed: parseInt(totals.rows[0].seed),
-      alert_count: parseInt(alertCount.rows[0].count),
-      country_count: parseInt(countryCount.rows[0].count),
-      today: parseInt(today.rows[0].count),
-      this_week: parseInt(thisWeek.rows[0].count),
-      this_month: parseInt(thisMonth.rows[0].count),
-      recent: recent.rows,
-      daily_submissions: dailySubmissions.rows,
-      country_breakdown: countryBreakdown.rows,
-      seniority_breakdown: seniorityBreakdown.rows,
-      top_jobs: topJobs.rows,
-      company_type_breakdown: companyTypeBreakdown.rows,
-      utm_breakdown: utmBreakdown.rows,
+      total: parseInt(totals.rows[0].total), real: parseInt(totals.rows[0].real), seed: parseInt(totals.rows[0].seed),
+      alert_count: parseInt(alertCount.rows[0].count), country_count: parseInt(countryCount.rows[0].count),
+      today: parseInt(today.rows[0].count), this_week: parseInt(thisWeek.rows[0].count), this_month: parseInt(thisMonth.rows[0].count),
+      recent: recent.rows, daily_submissions: dailySubmissions.rows, country_breakdown: countryBreakdown.rows,
+      seniority_breakdown: seniorityBreakdown.rows, top_jobs: topJobs.rows,
+      company_type_breakdown: companyTypeBreakdown.rows, utm_breakdown: utmBreakdown.rows,
     });
   } finally {
     client.release();

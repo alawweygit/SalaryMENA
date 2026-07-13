@@ -1,8 +1,8 @@
-import { Pool } from 'pg';
+import { getPool } from '../../lib/db';
 import Anthropic from '@anthropic-ai/sdk';
 import { Resend } from 'resend';
 
-const pool = new Pool({ connectionString: process.env.DATABASE_PUBLIC_URL, max: 3, idleTimeoutMillis: 10000, connectionTimeoutMillis: 5000 });
+const pool = getPool();
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -15,151 +15,74 @@ export async function POST(req) {
       education, nationalityType, gender, email, housingProvided, carProvided, utm_source
     } = body;
 
-    // Step 1: Translate + categorize in parallel
     let arabic = null;
     let english = jobTitle;
     let category = null;
     try {
       const [arMsg, enMsg, catMsg] = await Promise.all([
-        client.messages.create({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 50,
-          messages: [{ role: 'user', content: 'Translate this job title to Arabic. Reply with ONLY the Arabic translation, nothing else: ' + jobTitle }]
-        }),
-        client.messages.create({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 50,
-          messages: [{ role: 'user', content: 'Translate this job title to English. Reply with ONLY the English translation, nothing else: ' + jobTitle }]
-        }),
-        client.messages.create({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 20,
-          messages: [{ role: 'user', content: `Categorize this job title into ONE simple career category (examples: agriculture, technology, healthcare, finance, education, sales, marketing, engineering, legal, logistics, hospitality, construction, government, media). Reply with ONLY the single category word, nothing else: ${jobTitle}` }]
-        })
+        client.messages.create({ model: 'claude-haiku-4-5-20251001', max_tokens: 50, messages: [{ role: 'user', content: 'Translate this job title to Arabic. Reply with ONLY the Arabic translation, nothing else: ' + jobTitle }] }),
+        client.messages.create({ model: 'claude-haiku-4-5-20251001', max_tokens: 50, messages: [{ role: 'user', content: 'Translate this job title to English. Reply with ONLY the English translation, nothing else: ' + jobTitle }] }),
+        client.messages.create({ model: 'claude-haiku-4-5-20251001', max_tokens: 20, messages: [{ role: 'user', content: `Categorize this job title into ONE simple career category (examples: agriculture, technology, healthcare, finance, education, sales, marketing, engineering, legal, logistics, hospitality, construction, government, media). Reply with ONLY the single category word, nothing else: ${jobTitle}` }] })
       ]);
       arabic = arMsg.content[0].text.trim();
       english = enMsg.content[0].text.trim();
       category = catMsg.content[0].text.trim().toLowerCase();
-    } catch(e) {
-      console.error('Translation error:', e);
-    }
+    } catch(e) { console.error('Translation error:', e); }
 
-    // Step 2: Save to DB with translations
     const result = await pool.query(
       `INSERT INTO salaries (job_title, job_title_ar, job_title_en, seniority, company_type, company_name, country, city,
         monthly_salary, basic_salary, currency, bonus, experience, education,
         nationality_type, gender, email, housing_provided, car_provided, source, utm_source)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21) RETURNING id`,
-      [
-        jobTitle, arabic, english, seniority || null, companyType || null, companyName || null,
-        country || null, city || null,
-        monthlySalary ? Number(monthlySalary) : null,
-        basicSalary ? Number(basicSalary) : null,
-        currency || null,
-        bonus ? Number(bonus) : null,
-        experience || null, education || null, nationalityType || null,
-        gender || null, email || null,
-        housingProvided || false, carProvided || false,
-        'submit', utm_source || null
-      ]
+      [jobTitle, arabic, english, seniority || null, companyType || null, companyName || null,
+       country || null, city || null,
+       monthlySalary ? Number(monthlySalary) : null,
+       basicSalary ? Number(basicSalary) : null,
+       currency || null, bonus ? Number(bonus) : null,
+       experience || null, education || null, nationalityType || null,
+       gender || null, email || null,
+       housingProvided || false, carProvided || false,
+       'submit', utm_source || null]
     );
 
     const savedId = result.rows[0].id;
 
-    // Step 3: Send confirmation email
     if (email) {
       try {
         await resend.emails.send({
           from: 'SalaryMENA <support@cvdropai.com>',
           to: email,
           subject: 'Your salary has been submitted — SalaryMENA',
-          html: `
-            <div style="font-family:Inter,sans-serif;background:#0a0a0f;color:#ffffff;padding:32px;max-width:600px;margin:0 auto;border-radius:16px;">
-              <div style="margin-bottom:24px;display:flex;align-items:center;gap:12px;">
-                <img src="https://salarymena.com/logo-email.png" width="44" height="44" alt="SalaryMENA logo" style="border-radius:8px;"/>
-                <div>
-                  <span style="font-size:20px;font-weight:900;color:#ffffff;">Salary</span><span style="font-size:20px;font-weight:900;color:#8b5cf6;">MENA</span>
-                </div>
-              </div>
-              <h1 style="font-size:24px;font-weight:800;margin-bottom:8px;">Thank you! 🎉</h1>
-              <p style="color:#a0a0b0;font-size:15px;line-height:1.7;margin-bottom:24px;">Your salary has been submitted anonymously and is now helping others in the MENA region know their worth.</p>
-              <div style="background:#13131f;border:1px solid #2a2a3e;border-radius:12px;padding:24px;margin-bottom:24px;">
-                <p style="color:#606070;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">What you submitted</p>
-                <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #2a2a3e;">
-                  <div style="color:#a0a0b0;font-size:12px;margin-bottom:4px;">Role</div>
-                  <div style="color:#ffffff;font-weight:600;font-size:15px;">${jobTitle}</div>
-                </div>
-                <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #2a2a3e;">
-                  <div style="color:#a0a0b0;font-size:12px;margin-bottom:4px;">Country</div>
-                  <div style="color:#ffffff;font-weight:600;font-size:15px;">${country}</div>
-                </div>
-                <div>
-                  <div style="color:#a0a0b0;font-size:12px;margin-bottom:4px;">Monthly Salary</div>
-                  <div style="color:#a78bfa;font-weight:800;font-size:18px;">${currency} ${Number(monthlySalary).toLocaleString()}</div>
-                </div>
-              </div>
-              <a href="https://salarymena.com/explore" style="display:inline-block;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#ffffff;text-decoration:none;border-radius:10px;padding:12px 24px;font-weight:700;font-size:14px;margin-bottom:24px;">Explore Salaries →</a>
-              <div style="border-top:1px solid #1e1e2e;padding-top:20px;">
-                <p style="color:#404050;font-size:12px;margin:0;">© 2026 SalaryMENA · <a href="https://salarymena.com" style="color:#6366f1;text-decoration:none;">salarymena.com</a></p>
-              </div>
-            </div>
-          `
+          html: `<div style="font-family:Inter,sans-serif;background:#0a0a0f;color:#ffffff;padding:32px;max-width:600px;margin:0 auto;border-radius:16px;"><div style="margin-bottom:24px;"><span style="font-size:20px;font-weight:900;color:#ffffff;">Salary</span><span style="font-size:20px;font-weight:900;color:#8b5cf6;">MENA</span></div><h1 style="font-size:24px;font-weight:800;margin-bottom:8px;">Thank you! 🎉</h1><p style="color:#a0a0b0;font-size:15px;line-height:1.7;margin-bottom:24px;">Your salary has been submitted anonymously and is now helping others in the MENA region know their worth.</p><a href="https://salarymena.com/explore" style="display:inline-block;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#ffffff;text-decoration:none;border-radius:10px;padding:12px 24px;font-weight:700;font-size:14px;margin-bottom:24px;">Explore Salaries →</a><div style="border-top:1px solid #1e1e2e;padding-top:20px;"><p style="color:#404050;font-size:12px;margin:0;">© 2026 SalaryMENA · <a href="https://salarymena.com" style="color:#6366f1;text-decoration:none;">salarymena.com</a></p></div></div>`
         });
-      } catch(e) {
-        console.error('Email error:', e);
-      }
+      } catch(e) { console.error('Email error:', e); }
     }
 
-    // Step 4: Save alert preference with category
     if (email) {
       try {
         await pool.query(
           `INSERT INTO salary_alerts (email, job_title, job_title_en, job_title_ar, country, category) VALUES ($1,$2,$3,$4,$5,$6)`,
           [email, jobTitle, english, arabic, country, category]
         );
-      } catch(e) {
-        console.error('Alert save error:', e);
-      }
+      } catch(e) { console.error('Alert save error:', e); }
     }
 
-    // Step 5: Notify existing subscribers with same category + country
     try {
       const subscribers = await pool.query(
-        `SELECT DISTINCT email FROM salary_alerts 
-         WHERE country = $1 AND category = $2 AND email != $3`,
+        `SELECT DISTINCT email FROM salary_alerts WHERE country = $1 AND category = $2 AND email != $3`,
         [country, category, email || '']
       );
-
       for (const row of subscribers.rows) {
         try {
           await resend.emails.send({
             from: 'SalaryMENA <support@cvdropai.com>',
             to: row.email,
             subject: `New ${english} salary added in ${country} — SalaryMENA`,
-            html: `
-              <div style="font-family:Inter,sans-serif;background:#0a0a0f;color:#ffffff;padding:32px;max-width:600px;margin:0 auto;border-radius:16px;">
-                <div style="margin-bottom:24px;display:flex;align-items:center;gap:12px;">
-                  <img src="https://salarymena.com/logo-email.png" width="44" height="44" alt="SalaryMENA logo" style="border-radius:8px;"/>
-                  <div>
-                    <span style="font-size:20px;font-weight:900;color:#ffffff;">Salary</span><span style="font-size:20px;font-weight:900;color:#8b5cf6;">MENA</span>
-                  </div>
-                </div>
-                <h1 style="font-size:22px;font-weight:800;margin-bottom:8px;">New salary added for your field 🔔</h1>
-                <p style="color:#a0a0b0;font-size:15px;line-height:1.7;margin-bottom:24px;">A new <strong style="color:#fff">${english}</strong> salary was just submitted in <strong style="color:#fff">${country}</strong> — similar to your role.</p>
-                <a href="https://salarymena.com/explore" style="display:inline-block;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#ffffff;text-decoration:none;border-radius:10px;padding:12px 24px;font-weight:700;font-size:14px;margin-bottom:24px;">See the new salary →</a>
-                <div style="border-top:1px solid #1e1e2e;padding-top:20px;">
-                  <p style="color:#404050;font-size:12px;margin:0;">© 2026 SalaryMENA · <a href="https://salarymena.com" style="color:#6366f1;text-decoration:none;">salarymena.com</a></p>
-                </div>
-              </div>
-            `
+            html: `<div style="font-family:Inter,sans-serif;background:#0a0a0f;color:#ffffff;padding:32px;max-width:600px;margin:0 auto;border-radius:16px;"><h1 style="font-size:22px;font-weight:800;margin-bottom:8px;">New salary added for your field 🔔</h1><p style="color:#a0a0b0;font-size:15px;line-height:1.7;margin-bottom:24px;">A new <strong style="color:#fff">${english}</strong> salary was just submitted in <strong style="color:#fff">${country}</strong>.</p><a href="https://salarymena.com/explore" style="display:inline-block;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#ffffff;text-decoration:none;border-radius:10px;padding:12px 24px;font-weight:700;font-size:14px;">See the new salary →</a></div>`
           });
-        } catch(e) {
-          console.error('Alert email error:', e);
-        }
+        } catch(e) { console.error('Alert email error:', e); }
       }
-    } catch(e) {
-      console.error('Subscriber notify error:', e);
-    }
+    } catch(e) { console.error('Subscriber notify error:', e); }
 
     return Response.json({ success: true });
   } catch (error) {

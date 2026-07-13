@@ -1,9 +1,9 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { Pool } from 'pg';
+import { getPool } from '../../lib/db';
 import { Resend } from 'resend';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-const pool = new Pool({ connectionString: process.env.DATABASE_PUBLIC_URL, max: 3, idleTimeoutMillis: 10000, connectionTimeoutMillis: 5000 });
+const pool = getPool();
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function triggerAlerts(jobTitleEn, country, category) {

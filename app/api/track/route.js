@@ -1,6 +1,6 @@
-import { Pool } from 'pg';
+import { getPool } from '../../lib/db';
 
-const pool = new Pool({ connectionString: process.env.DATABASE_PUBLIC_URL });
+const pool = getPool();
 
 export async function POST(req) {
   try {
