@@ -27,6 +27,11 @@ export default function Gate({ children }) {
       title: 'See what others earn',
       desc: 'To browse real salaries across the MENA region, share yours first. It takes 90 seconds and is completely anonymous.',
     },
+    '/underpaid': {
+      icon: '💰',
+      title: 'Check if you are underpaid',
+      desc: 'To use the salary checker, share your own salary first. It takes 90 seconds and is completely anonymous.',
+    },
     '/coach': {
       icon: '🤖',
       title: 'Unlock your AI Negotiation Coach',

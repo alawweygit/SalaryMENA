@@ -26,6 +26,7 @@ async function triggerAlerts(jobTitleEn, country, category) {
 }
 
 const rateMap = new Map();
+const savedIPsCoach = new Set();
 const RATE_LIMIT = 10;
 const RATE_WINDOW = 60 * 60 * 1000;
 
@@ -64,11 +65,14 @@ export async function POST(req) {
       category = catMsg.content[0].text.trim().toLowerCase();
     } catch(e) { console.error('Translation error:', e); }
 
-    await pool.query(
-      `INSERT INTO salaries (job_title, job_title_ar, job_title_en, company_type, country, monthly_salary, currency, experience, nationality_type, source)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-      [jobTitle, jobTitleAr, jobTitleEn, companyType || null, country, offeredSalary || currentSalary || null, currency, experience, nationalityType || null, 'coach']
-    ).catch(err => console.error('Coach DB save error:', err));
+    if (!savedIPsCoach.has(ip)) {
+      savedIPsCoach.add(ip);
+      await pool.query(
+        `INSERT INTO salaries (job_title, job_title_ar, job_title_en, company_type, country, monthly_salary, currency, experience, nationality_type, source)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+        [jobTitle, jobTitleAr, jobTitleEn, companyType || null, country, offeredSalary || currentSalary || null, currency, experience, nationalityType || null, 'coach']
+      ).catch(err => console.error('Coach DB save error:', err));
+    }
 
 
     const isArabic = lang === 'ar';

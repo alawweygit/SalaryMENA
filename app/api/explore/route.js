@@ -34,7 +34,7 @@ export async function GET(req) {
 
     let rows;
     if (hasFilter) {
-      const result = await pool.query(`SELECT ${fields} FROM salaries ${baseWhere} ORDER BY created_at DESC`, params);
+      const result = await pool.query(`SELECT ${fields} FROM salaries ${baseWhere} ORDER BY created_at DESC LIMIT 200`, params);
       rows = result.rows;
     } else {
       const realResult = await pool.query(
@@ -42,11 +42,11 @@ export async function GET(req) {
         params
       );
       const gccResult = await pool.query(
-        `SELECT ${fields} FROM salaries ${baseWhere} AND is_seed = TRUE AND country IN ('UAE','Saudi Arabia','Kuwait','Qatar','Bahrain','Oman') ORDER BY RANDOM()`,
+        `SELECT ${fields} FROM salaries ${baseWhere} AND is_seed = TRUE AND country IN ('UAE','Saudi Arabia','Kuwait','Qatar','Bahrain','Oman') ORDER BY RANDOM() LIMIT 400`,
         params
       );
       const nonGccResult = await pool.query(
-        `SELECT ${fields} FROM salaries ${baseWhere} AND is_seed = TRUE AND country NOT IN ('UAE','Saudi Arabia','Kuwait','Qatar','Bahrain','Oman') ORDER BY RANDOM()`,
+        `SELECT ${fields} FROM salaries ${baseWhere} AND is_seed = TRUE AND country NOT IN ('UAE','Saudi Arabia','Kuwait','Qatar','Bahrain','Oman') ORDER BY RANDOM() LIMIT 150`,
         params
       );
       const gcc = gccResult.rows;
@@ -61,6 +61,6 @@ export async function GET(req) {
     return Response.json({ success: true, data: rows });
   } catch (error) {
     console.error(error);
-    return Response.json({ success: false, data: [], error: error.message }, { status: 500 });
+    return Response.json({ success: false, data: [], error: 'Failed to load salaries. Please try again.' }, { status: 500 });
   }
 }

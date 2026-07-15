@@ -16,7 +16,7 @@ const nextConfig = {
     const sources = [
       'reddit', 'instagram', 'twitter', 'facebook',
       'whatsapp', 'tiktok', 'linkedin', 'youtube',
-      'snapchat', 'telegram',
+      'snapchat', 'telegram', 'x',
     ];
     return sources.map(s => ({
       source: `/${s}`,
