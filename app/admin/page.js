@@ -148,7 +148,7 @@ export default function AdminDashboard() {
   const setLoad = (key, val) => setLoading(prev => ({ ...prev, [key]: val }));
   const login = async () => {
     try {
-      const r = await fetch(`/api/admin/stats?pw=${encodeURIComponent(pw)}`);
+      const r = await fetch(`/api/admin/stats`, { headers: { 'x-admin-pw': pw } });
       if (r.ok) { setStats(await r.json()); setAuthed(true); }
       else { setPwError('Wrong password.'); setPw(''); }
     } catch { setPwError('Connection error.'); }
@@ -156,19 +156,19 @@ export default function AdminDashboard() {
 
   const fetchStats = useCallback(async () => {
     setLoad('stats', true);
-    try { const r = await fetch(`/api/admin/stats?pw=${encodeURIComponent(pw)}`); setStats(await r.json()); } catch { showToast('Failed', 'error'); }
+    try { const r = await fetch(`/api/admin/stats`, { headers: { 'x-admin-pw': pw } }); setStats(await r.json()); } catch { showToast('Failed', 'error'); }
     setLoad('stats', false);
   }, [pw]);
 
   const fetchSubmissions = useCallback(async () => {
     setLoad('submissions', true);
-    try { const r = await fetch(`/api/admin/submissions?pw=${encodeURIComponent(pw)}`); const d = await r.json(); setSubmissions(d.records ?? []); } catch { showToast('Failed', 'error'); }
+    try { const r = await fetch(`/api/admin/submissions`, { headers: { 'x-admin-pw': pw } }); const d = await r.json(); setSubmissions(d.records ?? []); } catch { showToast('Failed', 'error'); }
     setLoad('submissions', false);
   }, [pw]);
 
   const fetchSeed = useCallback(async () => {
     setLoad('seed', true);
-    try { const r = await fetch(`/api/admin/seed?pw=${encodeURIComponent(pw)}`); const d = await r.json(); setSeedData(d.records ?? []); } catch { showToast('Failed', 'error'); }
+    try { const r = await fetch(`/api/admin/seed`, { headers: { 'x-admin-pw': pw } }); const d = await r.json(); setSeedData(d.records ?? []); } catch { showToast('Failed', 'error'); }
     setLoad('seed', false);
   }, [pw]);
 
@@ -178,7 +178,7 @@ export default function AdminDashboard() {
 
   const fetchAlerts = useCallback(async () => {
     setLoad('alerts', true);
-    try { const r = await fetch(`/api/admin/alerts?pw=${encodeURIComponent(pw)}`); const d = await r.json(); setAlerts(d.records ?? []); } catch { showToast('Failed', 'error'); }
+    try { const r = await fetch(`/api/admin/alerts`, { headers: { 'x-admin-pw': pw } }); const d = await r.json(); setAlerts(d.records ?? []); } catch { showToast('Failed', 'error'); }
     setLoad('alerts', false);
   }, [pw]);
 
@@ -191,7 +191,7 @@ export default function AdminDashboard() {
     if (!confirmDelete) return;
     const { id, table } = confirmDelete;
     try {
-      const r = await fetch(`/api/admin/${table}?pw=${encodeURIComponent(pw)}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+      const r = await fetch(`/api/admin/${table}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'x-admin-pw': pw }, body: JSON.stringify({ id }) });
       if (!r.ok) throw new Error();
       showToast('Record deleted');
       if (table === 'submissions') { setSubmissions(p => p.filter(x => x.id !== id)); fetchStats(); }
@@ -203,7 +203,7 @@ export default function AdminDashboard() {
 
   const bulkDeleteSeed = async (seniority) => {
     try {
-      const r = await fetch(`/api/admin/seed?pw=${encodeURIComponent(pw)}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bulk: true, seniority }) });
+      const r = await fetch(`/api/admin/seed`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'x-admin-pw': pw }, body: JSON.stringify({ bulk: true, seniority }) });
       if (!r.ok) throw new Error();
       const d = await r.json();
       showToast(`Deleted ${d.count} seed records`);

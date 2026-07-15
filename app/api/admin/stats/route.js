@@ -4,8 +4,7 @@ const pool = getPool();
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
 export async function GET(request) {
-  const { searchParams } = new URL(request.url);
-  if (searchParams.get('pw') !== ADMIN_PASSWORD) {
+  if (request.headers.get('x-admin-pw') !== ADMIN_PASSWORD) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

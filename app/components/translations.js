@@ -12,7 +12,7 @@ export const t = {
     hero_title: 'Know Your Worth.',
     hero_sub: 'Real salaries from real people across the Arab world. Know where you stand.',
     stat_1: '22', stat_1_label: 'Countries',
-    stat_2: '50+', stat_2_label: 'Industries',
+    stat_2: '50+', stat_2_label: 'Industries & Roles',
     stat_3: '100%', stat_3_label: 'Anonymous',
     submit_btn: 'Submit Your Salary →',
 

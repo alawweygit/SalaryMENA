@@ -8,8 +8,7 @@ function unauthorized() {
 }
 
 export async function GET(request) {
-  const { searchParams } = new URL(request.url);
-  if (searchParams.get('pw') !== ADMIN_PASSWORD) return unauthorized();
+  if (request.headers.get('x-admin-pw') !== ADMIN_PASSWORD) return unauthorized();
 
   const client = await pool.connect();
   try {
@@ -25,8 +24,7 @@ export async function GET(request) {
 }
 
 export async function DELETE(request) {
-  const { searchParams } = new URL(request.url);
-  if (searchParams.get('pw') !== ADMIN_PASSWORD) return unauthorized();
+  if (request.headers.get('x-admin-pw') !== ADMIN_PASSWORD) return unauthorized();
 
   const body = await request.json();
   const { id, bulk, seniority } = body;

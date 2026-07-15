@@ -6,8 +6,7 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 function unauthorized() { return Response.json({ error: 'Unauthorized' }, { status: 401 }); }
 
 export async function GET(request) {
-  const { searchParams } = new URL(request.url);
-  if (searchParams.get('pw') !== ADMIN_PASSWORD) return unauthorized();
+  if (request.headers.get('x-admin-pw') !== ADMIN_PASSWORD) return unauthorized();
   const client = await pool.connect();
   try {
     const result = await client.query(
@@ -21,8 +20,7 @@ export async function GET(request) {
 }
 
 export async function DELETE(request) {
-  const { searchParams } = new URL(request.url);
-  if (searchParams.get('pw') !== ADMIN_PASSWORD) return unauthorized();
+  if (request.headers.get('x-admin-pw') !== ADMIN_PASSWORD) return unauthorized();
   const body = await request.json();
   const { id } = body;
   if (!id) return Response.json({ error: 'Missing id' }, { status: 400 });
